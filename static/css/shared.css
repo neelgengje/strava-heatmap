@@ -1,0 +1,112 @@
+/* ── Reset & Base ─────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:          #eae6df;
+  --surface:     #f4f1ec;
+  --surface-2:   #ece8e2;
+  --surface-3:   #e3ded6;
+  --border:      #d5d0c8;
+  --text-1:      #2c2825;
+  --text-2:      #6e6860;
+  --text-3:      #9c958b;
+  --accent:      #c44535;
+  --accent-glow: rgba(196, 69, 53, 0.12);
+  --selected:    #7e5cc5;
+  --selected-glow: rgba(126, 92, 197, 0.15);
+  --hike:        #ff3366;
+  --ride:        #6366f1;
+  --run:         #ff9500;
+  --trail-run:   #bf5af2;
+  --nav-h:       48px;
+  --sidebar-w:   320px;
+  --radius:      10px;
+  --font:        'Inter', -apple-system, sans-serif;
+}
+
+html, body {
+  height: 100%;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text-1);
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* ── Top Nav ─────────────────────────────────────────── */
+.top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--nav-h);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  z-index: 2000;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: var(--text-1);
+}
+
+.nav-brand-icon { font-size: 20px; line-height: 1; }
+
+.nav-spacer { flex: 1; }
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-link {
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+}
+.nav-link:hover { color: var(--text-1); background: var(--surface-2); }
+
+.btn-primary {
+  display: inline-block;
+  padding: 8px 18px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  text-decoration: none;
+}
+.btn-primary:hover { opacity: 0.88; }
+
+.btn-outline {
+  display: inline-block;
+  padding: 6px 14px;
+  background: transparent;
+  color: var(--text-3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  text-decoration: none;
+}
+.btn-outline:hover { color: var(--text-2); border-color: var(--text-3); }

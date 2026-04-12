@@ -1,6 +1,6 @@
 """
-Prototype: strava-heatmap
-- Real Strava OAuth + activity fetch
+Trail Atlas — Strava activity visualizer
+- Real Strava OAuth + multi-activity fetch
 - Run: python app.py  →  open http://localhost:5001
 """
 import os, json, time
@@ -18,7 +18,15 @@ CLIENT_SECRET = os.environ['STRAVA_CLIENT_SECRET']
 REDIRECT_URI  = 'http://localhost:5001/auth/callback'
 TOKENS_FILE   = 'data/tokens.json'
 CACHE_FILE    = 'data/activities.json'
-SPORT_TYPES   = {'Hike', 'Walk', 'TrailRun', 'Hiking', 'BackcountrySki', 'NordicSki'}
+
+SPORT_TYPE_MAP = {
+    'Hike': 'Hike', 'Walk': 'Hike', 'Hiking': 'Hike',
+    'BackcountrySki': 'Hike', 'NordicSki': 'Hike',
+    'Ride': 'Ride', 'MountainBikeRide': 'Ride',
+    'GravelRide': 'Ride', 'EBikeRide': 'Ride', 'VirtualRide': 'Ride',
+    'Run': 'Run',
+    'TrailRun': 'TrailRun', 'VirtualRun': 'Run',
+}
 
 os.makedirs('data', exist_ok=True)
 
@@ -67,19 +75,26 @@ def fetch_activities():
         if not batch or not isinstance(batch, list):
             break
         for a in batch:
-            if a.get('sport_type') not in SPORT_TYPES:
+            category = SPORT_TYPE_MAP.get(a.get('sport_type'))
+            if not category:
                 continue
             poly = (a.get('map') or {}).get('summary_polyline', '')
             if not poly:
                 continue
             coords = [[lat, lng] for lat, lng in pl.decode(poly)]
+            moving_time = a.get('moving_time', 0)
+            distance_mi = round(a['distance'] / 1609.34, 1)
             activities.append({
                 'id':           a['id'],
                 'name':         a['name'],
                 'date':         a['start_date_local'][:10],
-                'distance_mi':  round(a['distance'] / 1609.34, 1),
+                'distance_mi':  distance_mi,
                 'elev_gain_ft': round(a.get('total_elevation_gain', 0) * 3.28084),
+                'moving_time':  moving_time,
                 'sport_type':   a['sport_type'],
+                'category':     category,
+                'speed_mph':    round(distance_mi / (moving_time / 3600), 1) if moving_time > 0 else 0,
+                'pace_min_mi':  round(moving_time / 60 / distance_mi, 1) if distance_mi > 0 else 0,
                 'coords':       coords,
             })
         if len(batch) < 200:
@@ -98,8 +113,12 @@ def load_cached():
 # ---------- routes ----------
 
 @app.route('/')
-def index():
-    return app.send_static_file('index.html')
+def landing():
+    return app.send_static_file('landing.html')
+
+@app.route('/app')
+def main_app():
+    return app.send_static_file('app.html')
 
 @app.route('/api/config')
 def config():
@@ -132,7 +151,7 @@ def auth_callback():
         'grant_type': 'authorization_code',
     })
     save_tokens(r.json())
-    return redirect('/')
+    return redirect('/app')
 
 @app.route('/auth/logout')
 def auth_logout():
@@ -148,6 +167,50 @@ def sync_activities():
     if activities is None:
         return jsonify({'error': 'not authenticated'}), 401
     return jsonify({'count': len(activities)})
+
+@app.route('/api/activities/<int:activity_id>/streams')
+def activity_streams(activity_id):
+    tokens = fresh_tokens()
+    if not tokens:
+        return jsonify({'error': 'not authenticated'}), 401
+    headers = {'Authorization': f"Bearer {tokens['access_token']}"}
+    r = requests.get(
+        f'https://www.strava.com/api/v3/activities/{activity_id}/streams',
+        headers=headers,
+        params={'keys': 'altitude,distance,latlng', 'key_type': 'distance'},
+    )
+    if r.status_code != 200:
+        return jsonify({'error': 'stream fetch failed'}), r.status_code
+    streams = {s['type']: s['data'] for s in r.json()}
+    return jsonify({
+        'distance': streams.get('distance', []),
+        'altitude': streams.get('altitude', []),
+        'latlng':   streams.get('latlng', []),
+    })
+
+@app.route('/api/activities/stats')
+def activity_stats():
+    data = load_cached()
+    if data is None:
+        return jsonify({'total': 0, 'miles': 0, 'elevation': 0, 'years': 0, 'by_type': {}})
+    by_type = {}
+    years = set()
+    for a in data:
+        cat = a.get('category', 'Hike')
+        if cat not in by_type:
+            by_type[cat] = {'count': 0, 'miles': 0, 'elevation': 0}
+        by_type[cat]['count'] += 1
+        by_type[cat]['miles'] += a['distance_mi']
+        by_type[cat]['elevation'] += a['elev_gain_ft']
+        years.add(a['date'][:4])
+    return jsonify({
+        'total': len(data),
+        'miles': round(sum(a['distance_mi'] for a in data)),
+        'elevation': round(sum(a['elev_gain_ft'] for a in data)),
+        'years': len(years),
+        'by_type': by_type,
+        'authenticated': load_tokens() is not None,
+    })
 
 @app.route('/api/activities')
 def activities():

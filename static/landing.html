@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trail Atlas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/shared.css" />
+  <link rel="stylesheet" href="/css/landing.css" />
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="top-nav">
+    <a class="nav-brand" href="/">
+      <span class="nav-brand-icon">&#9968;</span>
+      Trail Atlas
+    </a>
+    <div class="nav-spacer"></div>
+    <div class="nav-links" id="nav-links"></div>
+  </nav>
+
+  <div class="landing-wrap">
+
+    <!-- Hero -->
+    <section class="hero">
+      <h1>Every trail tells a story.</h1>
+      <p class="hero-sub" id="hero-sub">Your outdoor adventures, beautifully mapped.</p>
+      <div class="hero-cta" id="hero-cta"></div>
+    </section>
+
+    <!-- Stats Ribbon (shown when data exists) -->
+    <section class="stats-ribbon" id="stats-ribbon" style="display:none">
+      <div class="ribbon-stat">
+        <div class="ribbon-stat-value" id="rs-total">&mdash;</div>
+        <div class="ribbon-stat-label">Activities</div>
+      </div>
+      <div class="ribbon-stat">
+        <div class="ribbon-stat-value" id="rs-miles">&mdash;</div>
+        <div class="ribbon-stat-label">Miles</div>
+      </div>
+      <div class="ribbon-stat">
+        <div class="ribbon-stat-value" id="rs-elev">&mdash;</div>
+        <div class="ribbon-stat-label">Ft Gained</div>
+      </div>
+      <div class="ribbon-stat">
+        <div class="ribbon-stat-value" id="rs-years">&mdash;</div>
+        <div class="ribbon-stat-label">Years Active</div>
+      </div>
+    </section>
+
+    <!-- Activity Cards (shown when data exists) -->
+    <section class="cards-section" id="cards-section" style="display:none">
+      <h2>Your Activities</h2>
+      <div class="cards-grid" id="cards-grid"></div>
+    </section>
+
+    <!-- Connect CTA (shown when not authenticated) -->
+    <section class="connect-section" id="connect-section" style="display:none">
+      <p>Connect your Strava account to visualize all your outdoor activities on a beautiful interactive map.</p>
+      <a href="/auth/login" class="btn-strava">Connect with Strava</a>
+    </section>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+      Built with Strava data
+    </footer>
+
+  </div>
+
+  <script src="/js/landing.js"></script>
+</body>
+</html>
