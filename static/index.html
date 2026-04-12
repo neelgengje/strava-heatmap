@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Trail Heatmap</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body>
+  <div id="sidebar">
+
+    <!-- Branding -->
+    <div id="brand">
+      <span id="brand-icon">⛰</span>
+      <span id="brand-name">Trail Heatmap</span>
+      <div id="auth-actions"></div>
+    </div>
+
+    <!-- Stats -->
+    <div id="stats-bar" style="display:none">
+      <div class="stat">
+        <div class="stat-value" id="stat-hikes">—</div>
+        <div class="stat-label">Hikes</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <div class="stat-value" id="stat-miles">—</div>
+        <div class="stat-label">Miles</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <div class="stat-value" id="stat-elev">—</div>
+        <div class="stat-label">Ft Gained</div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div id="controls" style="display:none">
+      <div id="search-wrap">
+        <svg id="search-icon" viewBox="0 0 20 20" fill="none">
+          <circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M13 13l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        <input id="search" type="text" placeholder="Search trails…" oninput="applyFilters()" />
+      </div>
+      <select id="year-filter" onchange="applyFilters()">
+        <option value="">All years</option>
+      </select>
+    </div>
+
+    <!-- List -->
+    <ul id="activity-list"></ul>
+
+    <!-- Connect CTA (shown when logged out) -->
+    <div id="connect-cta" style="display:none">
+      <p>Connect your Strava account to visualize all your hikes on the map.</p>
+      <a href="/auth/login" id="btn-connect">Connect with Strava</a>
+    </div>
+
+  </div>
+
+  <div id="map"></div>
+
+  <!-- Trail detail drawer -->
+  <div id="detail-drawer">
+    <button id="drawer-close" onclick="clearSelection()">✕</button>
+    <div id="drawer-content"></div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>
