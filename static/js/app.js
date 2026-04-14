@@ -4,6 +4,7 @@ let activities   = [];   // raw from API
 let trails       = [];   // deduplicated, aggregated
 let filtered     = [];   // current filtered view
 let polylineLayers = []; // [{ glow, core, name, category }]
+let startMarkers   = []; // start-of-trail pins
 let selectedName = null;
 let activeTypes  = new Set(Object.keys(ACTIVITY_TYPES));
 const canvas     = L.canvas();
@@ -159,7 +160,7 @@ async function loadActivities() {
   renderSidebar();
   renderMap();
 
-  document.getElementById('stats-bar').style.display = 'flex';
+  document.getElementById('stats-bar').classList.remove('hidden');
   document.getElementById('controls').style.display  = 'flex';
   document.getElementById('connect-cta').style.display = 'none';
 }
@@ -175,11 +176,39 @@ function renderStats() {
   document.getElementById('stat-miles').textContent = Math.round(totalMiles).toLocaleString();
   document.getElementById('stat-elev').textContent  = Math.round(totalElev / 1000) + 'K';
 
-  // Dynamic label
+  // Dynamic count label
   const label = activeTypes.size === 1
     ? typeForCategory([...activeTypes][0]).label
     : 'Activities';
   document.getElementById('stat-count-label').textContent = label;
+
+  // Per-type time bars
+  const timeLabels = { Hike: 'Hiking', Ride: 'Riding', Run: 'Running', TrailRun: 'Trail Runs' };
+  const timeByCat = {};
+  active.forEach(a => {
+    const cat = a.category || 'Hike';
+    timeByCat[cat] = (timeByCat[cat] || 0) + (a.moving_time || 0);
+  });
+
+  const cats = Object.keys(ACTIVITY_TYPES).filter(k => timeByCat[k] > 0);
+  const maxSecs = Math.max(...cats.map(k => timeByCat[k]), 1);
+
+  const timeEl = document.getElementById('time-stats');
+  timeEl.innerHTML = cats.map(cat => {
+    const secs = timeByCat[cat];
+    const hrs = Math.round(secs / 3600);
+    const display = `${hrs}h`;
+    const pct = Math.round((secs / maxSecs) * 100);
+    const color = typeForCategory(cat).color;
+    return `
+      <div class="time-bar-item">
+        <span class="time-bar-label">${timeLabels[cat] || cat}</span>
+        <div class="time-bar-wrap">
+          <div class="time-bar-fill" style="width:${pct}%;background:${color}"></div>
+        </div>
+        <span class="time-bar-value">${display}</span>
+      </div>`;
+  }).join('');
 }
 
 // ── Year filter ───────────────────────────────────────────
@@ -213,6 +242,8 @@ function applyFilters() {
 function renderMap() {
   polylineLayers.forEach(({ glow, core }) => { map.removeLayer(glow); map.removeLayer(core); });
   polylineLayers = [];
+  startMarkers.forEach(m => map.removeLayer(m));
+  startMarkers = [];
 
   trails.forEach(trail => {
     const visible = activeTypes.has(trail.category);
@@ -240,6 +271,40 @@ function renderMap() {
     });
 
     polylineLayers.push({ glow, core, key: trail.key, category: trail.category, coreW });
+
+    // Start-of-trail pin (teardrop / map pin shape)
+    if (visible && latlngs.length > 0) {
+      const pinSvg = (c, size) => `
+        <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${Math.round(size * 1.4)}" viewBox="0 0 24 34">
+          <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 22 12 22s12-13 12-22C24 5.4 18.6 0 12 0z"
+                fill="${c}" stroke="#fff" stroke-width="2"/>
+          <circle cx="12" cy="11" r="4.5" fill="#fff"/>
+        </svg>`;
+
+      const icon = L.divIcon({
+        html: pinSvg(color, 16),
+        className: 'start-pin',
+        iconSize: [16, 22],
+        iconAnchor: [8, 22],
+        tooltipAnchor: [0, -22],
+      });
+
+      const startPin = L.marker(latlngs[0], { icon, pane: 'overlayPane' }).addTo(map);
+
+      startPin.bindTooltip(`
+        <div style="font-size:13px;line-height:1.6">
+          <strong>${trail.name}</strong><br>
+          ${trail.distance_mi} mi &nbsp;\u00b7&nbsp; ${trail.elev_gain_ft.toLocaleString()} ft gain<br>
+          <span style="color:var(--text-3);font-size:11px">${trail.date}</span>
+        </div>
+      `, { direction: 'top', offset: [0, 0], opacity: 1 });
+
+      startPin._trailKey = trail.key;
+      startPin._color = color;
+      startPin._pinSvg = pinSvg;
+      startPin.on('click', () => selectTrail(trail.key));
+      startMarkers.push(startPin);
+    }
   });
 }
 
@@ -263,7 +328,24 @@ function selectTrail(key) {
   });
 
   const latlngs = trail.coords.map(([lat, lng]) => [lat, lng]);
-  map.fitBounds(L.latLngBounds(latlngs), { padding: [60, 60], maxZoom: 14 });
+  // Extra bottom padding to account for the 210px drawer
+  map.fitBounds(L.latLngBounds(latlngs), { paddingTopLeft: [60, 60], paddingBottomRight: [60, 240], maxZoom: 14 });
+
+  // Highlight selected pin, dim others
+  startMarkers.forEach(m => {
+    if (m._trailKey === key) {
+      m.setIcon(L.divIcon({
+        html: m._pinSvg(m._color, 22),
+        className: 'start-pin start-pin-active',
+        iconSize: [22, 31],
+        iconAnchor: [11, 31],
+        tooltipAnchor: [0, -31],
+      }));
+      m.setOpacity(1);
+    } else {
+      m.setOpacity(0.25);
+    }
+  });
 
   showDrawer(trail);
   renderSidebar();
@@ -279,6 +361,18 @@ function clearSelection() {
     const color = typeForCategory(category).color;
     glow.setStyle({ opacity: visible ? 0.08 : 0, color });
     core.setStyle({ opacity: visible ? 0.55 : 0, weight: coreW, color });
+  });
+
+  // Restore start pins to default size and opacity
+  startMarkers.forEach(m => {
+    m.setIcon(L.divIcon({
+      html: m._pinSvg(m._color, 16),
+      className: 'start-pin',
+      iconSize: [16, 22],
+      iconAnchor: [8, 22],
+      tooltipAnchor: [0, -22],
+    }));
+    m.setOpacity(1);
   });
 }
 
@@ -374,6 +468,15 @@ async function loadElevationProfile(activityId, category) {
 
     // Store for hover interaction
     elevProfile = { distMi, elevFt, latlngs, maxDist, minElev, elevRange, padL, padR, padT, padB, cW, cH, W, H, cfg, chartColorBase };
+
+    // Update selected polyline to use hi-res streams coords so hover marker aligns exactly
+    if (latlngs.length > 0) {
+      const entry = polylineLayers.find(p => p.key === selectedName);
+      if (entry) {
+        entry.glow.setLatLngs(latlngs);
+        entry.core.setLatLngs(latlngs);
+      }
+    }
 
     drawElevChart(ctx, dpr);
 

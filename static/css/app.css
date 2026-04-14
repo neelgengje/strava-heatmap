@@ -17,13 +17,15 @@ body { overflow: hidden; }
   z-index: 1000;
 }
 
-/* Type filter pills */
+/* Type filter pills — floating on map */
 #type-filters {
+  position: fixed;
+  top: calc(var(--nav-h) + 12px);
+  left: calc(var(--sidebar-w) + 16px);
   display: flex;
   gap: 6px;
-  padding: 12px 12px;
-  border-bottom: 1px solid var(--border);
   flex-wrap: wrap;
+  z-index: 800;
 }
 
 .type-pill {
@@ -33,7 +35,8 @@ body { overflow: hidden; }
   padding: 5px 12px;
   border-radius: 20px;
   border: 1.5px solid var(--border);
-  background: transparent;
+  background: rgba(244, 241, 236, 0.85);
+  backdrop-filter: blur(6px);
   font-family: var(--font);
   font-size: 12px;
   font-weight: 600;
@@ -41,6 +44,7 @@ body { overflow: hidden; }
   cursor: pointer;
   transition: all 0.15s;
   white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
 
 .type-pill:hover { border-color: var(--text-3); }
@@ -58,36 +62,74 @@ body { overflow: hidden; }
 
 /* Stats bar */
 #stats-bar {
-  display: flex;
-  align-items: center;
-  padding: 14px 16px;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--border);
   background: var(--bg);
 }
 
-.stat { flex: 1; text-align: center; }
+#stats-top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.stat { text-align: center; flex: 1; }
 
 .stat-value {
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-1);
   letter-spacing: -0.5px;
-  line-height: 1.1;
+  line-height: 1;
 }
 
 .stat-label {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
   color: var(--text-3);
   text-transform: uppercase;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.5px;
   margin-top: 4px;
 }
 
-.stat-divider {
-  width: 1px;
-  height: 28px;
-  background: var(--border);
+/* Time bars */
+.time-bar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.time-bar-item:last-child { margin-bottom: 0; }
+
+.time-bar-label {
+  font-size: 10px;
+  color: var(--text-3);
+  width: 58px;
+  flex-shrink: 0;
+}
+
+.time-bar-wrap {
+  flex: 1;
+  height: 7px;
+  background: var(--surface-3);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.time-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.time-bar-value {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-1);
+  width: 62px;
+  text-align: right;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 /* Controls */
@@ -239,7 +281,8 @@ body { overflow: hidden; }
   touch-action: none;
 }
 
-/* Hide default Leaflet controls — we style ours */
+/* Leaflet zoom — bottom left */
+.leaflet-top.leaflet-left { top: auto !important; bottom: 10px !important; }
 .leaflet-control-zoom {
   border: none !important;
   box-shadow: none !important;
@@ -286,6 +329,32 @@ body { overflow: hidden; }
 }
 .leaflet-popup-tip { background: var(--surface-2) !important; }
 .leaflet-popup-close-button { color: var(--text-3) !important; top: 6px !important; right: 8px !important; }
+
+/* Start pins */
+.start-pin {
+  background: none !important;
+  border: none !important;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+.start-pin:hover {
+  transform: scale(1.2);
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+.start-pin-active {
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.25));
+}
+
+/* Tooltip (start pins) */
+.leaflet-tooltip {
+  background: var(--surface-2) !important;
+  color: var(--text-1) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1) !important;
+  font-family: var(--font) !important;
+  padding: 8px 12px !important;
+}
+.leaflet-tooltip-top::before { border-top-color: var(--border) !important; }
 
 /* ── Detail Drawer (bottom of map on select) ──────────── */
 #detail-drawer {

@@ -23,27 +23,28 @@
     <div class="nav-links" id="nav-actions"></div>
   </nav>
 
+  <!-- Type filter pills — floating on map -->
+  <div id="type-filters"></div>
+
   <div id="sidebar">
 
-    <!-- Type filter pills -->
-    <div id="type-filters"></div>
-
     <!-- Stats -->
-    <div id="stats-bar" style="display:none">
-      <div class="stat">
-        <div class="stat-value" id="stat-count">&mdash;</div>
-        <div class="stat-label" id="stat-count-label">Activities</div>
+    <div id="stats-bar" class="hidden">
+      <div id="stats-top">
+        <div class="stat">
+          <div class="stat-value" id="stat-count">&mdash;</div>
+          <div class="stat-label" id="stat-count-label">Activities</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="stat-miles">&mdash;</div>
+          <div class="stat-label">Miles</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="stat-elev">&mdash;</div>
+          <div class="stat-label">Ft Gained</div>
+        </div>
       </div>
-      <div class="stat-divider"></div>
-      <div class="stat">
-        <div class="stat-value" id="stat-miles">&mdash;</div>
-        <div class="stat-label">Miles</div>
-      </div>
-      <div class="stat-divider"></div>
-      <div class="stat">
-        <div class="stat-value" id="stat-elev">&mdash;</div>
-        <div class="stat-label">Ft Gained</div>
-      </div>
+      <div id="time-stats"></div>
     </div>
 
     <!-- Controls -->
