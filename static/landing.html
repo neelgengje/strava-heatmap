@@ -6,7 +6,8 @@
   <title>Trail Atlas</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
   <link rel="stylesheet" href="/css/shared.css" />
   <link rel="stylesheet" href="/css/landing.css" />
 </head>
@@ -15,60 +16,107 @@
   <!-- Nav -->
   <nav class="top-nav">
     <a class="nav-brand" href="/">
-      <span class="nav-brand-icon">&#9968;</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20L10 6L14 14L18 10L21 20H3Z"/></svg>
       Trail Atlas
     </a>
     <div class="nav-spacer"></div>
     <div class="nav-links" id="nav-links"></div>
   </nav>
 
-  <div class="landing-wrap">
-
-    <!-- Hero -->
-    <section class="hero">
-      <h1>Every trail tells a story.</h1>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="light-rays"></div>
+    <div class="light-rays"></div>
+    <div class="mist"></div>
+    <div class="forest-layer">
+      <!-- Back layer trees (lightest) -->
+      <svg viewBox="0 0 1200 500" preserveAspectRatio="none" class="forest-back">
+        <g fill="var(--forest-1)">
+          <path d="M50,500 L50,280 L30,280 L70,200 L50,200 L80,130 L60,130 L90,60 L120,130 L100,130 L130,200 L110,200 L150,280 L130,280 L130,500Z"/>
+          <path d="M200,500 L200,300 L180,300 L220,220 L200,220 L230,150 L210,150 L240,80 L270,150 L250,150 L280,220 L260,220 L300,300 L280,300 L280,500Z"/>
+          <path d="M380,500 L380,320 L360,320 L400,240 L380,240 L410,170 L390,170 L420,100 L450,170 L430,170 L460,240 L440,240 L480,320 L460,320 L460,500Z"/>
+          <path d="M550,500 L550,290 L530,290 L570,210 L550,210 L580,140 L560,140 L590,70 L620,140 L600,140 L630,210 L610,210 L650,290 L630,290 L630,500Z"/>
+          <path d="M720,500 L720,310 L700,310 L740,230 L720,230 L750,160 L730,160 L760,90 L790,160 L770,160 L800,230 L780,230 L820,310 L800,310 L800,500Z"/>
+          <path d="M880,500 L880,280 L860,280 L900,200 L880,200 L910,130 L890,130 L920,60 L950,130 L930,130 L960,200 L940,200 L980,280 L960,280 L960,500Z"/>
+          <path d="M1040,500 L1040,300 L1020,300 L1060,220 L1040,220 L1070,150 L1050,150 L1080,80 L1110,150 L1090,150 L1120,220 L1100,220 L1140,300 L1120,300 L1120,500Z"/>
+        </g>
+      </svg>
+      <!-- Mid layer -->
+      <svg viewBox="0 0 1200 400" preserveAspectRatio="none" class="forest-mid">
+        <g fill="var(--forest-2)">
+          <path d="M100,400 L100,220 L80,220 L120,150 L100,150 L130,80 L160,150 L140,150 L180,220 L160,220 L160,400Z"/>
+          <path d="M300,400 L300,240 L280,240 L320,170 L300,170 L330,100 L360,170 L340,170 L380,240 L360,240 L360,400Z"/>
+          <path d="M480,400 L480,200 L460,200 L500,130 L480,130 L510,60 L540,130 L520,130 L560,200 L540,200 L540,400Z"/>
+          <path d="M660,400 L660,230 L640,230 L680,160 L660,160 L690,90 L720,160 L700,160 L740,230 L720,230 L720,400Z"/>
+          <path d="M840,400 L840,210 L820,210 L860,140 L840,140 L870,70 L900,140 L880,140 L920,210 L900,210 L900,400Z"/>
+          <path d="M1020,400 L1020,250 L1000,250 L1040,180 L1020,180 L1050,110 L1080,180 L1060,180 L1100,250 L1080,250 L1080,400Z"/>
+        </g>
+      </svg>
+      <!-- Front layer (darkest) -->
+      <svg viewBox="0 0 1200 300" preserveAspectRatio="none" class="forest-front">
+        <g fill="var(--forest-1)">
+          <path d="M0,300 L0,180 L-20,180 L20,110 L0,110 L30,50 L60,110 L40,110 L80,180 L60,180 L60,300Z"/>
+          <path d="M180,300 L180,160 L160,160 L200,90 L180,90 L210,30 L240,90 L220,90 L260,160 L240,160 L240,300Z"/>
+          <path d="M400,300 L400,170 L380,170 L420,100 L400,100 L430,40 L460,100 L440,100 L480,170 L460,170 L460,300Z"/>
+          <path d="M600,300 L600,150 L580,150 L620,80 L600,80 L630,20 L660,80 L640,80 L680,150 L660,150 L660,300Z"/>
+          <path d="M800,300 L800,170 L780,170 L820,100 L800,100 L830,40 L860,100 L840,100 L880,170 L860,170 L860,300Z"/>
+          <path d="M1000,300 L1000,160 L980,160 L1020,90 L1000,90 L1030,30 L1060,90 L1040,90 L1080,160 L1060,160 L1060,300Z"/>
+        </g>
+      </svg>
+    </div>
+    <div class="hero-content">
+      <h1><span class="w">Every</span> <span class="w">trail</span> <span class="w">tells</span> <span class="w">a</span> <span class="w pop">story.</span></h1>
       <p class="hero-sub" id="hero-sub">Your outdoor adventures, beautifully mapped.</p>
-      <div class="hero-cta" id="hero-cta"></div>
-    </section>
+      <div class="hero-pills" id="hero-pills" style="display:none"></div>
+      <div class="hero-cta-wrap" id="hero-cta"></div>
+    </div>
+  </section>
 
-    <!-- Stats Ribbon (shown when data exists) -->
-    <section class="stats-ribbon" id="stats-ribbon" style="display:none">
-      <div class="ribbon-stat">
-        <div class="ribbon-stat-value" id="rs-total">&mdash;</div>
-        <div class="ribbon-stat-label">Activities</div>
+  <!-- Stats Ribbon -->
+  <section class="stats-section" id="stats-section" style="display:none">
+    <div class="stats-title">By the numbers</div>
+    <div class="stats-float">
+      <div class="fc" style="transition-delay:0s">
+        <div class="fi"><i class="ph-duotone ph-path"></i></div>
+        <div class="fv" id="rs-total" data-target="0">0</div>
+        <div class="fl">Activities</div>
       </div>
-      <div class="ribbon-stat">
-        <div class="ribbon-stat-value" id="rs-miles">&mdash;</div>
-        <div class="ribbon-stat-label">Miles</div>
+      <div class="fc" style="transition-delay:0.1s">
+        <div class="fi"><i class="ph-duotone ph-map-trifold"></i></div>
+        <div class="fv" id="rs-miles" data-target="0">0</div>
+        <div class="fl">Miles</div>
       </div>
-      <div class="ribbon-stat">
-        <div class="ribbon-stat-value" id="rs-elev">&mdash;</div>
-        <div class="ribbon-stat-label">Ft Gained</div>
+      <div class="fc" style="transition-delay:0.15s">
+        <div class="fi"><i class="ph-duotone ph-trend-up"></i></div>
+        <div class="fv" id="rs-elev" data-target="0" data-suffix="K">0</div>
+        <div class="fl">Ft Gained</div>
       </div>
-      <div class="ribbon-stat">
-        <div class="ribbon-stat-value" id="rs-years">&mdash;</div>
-        <div class="ribbon-stat-label">Years Active</div>
+      <div class="fc" style="transition-delay:0.2s">
+        <div class="fi"><i class="ph-duotone ph-calendar-dots"></i></div>
+        <div class="fv" id="rs-years" data-target="0">0</div>
+        <div class="fl">Years Active</div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- Activity Cards (shown when data exists) -->
-    <section class="cards-section" id="cards-section" style="display:none">
-      <h2>Your Activities</h2>
-      <div class="cards-grid" id="cards-grid"></div>
-    </section>
+  <!-- Activity Cards -->
+  <section class="cards-section" id="cards-section" style="display:none">
+    <div class="cards-header">
+      <h2>Your Adventures</h2>
+      <p>Tap to explore on the map</p>
+    </div>
+    <div class="cg" id="cards-grid"></div>
+  </section>
 
-    <!-- Connect CTA (shown when not authenticated) -->
-    <section class="connect-section" id="connect-section" style="display:none">
-      <p>Connect your Strava account to visualize all your outdoor activities on a beautiful interactive map.</p>
-      <a href="/auth/login" class="btn-strava">Connect with Strava</a>
-    </section>
+  <!-- Connect CTA (shown when not authenticated) -->
+  <section class="cta-section" id="connect-section" style="display:none">
+    <h2>Ready to explore?</h2>
+    <p>Connect your Strava account to visualize all your outdoor activities on a beautiful interactive map.</p>
+    <a class="btn-strava" href="/auth/login">Connect with Strava</a>
+  </section>
 
-    <!-- Footer -->
-    <footer class="landing-footer">
-      Built with Strava data
-    </footer>
-
-  </div>
+  <!-- Footer -->
+  <footer class="landing-footer">Built with Strava data</footer>
 
   <script src="/js/landing.js"></script>
 </body>

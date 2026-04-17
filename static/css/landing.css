@@ -1,193 +1,503 @@
-/* ── Landing Page ─────────────────────────────────────── */
-body { overflow-y: auto; }
+/* ── Landing Page — Forest Canopy Theme ───────────────── */
+body { overflow-y: auto; overflow-x: hidden; }
 
-.landing-wrap {
-  padding-top: var(--nav-h);
-  min-height: 100vh;
+/* ── Nav (frosted glass, sticky) ─────────────────────── */
+.top-nav {
+  position: sticky;
+  top: 0;
+  height: 56px;
+  background: rgba(244, 241, 236, 0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  z-index: 1000;
 }
 
-/* ── Hero ─────────────────────────────────────────────── */
+.nav-brand {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.nav-brand svg {
+  width: 24px;
+  height: 24px;
+}
+
+.nav-cta {
+  padding: 9px 22px;
+  background: linear-gradient(135deg, var(--forest-2), var(--forest-4));
+  color: #fff;
+  border-radius: 24px;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+}
+
+.nav-cta:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 16px rgba(58, 114, 80, 0.25);
+}
+
+/* ── Hero — Forest Canopy ────────────────────────────── */
 .hero {
+  position: relative;
+  min-height: 92vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 100px 24px 80px;
-  background: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+  padding: 120px 24px 100px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #f7f0e5 0%, #e8dfcf 40%, #d9cebc 70%, var(--bg) 100%);
+}
+
+/* Forest tree layers */
+.forest-layer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+}
+
+.forest-layer svg {
+  position: absolute;
+  bottom: 0;
+  width: 110%;
+  left: -5%;
+}
+
+.forest-back  { height: 420px; opacity: 0.12; }
+.forest-mid   { height: 320px; opacity: 0.15; }
+.forest-front { height: 200px; opacity: 0.08; }
+
+/* Mist / fog */
+.mist {
+  position: absolute;
+  bottom: 20%;
+  left: 0;
+  right: 0;
+  height: 120px;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(247, 240, 229, 0.6), transparent);
+  animation: mistDrift 12s ease-in-out infinite;
+}
+
+@keyframes mistDrift {
+  0%, 100% { transform: translateX(0);    opacity: 0.6; }
+  50%      { transform: translateX(30px); opacity: 0.8; }
+}
+
+/* Light rays through trees */
+.light-rays {
+  position: absolute;
+  top: 0;
+  left: 40%;
+  width: 300px;
+  height: 100%;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 200, 100, 0.08), transparent 60%);
+  transform: skewX(-10deg);
+  animation: rayShift 8s ease-in-out infinite;
+}
+
+.light-rays:nth-child(2) {
+  left: 55%;
+  width: 200px;
+  animation-delay: 2s;
+  transform: skewX(-15deg);
+}
+
+@keyframes rayShift {
+  0%, 100% { opacity: 0.6; transform: skewX(-10deg); }
+  50%      { opacity: 1;   transform: skewX(-8deg); }
+}
+
+/* Floating leaves */
+.leaf {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  opacity: 0;
+  pointer-events: none;
+  animation: leafFall var(--dur) ease-in-out infinite;
+}
+
+@keyframes leafFall {
+  0%   { transform: translate(0, -20px) rotate(0deg);        opacity: 0; }
+  10%  {                                                       opacity: 0.4; }
+  90%  {                                                       opacity: 0.3; }
+  100% { transform: translate(var(--dx), 400px) rotate(360deg); opacity: 0; }
+}
+
+/* ── Hero content ────────────────────────────────────── */
+.hero-content {
+  position: relative;
+  z-index: 2;
 }
 
 .hero h1 {
-  font-size: 52px;
-  font-weight: 700;
-  letter-spacing: -1.5px;
-  line-height: 1.1;
-  color: var(--text-1);
-  max-width: 600px;
+  font-size: clamp(44px, 7vw, 76px);
+  font-weight: 900;
+  letter-spacing: -3px;
+  line-height: 1.0;
+  max-width: 700px;
+}
+
+.hero h1 .w {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(30px) rotate(-2deg);
+  animation: wordBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.w:nth-child(1) { animation-delay: 0.1s; }
+.w:nth-child(2) { animation-delay: 0.2s; }
+.w:nth-child(3) { animation-delay: 0.3s; }
+.w:nth-child(4) { animation-delay: 0.4s; }
+
+.w.pop {
+  background: linear-gradient(135deg, var(--forest-2), var(--forest-4));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation-delay: 0.5s;
+}
+
+@keyframes wordBounce {
+  to { opacity: 1; transform: translateY(0) rotate(0); }
 }
 
 .hero-sub {
-  margin-top: 20px;
-  font-size: 18px;
+  margin-top: 24px;
+  font-size: 19px;
   color: var(--text-2);
   line-height: 1.6;
   max-width: 480px;
+  opacity: 0;
+  transform: translateY(16px);
+  animation: fadeUp 0.6s ease-out 0.8s forwards;
 }
 
-.hero-cta {
-  margin-top: 36px;
+@keyframes fadeUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Activity pills */
+.hero-pills {
   display: flex;
-  gap: 12px;
+  gap: 10px;
+  margin-top: 28px;
+  flex-wrap: wrap;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(16px);
+  animation: fadeUp 0.6s ease-out 1s forwards;
 }
 
-.hero-cta .btn-primary {
-  padding: 12px 28px;
-  font-size: 15px;
-  border-radius: 8px;
+.pill {
+  padding: 8px 18px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1.5px solid var(--border);
+  background: rgba(244, 241, 236, 0.9);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
 }
 
-.hero-cta .btn-outline {
-  padding: 12px 28px;
-  font-size: 15px;
-  border-radius: 8px;
+.pill:hover {
+  transform: translateY(-3px) rotate(-1deg);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
-/* ── Stats Ribbon ────────────────────────────────────── */
-.stats-ribbon {
+.pill i { font-size: 18px; }
+.pill-hike i    { color: var(--hike); }
+.pill-ride i    { color: var(--ride); }
+.pill-run i     { color: var(--run); }
+.pill-trailrun i { color: var(--trail-run); }
+
+/* Hero CTA */
+.hero-cta-wrap {
+  margin-top: 36px;
+  opacity: 0;
+  transform: translateY(16px);
+  animation: fadeUp 0.6s ease-out 1.2s forwards;
+}
+
+.btn-hero {
+  padding: 18px 44px;
+  background: linear-gradient(135deg, var(--forest-2), var(--forest-4));
+  color: #fff;
+  border: none;
+  border-radius: 28px;
+  font-family: var(--font);
+  font-size: 17px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s;
+  box-shadow: 0 4px 24px rgba(58, 114, 80, 0.25);
+}
+
+.btn-hero:hover {
+  transform: scale(1.08);
+  box-shadow: 0 8px 36px rgba(58, 114, 80, 0.35);
+}
+
+.btn-hero .ar {
+  transition: transform 0.2s;
+}
+
+.btn-hero:hover .ar {
+  transform: translateX(4px);
+}
+
+/* ── Stats Section ───────────────────────────────────── */
+.stats-section {
+  padding: 80px 24px;
+}
+
+.stats-section::before {
+  content: '';
+  display: block;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--forest-1), var(--forest-2), var(--forest-3), var(--forest-4), transparent);
+  margin-bottom: 40px;
+}
+
+.stats-title {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--text-3);
+  margin-bottom: 40px;
+}
+
+.stats-float {
   display: flex;
   justify-content: center;
-  gap: 0;
-  padding: 40px 24px;
+  gap: 20px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.fc {
   background: var(--surface);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-}
-
-.ribbon-stat {
-  flex: 0 1 180px;
+  border: 1.5px solid var(--border);
+  border-radius: 24px;
+  padding: 32px 24px;
   text-align: center;
-  padding: 0 24px;
+  flex: 1;
+  max-width: 210px;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+  opacity: 0;
+  transform: translateY(40px);
 }
 
-.ribbon-stat + .ribbon-stat {
-  border-left: 1px solid var(--border);
+.fc.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-.ribbon-stat-value {
-  font-size: 36px;
-  font-weight: 700;
-  letter-spacing: -1px;
+.fc:hover {
+  transform: translateY(-12px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+}
+
+.fc .fi { font-size: 24px; margin-bottom: 12px; }
+.fc:nth-child(1) .fi { color: var(--hike); }
+.fc:nth-child(2) .fi { color: var(--ride); }
+.fc:nth-child(3) .fi { color: var(--run); }
+.fc:nth-child(4) .fi { color: var(--trail-run); }
+
+.fc .fv {
+  font-size: 42px;
+  font-weight: 900;
+  letter-spacing: -2px;
   line-height: 1;
+  margin-bottom: 6px;
   color: var(--text-1);
 }
 
-.ribbon-stat-label {
+.fc .fl {
   font-size: 11px;
   font-weight: 600;
-  color: var(--text-3);
   text-transform: uppercase;
-  letter-spacing: 0.8px;
-  margin-top: 8px;
+  letter-spacing: 1.5px;
+  color: var(--text-3);
 }
 
 /* ── Activity Cards ──────────────────────────────────── */
 .cards-section {
-  padding: 60px 24px;
-  max-width: 900px;
+  padding: 80px 24px;
+  max-width: 1000px;
   margin: 0 auto;
 }
 
-.cards-section h2 {
-  font-size: 24px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
+.cards-header {
   text-align: center;
-  margin-bottom: 36px;
-  color: var(--text-1);
+  margin-bottom: 48px;
 }
 
-.cards-grid {
+.cards-header h2 {
+  font-size: 36px;
+  font-weight: 900;
+  letter-spacing: -1px;
+}
+
+.cards-header p {
+  font-size: 16px;
+  color: var(--text-2);
+  margin-top: 8px;
+}
+
+.cg {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
 }
 
-.activity-card {
+.pc {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px 20px;
+  border-radius: 24px;
+  padding: 36px;
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-  transition: transform 0.15s, box-shadow 0.15s;
-  border-left: 4px solid transparent;
+  align-items: flex-start;
+  gap: 24px;
   cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+  opacity: 0;
+  transform: translateY(30px);
   text-decoration: none;
   color: inherit;
 }
 
-.activity-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+.pc.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-.activity-card[data-type="Hike"]     { border-left-color: var(--hike); }
-.activity-card[data-type="Ride"]     { border-left-color: var(--ride); }
-.activity-card[data-type="Run"]      { border-left-color: var(--run); }
-.activity-card[data-type="TrailRun"] { border-left-color: var(--trail-run); }
+.pc:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
+}
 
-.card-icon {
-  font-size: 28px;
+.pci {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pc:hover .pci {
+  transform: scale(1.15) rotate(-5deg);
+}
+
+.pc[data-type="Hike"] .pci     { background: rgba(255, 51, 102, 0.1);  color: var(--hike); }
+.pc[data-type="Ride"] .pci     { background: rgba(99, 102, 241, 0.1);  color: var(--ride); }
+.pc[data-type="Run"] .pci      { background: rgba(255, 149, 0, 0.1);   color: var(--run); }
+.pc[data-type="TrailRun"] .pci { background: rgba(191, 90, 242, 0.1);  color: var(--trail-run); }
+
+.pc[data-type="Hike"] .pcc     { color: var(--hike); }
+.pc[data-type="Ride"] .pcc     { color: var(--ride); }
+.pc[data-type="Run"] .pcc      { color: var(--run); }
+.pc[data-type="TrailRun"] .pcc { color: var(--trail-run); }
+
+.pcl {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.pcc {
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: -1.5px;
   line-height: 1;
+  margin-bottom: 4px;
 }
 
-.card-label {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-1);
-}
-
-.card-meta {
-  font-size: 13px;
+.pcm {
+  font-size: 14px;
   color: var(--text-2);
-  line-height: 1.5;
 }
 
-.card-meta span {
-  display: block;
+.pca {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-3);
+  transition: color 0.2s, gap 0.2s;
 }
 
-/* ── Connect CTA (unauthenticated) ───────────────────── */
-.connect-section {
-  padding: 80px 24px;
+.pc:hover .pca {
+  color: var(--text-1);
+  gap: 8px;
+}
+
+/* ── CTA Section ─────────────────────────────────────── */
+.cta-section {
+  padding: 100px 24px;
   text-align: center;
   background: var(--surface);
   border-top: 1px solid var(--border);
 }
 
-.connect-section p {
+.cta-section h2 {
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  margin-bottom: 12px;
+}
+
+.cta-section p {
   font-size: 16px;
   color: var(--text-2);
-  margin-bottom: 24px;
-  line-height: 1.6;
+  margin-bottom: 36px;
   max-width: 400px;
   margin-left: auto;
   margin-right: auto;
+  line-height: 1.6;
 }
 
 .btn-strava {
-  display: inline-block;
-  padding: 14px 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 40px;
   background: #fc4c02;
   color: #fff;
-  border-radius: 8px;
-  font-size: 15px;
+  border-radius: 28px;
+  font-family: var(--font);
+  font-size: 16px;
   font-weight: 700;
-  letter-spacing: 0.2px;
-  transition: opacity 0.15s;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s;
 }
-.btn-strava:hover { opacity: 0.88; }
+
+.btn-strava:hover {
+  transform: scale(1.06);
+  box-shadow: 0 8px 32px rgba(252, 76, 2, 0.25);
+}
 
 /* ── Footer ──────────────────────────────────────────── */
 .landing-footer {
@@ -196,4 +506,19 @@ body { overflow-y: auto; }
   font-size: 12px;
   color: var(--text-3);
   border-top: 1px solid var(--border);
+}
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  .stats-float { flex-wrap: wrap; }
+  .cg { grid-template-columns: 1fr; }
+}
+
+/* ── Reduced motion ──────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .fc, .pc { opacity: 1; transform: none; }
 }
