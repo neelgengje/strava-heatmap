@@ -3,19 +3,48 @@
 let activities   = [];   // raw from API
 let trails       = [];   // deduplicated, aggregated
 let filtered     = [];   // current filtered view
-let polylineLayers = []; // [{ glow, core, name, category }]
+let polylineLayers = new Map(); // trail.key → { glow, core, category, coreW }
 let startMarkers   = []; // start-of-trail pins
 let selectedName = null;
 let activeTypes  = new Set(Object.keys(ACTIVITY_TYPES));
 const canvas     = L.canvas();
+let els = {};   // cached DOM refs, populated by cacheEls()
 
 // ── Map ───────────────────────────────────────────────────
+const DEFAULT_CENTER = [37.58, -122.05];
+const DEFAULT_ZOOM   = 10.5;
 const map = L.map('map', {
   scrollWheelZoom: false,
   zoomSnap: 0,
   zoomControl: true,
   minZoom: 2,
-}).setView([37.58, -122.05], 10.5);
+}).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+
+// Re-center control — sits below the +/− zoom buttons
+const RecenterControl = L.Control.extend({
+  options: { position: 'bottomleft' },
+  onAdd() {
+    const c = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-recenter');
+    const a = L.DomUtil.create('a', '', c);
+    a.href = '#';
+    a.title = 'Reset view';
+    a.setAttribute('aria-label', 'Reset view');
+    a.innerHTML = `
+      <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="10" cy="10" r="6"/><circle cx="10" cy="10" r="1.5" fill="currentColor"/>
+        <line x1="10" y1="1.5" x2="10" y2="4"/><line x1="10" y1="16" x2="10" y2="18.5"/>
+        <line x1="1.5" y1="10" x2="4" y2="10"/><line x1="16" y1="10" x2="18.5" y2="10"/>
+      </svg>`;
+    L.DomEvent.on(a, 'click', e => {
+      L.DomEvent.preventDefault(e);
+      if (selectedName) clearSelection();
+      map.setView(DEFAULT_CENTER, DEFAULT_ZOOM, { animate: true });
+    });
+    L.DomEvent.disableClickPropagation(c);
+    return c;
+  },
+});
+new RecenterControl().addTo(map);
 
 // Custom wheel zoom:
 // - macOS trackpad pinch fires wheel with ctrlKey=true and tiny deltaY (~1-5px)
@@ -67,6 +96,9 @@ async function init() {
     activeTypes = new Set([typeParam]);
   }
 
+  cacheEls();
+  bindDelegatedHandlers();
+
   if (cfg.authenticated) {
     renderNavAuth(true);
     await loadActivities();
@@ -76,23 +108,47 @@ async function init() {
   }
 }
 
+function cacheEls() {
+  els.statCount      = document.getElementById('stat-count');
+  els.statMiles      = document.getElementById('stat-miles');
+  els.statElev       = document.getElementById('stat-elev');
+  els.statCountLabel = document.getElementById('stat-count-label');
+  els.timeStats      = document.getElementById('time-stats');
+}
+
+function bindDelegatedHandlers() {
+  document.getElementById('type-filters').addEventListener('click', e => {
+    const pill = e.target.closest('[data-type]');
+    if (pill) toggleType(pill.dataset.type);
+  });
+  document.getElementById('activity-list').addEventListener('click', e => {
+    const row = e.target.closest('[data-key]');
+    if (row) selectTrail(row.dataset.key);
+  });
+}
+
 // ── Nav Auth ─────────────────────────────────────────────
 function renderNavAuth(authenticated) {
   const el = document.getElementById('nav-actions');
   if (authenticated) {
     el.innerHTML = `
-      <button class="btn-primary" id="sync-btn" onclick="syncActivities()">Sync</button>
+      <button class="btn-primary" id="sync-btn" title="Click: incremental · Shift+Click: full resync">Sync</button>
       <a class="btn-outline" href="/auth/logout">Disconnect</a>`;
+    document.getElementById('sync-btn').addEventListener('click',
+      e => syncActivities({ full: e.shiftKey })
+    );
   }
 }
 
-async function syncActivities() {
+async function syncActivities(opts = {}) {
   const btn = document.getElementById('sync-btn');
-  btn.textContent = 'Syncing…';
+  const full = !!opts.full;
+  btn.textContent = full ? 'Full resync…' : 'Syncing…';
   btn.disabled = true;
-  await fetch('/api/activities/sync');
-  btn.textContent = 'Sync';
-  btn.disabled = false;
+  const res = await fetch('/api/activities/sync' + (full ? '?full=1' : ''));
+  const data = await res.json().catch(() => ({}));
+  btn.textContent = data.new === 0 ? 'Up to date' : `+${data.new} new`;
+  setTimeout(() => { btn.textContent = 'Sync'; btn.disabled = false; }, 1800);
   await loadActivities();
 }
 
@@ -111,7 +167,7 @@ function renderTypePills() {
     if (count === 0) return '';
     const active = activeTypes.has(key) ? 'active' : '';
     return `
-      <button class="type-pill ${active}" data-type="${key}" onclick="toggleType('${key}')">
+      <button class="type-pill ${active}" data-type="${key}">
         ${cfg.icon} ${cfg.label} <span class="pill-count">${count}</span>
       </button>`;
   }).join('');
@@ -172,15 +228,15 @@ function renderStats() {
   const totalMiles = active.reduce((s, a) => s + a.distance_mi, 0);
   const totalElev  = active.reduce((s, a) => s + a.elev_gain_ft, 0);
 
-  document.getElementById('stat-count').textContent = totalCount.toLocaleString();
-  document.getElementById('stat-miles').textContent = Math.round(totalMiles).toLocaleString();
-  document.getElementById('stat-elev').textContent  = Math.round(totalElev / 1000) + 'K';
+  els.statCount.textContent = totalCount.toLocaleString();
+  els.statMiles.textContent = Math.round(totalMiles).toLocaleString();
+  els.statElev.textContent  = Math.round(totalElev / 1000) + 'K';
 
   // Dynamic count label
   const label = activeTypes.size === 1
     ? typeForCategory([...activeTypes][0]).label
     : 'Activities';
-  document.getElementById('stat-count-label').textContent = label;
+  els.statCountLabel.textContent = label;
 
   // Per-type time bars
   const timeLabels = { Hike: 'Hiking', Ride: 'Riding', Run: 'Running', TrailRun: 'Trail Runs' };
@@ -193,8 +249,7 @@ function renderStats() {
   const cats = Object.keys(ACTIVITY_TYPES).filter(k => timeByCat[k] > 0);
   const maxSecs = Math.max(...cats.map(k => timeByCat[k]), 1);
 
-  const timeEl = document.getElementById('time-stats');
-  timeEl.innerHTML = cats.map(cat => {
+  els.timeStats.innerHTML = cats.map(cat => {
     const secs = timeByCat[cat];
     const hrs = Math.round(secs / 3600);
     const display = `${hrs}h`;
@@ -241,7 +296,7 @@ function applyFilters() {
 // ── Map rendering ─────────────────────────────────────────
 function renderMap() {
   polylineLayers.forEach(({ glow, core }) => { map.removeLayer(glow); map.removeLayer(core); });
-  polylineLayers = [];
+  polylineLayers.clear();
   startMarkers.forEach(m => map.removeLayer(m));
   startMarkers = [];
 
@@ -270,7 +325,7 @@ function renderMap() {
       p.on('click', () => { if (visible) selectTrail(trail.key); });
     });
 
-    polylineLayers.push({ glow, core, key: trail.key, category: trail.category, coreW });
+    polylineLayers.set(trail.key, { glow, core, category: trail.category, coreW });
 
     // Start-of-trail pin (teardrop / map pin shape)
     if (visible && latlngs.length > 0) {
@@ -318,7 +373,7 @@ function selectTrail(key) {
 
   const selColor = typeForCategory(trail.category).color;
 
-  polylineLayers.forEach(({ glow, core, key: k, category: c, coreW }) => {
+  polylineLayers.forEach(({ glow, core, category: c, coreW }, k) => {
     const sel = k === selectedName;
     const visible = activeTypes.has(c);
     if (!visible) return;
@@ -356,7 +411,7 @@ function clearSelection() {
   renderSidebar();
   hideDrawer();
 
-  polylineLayers.forEach(({ glow, core, key, category, coreW }) => {
+  polylineLayers.forEach(({ glow, core, category, coreW }) => {
     const visible = activeTypes.has(category);
     const color = typeForCategory(category).color;
     glow.setStyle({ opacity: visible ? 0.08 : 0, color });
@@ -414,6 +469,7 @@ function showDrawer(trail) {
       <canvas id="elev-chart"></canvas>
     </div>`;
   document.getElementById('detail-drawer').classList.add('open');
+  document.body.classList.add('drawer-open');
   loadElevationProfile(trail.id, trail.category);
 }
 
@@ -471,7 +527,7 @@ async function loadElevationProfile(activityId, category) {
 
     // Update selected polyline to use hi-res streams coords so hover marker aligns exactly
     if (latlngs.length > 0) {
-      const entry = polylineLayers.find(p => p.key === selectedName);
+      const entry = polylineLayers.get(selectedName);
       if (entry) {
         entry.glow.setLatLngs(latlngs);
         entry.core.setLatLngs(latlngs);
@@ -640,6 +696,7 @@ function handleElevHover(e, chartCanvas, ctx, dpr) {
 
 function hideDrawer() {
   document.getElementById('detail-drawer').classList.remove('open');
+  document.body.classList.remove('drawer-open');
   elevProfile = null;
   removeElevMarker();
 }
@@ -655,7 +712,7 @@ function renderSidebar() {
     return `
       <li class="${isSelected ? 'active' : ''}"
           style="border-left-color: ${cfg.color}"
-          onclick="selectTrail('${trail.key.replace(/'/g, "\\'")}')">
+          data-key="${trail.key}">
         <div class="trail-name">${trail.name}</div>
         <div class="trail-meta">
           <span>\u2194 ${trail.distance_mi} mi</span>

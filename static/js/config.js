@@ -3,8 +3,8 @@ const ACTIVITY_TYPES = {
   Hike: {
     label: 'Hikes',
     icon: '\u26F0',
+    pIcon: 'ph-mountains',
     color: '#ff3366',
-    sportTypes: new Set(['Hike', 'Walk', 'Hiking', 'BackcountrySki', 'NordicSki']),
     freqColors: ['#ff6688','#ff3366','#e6204e','#cc1040','#991033'],
     stats: ['miles', 'elevation', 'time'],
     drawerVerb: 'Hiked',
@@ -13,8 +13,8 @@ const ACTIVITY_TYPES = {
   Ride: {
     label: 'Rides',
     icon: '\uD83D\uDEB4',
+    pIcon: 'ph-bicycle',
     color: '#6366f1',
-    sportTypes: new Set(['Ride', 'MountainBikeRide', 'GravelRide', 'EBikeRide', 'VirtualRide']),
     freqColors: ['#8b8ef5','#6366f1','#5254d8','#4244be','#3234a0'],
     stats: ['miles', 'elevation', 'time', 'speed'],
     drawerVerb: 'Ridden',
@@ -23,8 +23,8 @@ const ACTIVITY_TYPES = {
   Run: {
     label: 'Runs',
     icon: '\uD83C\uDFC3',
+    pIcon: 'ph-person-simple-run',
     color: '#ff9500',
-    sportTypes: new Set(['Run', 'VirtualRun']),
     freqColors: ['#ffb344','#ff9500','#e68400','#cc7200','#995500'],
     stats: ['miles', 'pace', 'time'],
     drawerVerb: 'Run',
@@ -33,8 +33,8 @@ const ACTIVITY_TYPES = {
   TrailRun: {
     label: 'Trail Runs',
     icon: '\uD83C\uDF32',
+    pIcon: 'ph-tree-evergreen',
     color: '#bf5af2',
-    sportTypes: new Set(['TrailRun']),
     freqColors: ['#d088f5','#bf5af2','#a840d8','#9030be','#7020a0'],
     stats: ['miles', 'elevation', 'pace', 'time'],
     drawerVerb: 'Run',

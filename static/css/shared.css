@@ -27,6 +27,7 @@
   --sidebar-w:   320px;
   --radius:      10px;
   --font:        'Inter', -apple-system, sans-serif;
+  --font-display: 'Source Serif Pro', serif;
 }
 
 html, body {

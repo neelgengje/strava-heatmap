@@ -59,13 +59,42 @@ def fresh_tokens():
 
 # ---------- strava fetch ----------
 
-def fetch_activities():
+def normalize_activity(a):
+    """Strava activity → cache record. Returns None if it should be skipped."""
+    category = SPORT_TYPE_MAP.get(a.get('sport_type'))
+    if not category:
+        return None
+    poly = (a.get('map') or {}).get('summary_polyline', '')
+    if not poly:
+        return None
+    coords = [[lat, lng] for lat, lng in pl.decode(poly)]
+    moving_time = a.get('moving_time', 0)
+    distance_mi = round(a['distance'] / 1609.34, 1)
+    return {
+        'id':           a['id'],
+        'name':         a['name'],
+        'date':         a['start_date_local'][:10],
+        'distance_mi':  distance_mi,
+        'elev_gain_ft': round(a.get('total_elevation_gain', 0) * 3.28084),
+        'moving_time':  moving_time,
+        'sport_type':   a['sport_type'],
+        'category':     category,
+        'speed_mph':    round(distance_mi / (moving_time / 3600), 1) if moving_time > 0 else 0,
+        'pace_min_mi':  round(moving_time / 60 / distance_mi, 1) if distance_mi > 0 else 0,
+        'coords':       coords,
+    }
+
+def fetch_activities(known_ids=None):
+    """Fetch activities from Strava, newest-first. Stops at the first activity
+    whose ID is in `known_ids` (incremental sync). Pass an empty set / None
+    for a full pull."""
     tokens = fresh_tokens()
     if not tokens:
         return None
     headers = {'Authorization': f"Bearer {tokens['access_token']}"}
-    activities, page = [], 1
-    while True:
+    known_ids = known_ids or set()
+    new_acts, page, hit_known = [], 1, False
+    while not hit_known:
         r = requests.get(
             'https://www.strava.com/api/v3/athlete/activities',
             headers=headers,
@@ -75,34 +104,16 @@ def fetch_activities():
         if not batch or not isinstance(batch, list):
             break
         for a in batch:
-            category = SPORT_TYPE_MAP.get(a.get('sport_type'))
-            if not category:
-                continue
-            poly = (a.get('map') or {}).get('summary_polyline', '')
-            if not poly:
-                continue
-            coords = [[lat, lng] for lat, lng in pl.decode(poly)]
-            moving_time = a.get('moving_time', 0)
-            distance_mi = round(a['distance'] / 1609.34, 1)
-            activities.append({
-                'id':           a['id'],
-                'name':         a['name'],
-                'date':         a['start_date_local'][:10],
-                'distance_mi':  distance_mi,
-                'elev_gain_ft': round(a.get('total_elevation_gain', 0) * 3.28084),
-                'moving_time':  moving_time,
-                'sport_type':   a['sport_type'],
-                'category':     category,
-                'speed_mph':    round(distance_mi / (moving_time / 3600), 1) if moving_time > 0 else 0,
-                'pace_min_mi':  round(moving_time / 60 / distance_mi, 1) if distance_mi > 0 else 0,
-                'coords':       coords,
-            })
+            if a['id'] in known_ids:
+                hit_known = True
+                break
+            normalized = normalize_activity(a)
+            if normalized:
+                new_acts.append(normalized)
         if len(batch) < 200:
             break
         page += 1
-    with open(CACHE_FILE, 'w') as f:
-        json.dump(activities, f)
-    return activities
+    return new_acts
 
 def load_cached():
     if os.path.exists(CACHE_FILE):
@@ -163,10 +174,21 @@ def auth_logout():
 
 @app.route('/api/activities/sync')
 def sync_activities():
-    activities = fetch_activities()
-    if activities is None:
+    full = request.args.get('full') == '1'
+    cached = [] if full else (load_cached() or [])
+    known_ids = {a['id'] for a in cached}
+    new_acts = fetch_activities(known_ids=known_ids)
+    if new_acts is None:
         return jsonify({'error': 'not authenticated'}), 401
-    return jsonify({'count': len(activities)})
+    merged = new_acts + cached  # both are newest-first
+    with open(CACHE_FILE, 'w') as f:
+        json.dump(merged, f)
+    return jsonify({'count': len(merged), 'new': len(new_acts), 'full': full})
+
+@app.route('/api/sport-types')
+def sport_types():
+    """Single source of truth for sport_type → category mapping."""
+    return jsonify(SPORT_TYPE_MAP)
 
 @app.route('/api/activities/<int:activity_id>/streams')
 def activity_streams(activity_id):

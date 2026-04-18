@@ -282,7 +282,15 @@ body { overflow: hidden; }
 }
 
 /* Leaflet zoom — bottom left */
-.leaflet-top.leaflet-left { top: auto !important; bottom: 10px !important; }
+.leaflet-top.leaflet-left {
+  top: auto !important;
+  bottom: 10px !important;
+  transition: bottom 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+/* Lift controls above the detail drawer when it's open (drawer height = 210px) */
+body.drawer-open .leaflet-top.leaflet-left {
+  bottom: 220px !important;
+}
 .leaflet-control-zoom {
   border: none !important;
   box-shadow: none !important;
@@ -303,6 +311,28 @@ body { overflow: hidden; }
 }
 .leaflet-control-zoom-in { border-radius: 6px 6px 0 0 !important; }
 .leaflet-control-zoom-out { border-radius: 0 0 6px 6px !important; }
+
+.leaflet-control-recenter {
+  margin-top: 6px !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.leaflet-control-recenter a {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 32px !important;
+  height: 32px !important;
+  background: var(--surface) !important;
+  color: var(--text-2) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 6px !important;
+  transition: background 0.12s, color 0.12s !important;
+}
+.leaflet-control-recenter a:hover {
+  background: var(--surface-2) !important;
+  color: var(--text-1) !important;
+}
 
 .leaflet-control-attribution {
   background: rgba(234, 230, 223, 0.85) !important;
