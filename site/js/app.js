@@ -162,7 +162,10 @@ function renderTypePills() {
 
 function toggleType(category) {
   const allKeys = Object.keys(ACTIVITY_TYPES);
-  if (activeTypes.has(category)) {
+  const allActive = allKeys.every(k => activeTypes.has(k));
+  if (allActive) {
+    activeTypes = new Set([category]);
+  } else if (activeTypes.has(category)) {
     activeTypes.delete(category);
     if (activeTypes.size === 0) activeTypes = new Set(allKeys);
   } else {
