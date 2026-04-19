@@ -29,7 +29,7 @@ body { overflow-y: auto; overflow-x: hidden; }
   background: linear-gradient(135deg, var(--forest-2), var(--forest-4));
   color: #fff;
   border-radius: 24px;
-  font-family: var(--font);
+  font-family: 'Inter', -apple-system, sans-serif;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
@@ -88,6 +88,8 @@ body { overflow-y: auto; overflow-x: hidden; }
   letter-spacing: -3px;
   line-height: 1.0;
   max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
 }
 
 .hero h1 .w {
@@ -119,8 +121,9 @@ body { overflow-y: auto; overflow-x: hidden; }
   font-size: 24px;
   font-weight: 400;
   color: var(--text-2);
-  line-height: 1.6;
-  max-width: 480px;
+  line-height: 1.4;
+  max-width: none;
+  white-space: nowrap;
   opacity: 0;
   transform: translateY(16px);
   animation: fadeUp 0.6s ease-out 0.8s forwards;
@@ -176,13 +179,13 @@ body { overflow-y: auto; overflow-x: hidden; }
 }
 
 .btn-hero {
-  padding: 22px 52px;
+  padding: 16px 40px;
   background: linear-gradient(135deg, var(--forest-2), var(--forest-4));
   color: #fff;
   border: none;
-  border-radius: 32px;
+  border-radius: 30px;
   font-family: var(--font);
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 800;
   cursor: pointer;
   display: inline-flex;
@@ -250,6 +253,7 @@ body { overflow-y: auto; overflow-x: hidden; }
 @media (max-width: 768px) {
   .hero-kpis { gap: 24px; }
   .hero-kpi-value { font-size: 26px; }
+  .hero-sub { white-space: normal; font-size: 18px; }
 }
 
 /* ── Reduced motion ──────────────────────────────────── */
