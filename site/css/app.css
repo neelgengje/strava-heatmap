@@ -314,11 +314,16 @@ body.sidebar-collapsed #type-filters { left: 64px; }
   touch-action: none;
 }
 
-/* Leaflet zoom — bottom left */
+/* Leaflet zoom — bottom left, clearing the floating sidebar */
 .leaflet-top.leaflet-left {
   top: auto !important;
   bottom: 10px !important;
-  transition: bottom 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  left: calc(16px + var(--sidebar-w) + 12px) !important;
+  transition: left 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+              bottom 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+body.sidebar-collapsed .leaflet-top.leaflet-left {
+  left: 16px !important;
 }
 /* Lift controls above the detail drawer when it's open */
 body.drawer-open .leaflet-top.leaflet-left {

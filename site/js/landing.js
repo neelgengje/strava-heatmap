@@ -1,20 +1,9 @@
 // Map category → CSS pill modifier class. Pill colors live in landing.css.
 const PILL_CLASS = {
-  Hike: 'pill-hike', Ride: 'pill-ride', Run: 'pill-run', TrailRun: 'pill-trailrun',
+  Hike: 'pill-hike', Ride: 'pill-ride', Run: 'pill-run', TrailRun: 'pill-trailrun', Kayak: 'pill-kayak',
 };
 
-function setupScrollObservers() {
-  const revealObs = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        revealObs.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.2 });
-
-  document.querySelectorAll('.fc, .pc').forEach(el => revealObs.observe(el));
-
+function animateCounters() {
   const counterObs = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       if (entry.isIntersecting && !entry.target.dataset.counted) {
@@ -51,7 +40,6 @@ async function init() {
     // No data yet — show a coming-soon state
     document.getElementById('hero-cta').innerHTML =
       '<a class="btn-hero" href="/app.html">Explore the Map <span class="ar">&rarr;</span></a>';
-    setupScrollObservers();
     return;
   }
 
@@ -60,10 +48,6 @@ async function init() {
     '<a class="btn-hero" href="/app.html">Explore the Map <span class="ar">&rarr;</span></a>';
 
   if (stats.total > 0) {
-    // Hero subtitle with real numbers
-    document.getElementById('hero-sub').textContent =
-      `${stats.total.toLocaleString()} activities. ${stats.miles.toLocaleString()} miles. ${stats.years} years of exploring.`;
-
     // Activity pills
     const pills = document.getElementById('hero-pills');
     const types = Object.entries(stats.by_type);
@@ -78,37 +62,16 @@ async function init() {
       }).join('');
     }
 
-    // Stats section
-    const statsSection = document.getElementById('stats-section');
-    statsSection.style.display = 'block';
-    document.getElementById('rs-total').dataset.target = stats.total;
-    document.getElementById('rs-miles').dataset.target = stats.miles;
-    document.getElementById('rs-elev').dataset.target = Math.round(stats.elevation / 1000);
-    document.getElementById('rs-years').dataset.target = stats.years;
-
-    // Activity cards
-    const grid = document.getElementById('cards-grid');
-    if (types.length > 0) {
-      document.getElementById('cards-section').style.display = 'block';
-      grid.innerHTML = types.map(([cat, data], i) => {
-        const t = ACTIVITY_TYPES[cat];
-        const pIcon = t?.pIcon || 'ph-map-pin';
-        const label = t?.label || cat;
-        return `
-          <a class="pc" data-type="${cat}" href="/app.html?type=${cat}" style="transition-delay:${i * 0.1}s">
-            <div class="pci"><i class="ph-duotone ${pIcon}" style="font-size:32px"></i></div>
-            <div>
-              <div class="pcl">${label}</div>
-              <div class="pcc">${data.count}</div>
-              <div class="pcm">${Math.round(data.miles).toLocaleString()} miles explored</div>
-              <div class="pca">View on map <span>&rarr;</span></div>
-            </div>
-          </a>`;
-      }).join('');
-    }
+    // Hero KPIs
+    const kpis = document.getElementById('hero-kpis');
+    kpis.style.display = 'flex';
+    document.getElementById('hk-total').dataset.target = stats.total;
+    document.getElementById('hk-miles').dataset.target = stats.miles;
+    document.getElementById('hk-elev').dataset.target = Math.round(stats.elevation / 1000);
+    document.getElementById('hk-years').dataset.target = stats.years;
   }
 
-  setupScrollObservers();
+  animateCounters();
 }
 
 init();

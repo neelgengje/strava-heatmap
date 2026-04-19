@@ -9,7 +9,6 @@ let selectedName = null;
 let activeTypes  = new Set(Object.keys(ACTIVITY_TYPES));
 const canvas     = L.canvas();
 let els = {};   // cached DOM refs, populated by cacheEls()
-let defaultBounds = null;  // bounds of all activities, set after load
 
 // Padding for fitBounds that accounts for the floating sidebar (and drawer when open).
 function fitPadding({ drawer = false } = {}) {
@@ -23,6 +22,8 @@ function fitPadding({ drawer = false } = {}) {
 // ── Map ───────────────────────────────────────────────────
 const DEFAULT_CENTER = [37.58, -122.05];
 const DEFAULT_ZOOM   = 10.5;
+// Rough bounding box covering SF Peninsula + East Bay + South Bay
+const BAY_AREA_BOUNDS = L.latLngBounds([37.20, -122.60], [38.00, -121.70]);
 const map = L.map('map', {
   scrollWheelZoom: false,
   zoomSnap: 0,
@@ -48,11 +49,7 @@ const RecenterControl = L.Control.extend({
     L.DomEvent.on(a, 'click', e => {
       L.DomEvent.preventDefault(e);
       if (selectedName) clearSelection();
-      if (defaultBounds) {
-        map.fitBounds(defaultBounds, { ...fitPadding(), animate: true });
-      } else {
-        map.setView(DEFAULT_CENTER, DEFAULT_ZOOM, { animate: true });
-      }
+      map.fitBounds(BAY_AREA_BOUNDS, { ...fitPadding(), animate: true });
     });
     L.DomEvent.disableClickPropagation(c);
     return c;
@@ -213,11 +210,7 @@ async function loadActivities() {
   renderSidebar();
   renderMap();
 
-  const allCoords = trails.flatMap(t => t.coords);
-  if (allCoords.length) {
-    defaultBounds = L.latLngBounds(allCoords);
-    map.fitBounds(defaultBounds, fitPadding());
-  }
+  map.fitBounds(BAY_AREA_BOUNDS, fitPadding());
 
   document.getElementById('stats-bar').classList.remove('hidden');
   document.getElementById('controls').style.display = 'flex';
