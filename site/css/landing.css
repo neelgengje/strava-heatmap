@@ -13,17 +13,6 @@ body { overflow-y: auto; overflow-x: hidden; }
   z-index: 1000;
 }
 
-.nav-brand {
-  font-size: 17px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-}
-
-.nav-brand svg {
-  width: 24px;
-  height: 24px;
-}
-
 .nav-cta {
   padding: 9px 22px;
   background: linear-gradient(135deg, var(--forest-2), var(--forest-4));
