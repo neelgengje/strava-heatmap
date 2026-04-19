@@ -1,103 +1,78 @@
 # Trail Atlas
 
-A personal activity visualizer that maps your Strava hikes, rides, runs, and trail runs on an interactive map. Routes you repeat glow brighter through overlapping trail lines, creating a natural heatmap of your most-traveled paths.
+**[neelgengje.com](https://neelgengje.com)**
+
+A personal activity visualizer that maps 8 years of Strava data — 379 activities, 2,806 miles, 345K ft of elevation — on an interactive map. Routes you repeat glow brighter through overlapping trail lines, creating a natural heatmap of your most-traveled paths.
+
+![Trail Atlas Map](https://neelgengje.com/og-image.png)
 
 ## Features
 
 - **Multi-activity support** — Hikes, bike rides, runs, and trail runs, each with distinct color coding
 - **Interactive map** — Smooth pinch-to-zoom, click any trail to highlight it and see details
-- **Elevation profile** — Hover along the chart to see a marker trace the route on the map in real-time
+- **Elevation profile** — Hover along the chart to see a live marker trace the route on the map
 - **Activity filtering** — Filter by type, search by name, or narrow by year
-- **Landing page** — Overview of your total stats and activity breakdown
-- **Strava OAuth** — Securely connects to your Strava account to sync activities
+- **Landing page** — Stats overview and activity breakdown
+- **No login required** — Fully public static site, no server
 
-## Screenshots
+## How it works
 
-| Landing Page | Map View | Elevation Profile |
-|---|---|---|
-| Stats + activity cards | Neon trail lines on Voyager basemap | Interactive hover with map marker |
-
-## Setup
-
-### Prerequisites
-
-- Python 3.9+
-- A [Strava API application](https://www.strava.com/settings/api) (free to create)
-- A [Thunderforest API key](https://www.thunderforest.com/) (free tier available, optional — app falls back to CartoDB)
-
-### Install
-
-```bash
-git clone https://github.com/neelgengje/strava-heatmap.git
-cd strava-heatmap
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
-
-### Configure
-
-Copy the example env file and fill in your credentials:
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env`:
+Activities are synced locally with `sync.py`, which pulls from the Strava API and writes static JSON files. The site is pure HTML/CSS/JS — no backend, no database. Deployed on Cloudflare Pages and auto-updates on every `git push`.
 
 ```
-STRAVA_CLIENT_ID=your_client_id
-STRAVA_CLIENT_SECRET=your_client_secret
-FLASK_SECRET_KEY=any_random_string
-THUNDERFOREST_API_KEY=your_key_or_leave_blank
+After a hike:
+  python sync.py       ← pulls new activities from Strava
+  git push origin main ← Cloudflare Pages deploys in ~30s
 ```
-
-Set your Strava app's **Authorization Callback Domain** to `localhost` in the Strava API settings.
-
-### Run
-
-```bash
-python app.py
-```
-
-Open [http://localhost:5001](http://localhost:5001) in your browser.
-
-1. Click **Connect with Strava** to authorize
-2. Click **Sync** to fetch your activities
-3. Explore the map
 
 ## Tech Stack
 
-- **Backend:** Python / Flask
-- **Frontend:** Vanilla JS, Leaflet.js
-- **Map tiles:** CartoDB Voyager
-- **Data:** Strava API v3, cached locally as JSON
+- **Frontend:** Vanilla JS, Leaflet.js, CartoDB Voyager tiles
+- **Sync:** Python — Strava API v3, incremental fetch, OAuth via local callback
+- **Hosting:** Cloudflare Pages (static, always-on, free)
+- **Data:** Pre-built JSON files committed to the repo
 
 ## Project Structure
 
 ```
-app.py                  Flask backend — OAuth, activity sync, API routes
-static/
-  landing.html          Landing page
-  app.html              Map application
+sync.py               Pull Strava activities → write static JSON
+site/
+  index.html          Landing page
+  app.html            Map application
   css/
-    shared.css          Design tokens, nav bar, shared styles
-    landing.css         Landing page styles
-    app.css             Map app styles (sidebar, drawer, controls)
+    shared.css        Design tokens, nav, shared styles
+    landing.css       Landing page styles
+    app.css           Map app styles (sidebar, drawer, controls)
   js/
-    config.js           Activity type definitions and color palettes
-    landing.js          Landing page stats
-    app.js              Map rendering, filtering, elevation profile
-data/                   Local cache (gitignored)
-  tokens.json           Strava OAuth tokens
-  activities.json       Cached activity data
+    config.js         Activity type definitions and color palettes
+    landing.js        Landing page — reads stats.json
+    app.js            Map rendering, filtering, elevation profile
+  data/
+    activities.json   All activity data (coords, stats, metadata)
+    stats.json        Aggregated totals for the landing page
+    streams/          Per-activity elevation + GPS streams
 ```
 
 ## Activity Types
 
 | Type | Color | Strava Sport Types |
 |---|---|---|
-| Hikes | Hot pink | Hike, Walk, Hiking, BackcountrySki, NordicSki |
+| Hikes | Hot pink | Hike, Walk, BackcountrySki, NordicSki |
 | Rides | Electric indigo | Ride, MountainBikeRide, GravelRide, EBikeRide |
 | Runs | Neon orange | Run, VirtualRun |
 | Trail Runs | Vivid purple | TrailRun |
+
+## Local sync setup
+
+To run `sync.py` yourself you need a [Strava API application](https://www.strava.com/settings/api) and a `.env` file:
+
+```
+STRAVA_CLIENT_ID=your_client_id
+STRAVA_CLIENT_SECRET=your_client_secret
+```
+
+```bash
+python -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+python sync.py        # opens browser for Strava login on first run
+```
