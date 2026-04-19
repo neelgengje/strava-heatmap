@@ -47,6 +47,7 @@ SPORT_TYPE_MAP = {
     'GravelRide': 'Ride', 'EBikeRide': 'Ride', 'VirtualRide': 'Ride',
     'Run': 'Run', 'VirtualRun': 'Run',
     'TrailRun': 'TrailRun',
+    'Kayaking': 'Kayak',
 }
 
 os.makedirs('data', exist_ok=True)

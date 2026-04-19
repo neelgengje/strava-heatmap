@@ -9,6 +9,16 @@ let selectedName = null;
 let activeTypes  = new Set(Object.keys(ACTIVITY_TYPES));
 const canvas     = L.canvas();
 let els = {};   // cached DOM refs, populated by cacheEls()
+let defaultBounds = null;  // bounds of all activities, set after load
+
+// Padding for fitBounds that accounts for the floating sidebar (and drawer when open).
+function fitPadding({ drawer = false } = {}) {
+  const sidebarOpen = !document.body.classList.contains('sidebar-collapsed');
+  return {
+    paddingTopLeft: [sidebarOpen ? 380 : 80, 60],
+    paddingBottomRight: [60, drawer ? 260 : 60],
+  };
+}
 
 // ── Map ───────────────────────────────────────────────────
 const DEFAULT_CENTER = [37.58, -122.05];
@@ -38,7 +48,11 @@ const RecenterControl = L.Control.extend({
     L.DomEvent.on(a, 'click', e => {
       L.DomEvent.preventDefault(e);
       if (selectedName) clearSelection();
-      map.setView(DEFAULT_CENTER, DEFAULT_ZOOM, { animate: true });
+      if (defaultBounds) {
+        map.fitBounds(defaultBounds, { ...fitPadding(), animate: true });
+      } else {
+        map.setView(DEFAULT_CENTER, DEFAULT_ZOOM, { animate: true });
+      }
     });
     L.DomEvent.disableClickPropagation(c);
     return c;
@@ -95,6 +109,13 @@ async function init() {
 
   cacheEls();
   bindDelegatedHandlers();
+
+  let resizeTO;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTO);
+    resizeTO = setTimeout(() => map.invalidateSize(), 150);
+  });
+
   await loadActivities();
 }
 
@@ -114,6 +135,11 @@ function bindDelegatedHandlers() {
   document.getElementById('activity-list').addEventListener('click', e => {
     const row = e.target.closest('[data-key]');
     if (row) selectTrail(row.dataset.key);
+  });
+  document.getElementById('sidebar-toggle').addEventListener('click', () => {
+    document.body.classList.toggle('sidebar-collapsed');
+    document.getElementById('sidebar').classList.toggle('collapsed');
+    setTimeout(() => map.invalidateSize(), 300);
   });
 }
 
@@ -187,6 +213,12 @@ async function loadActivities() {
   renderSidebar();
   renderMap();
 
+  const allCoords = trails.flatMap(t => t.coords);
+  if (allCoords.length) {
+    defaultBounds = L.latLngBounds(allCoords);
+    map.fitBounds(defaultBounds, fitPadding());
+  }
+
   document.getElementById('stats-bar').classList.remove('hidden');
   document.getElementById('controls').style.display = 'flex';
 }
@@ -207,7 +239,7 @@ function renderStats() {
     : 'Activities';
   els.statCountLabel.textContent = label;
 
-  const timeLabels = { Hike: 'Hiking', Ride: 'Riding', Run: 'Running', TrailRun: 'Trail Runs' };
+  const timeLabels = { Hike: 'Hiking', Ride: 'Riding', Run: 'Running', TrailRun: 'Trail Runs', Kayak: 'Paddling' };
   const timeByCat = {};
   active.forEach(a => {
     const cat = a.category || 'Hike';
@@ -349,7 +381,10 @@ function selectTrail(key) {
   });
 
   const latlngs = trail.coords.map(([lat, lng]) => [lat, lng]);
-  map.fitBounds(L.latLngBounds(latlngs), { paddingTopLeft: [60, 60], paddingBottomRight: [60, 240], maxZoom: 14 });
+  map.fitBounds(L.latLngBounds(latlngs), {
+    ...fitPadding({ drawer: true }),
+    maxZoom: 14,
+  });
 
   startMarkers.forEach(m => {
     if (m._trailKey === key) {
@@ -431,7 +466,7 @@ function showDrawer(trail) {
     <div id="elev-chart-wrap">
       <canvas id="elev-chart"></canvas>
     </div>`;
-  document.getElementById('detail-drawer').classList.add('open');
+  document.getElementById('drawer-wrap').classList.add('open');
   document.body.classList.add('drawer-open');
   loadElevationProfile(trail.id, trail.category);
 }
@@ -644,7 +679,7 @@ function handleElevHover(e, chartCanvas, ctx, dpr) {
 }
 
 function hideDrawer() {
-  document.getElementById('detail-drawer').classList.remove('open');
+  document.getElementById('drawer-wrap').classList.remove('open');
   document.body.classList.remove('drawer-open');
   elevProfile = null;
   removeElevMarker();

@@ -40,6 +40,16 @@ const ACTIVITY_TYPES = {
     drawerVerb: 'Run',
     chartColor: 'rgba(191, 90, 242,',
   },
+  Kayak: {
+    label: 'Kayak',
+    icon: '\uD83D\uDEF6',
+    pIcon: 'ph-boat',
+    color: '#00b4d8',
+    freqColors: ['#7ad8ec','#00b4d8','#0093b0','#007289','#00556b'],
+    stats: ['miles', 'time', 'speed'],
+    drawerVerb: 'Paddled',
+    chartColor: 'rgba(0, 180, 216,',
+  },
 };
 
 // ── Shared Helpers ────────────────────────────────────────
