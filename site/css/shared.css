@@ -27,8 +27,8 @@
   --nav-h:       48px;
   --sidebar-w:   320px;
   --radius:      10px;
-  --font:        'Inter', -apple-system, sans-serif;
-  --font-display: 'Source Serif Pro', serif;
+  --font:        'Source Serif Pro', Georgia, serif;
+  --font-display: 'Source Serif Pro', Georgia, serif;
 }
 
 html, body {
