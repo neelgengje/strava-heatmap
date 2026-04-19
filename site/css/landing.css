@@ -1,0 +1,474 @@
+/* ── Landing Page — Forest Canopy Theme ───────────────── */
+body { overflow-y: auto; overflow-x: hidden; }
+
+/* ── Nav (frosted glass, sticky) ─────────────────────── */
+/* Landing-only nav override — intentionally sticky + frosted (shared.css default is plain). */
+.top-nav {
+  position: sticky;
+  top: 0;
+  height: 56px;
+  background: rgba(244, 241, 236, 0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  z-index: 1000;
+}
+
+.nav-brand {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.nav-brand svg {
+  width: 24px;
+  height: 24px;
+}
+
+.nav-cta {
+  padding: 9px 22px;
+  background: linear-gradient(135deg, var(--forest-2), var(--forest-4));
+  color: #fff;
+  border-radius: 24px;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+}
+
+.nav-cta:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 16px rgba(58, 114, 80, 0.25);
+}
+
+/* ── Hero — Sage Dot Grid ────────────────────────────── */
+.hero {
+  position: relative;
+  min-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 120px 24px 100px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #eef3ea 0%, #e6efe1 55%, #dde7d6 100%);
+}
+
+/* Live canvas dot field — animated waves, mouse interaction, pulse rings. */
+.hero-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Soft edge vignette — subtly darkens corners to add depth. */
+.vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 110% 95% at 50% 50%, transparent 55%, rgba(45, 90, 61, 0.10) 100%);
+  z-index: 2;
+}
+
+/* ── Hero content ────────────────────────────────────── */
+.hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(44px, 7vw, 76px);
+  font-weight: 900;
+  letter-spacing: -3px;
+  line-height: 1.0;
+  max-width: 700px;
+}
+
+.hero h1 .w {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(30px) rotate(-2deg);
+  animation: wordBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.w:nth-child(1) { animation-delay: 0.1s; }
+.w:nth-child(2) { animation-delay: 0.2s; }
+.w:nth-child(3) { animation-delay: 0.3s; }
+.w:nth-child(4) { animation-delay: 0.4s; }
+
+.w.pop {
+  background: linear-gradient(135deg, var(--forest-2), var(--forest-4));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation-delay: 0.5s;
+}
+
+@keyframes wordBounce {
+  to { opacity: 1; transform: translateY(0) rotate(0); }
+}
+
+.hero-sub {
+  margin: 24px auto 0;
+  font-size: 19px;
+  color: var(--text-2);
+  line-height: 1.6;
+  max-width: 480px;
+  opacity: 0;
+  transform: translateY(16px);
+  animation: fadeUp 0.6s ease-out 0.8s forwards;
+}
+
+@keyframes fadeUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Activity pills */
+.hero-pills {
+  display: flex;
+  gap: 10px;
+  margin-top: 28px;
+  flex-wrap: wrap;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(16px);
+  animation: fadeUp 0.6s ease-out 1s forwards;
+}
+
+.pill {
+  padding: 8px 18px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1.5px solid var(--border);
+  background: rgba(244, 241, 236, 0.9);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+}
+
+.pill:hover {
+  transform: translateY(-3px) rotate(-1deg);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.pill i { font-size: 18px; }
+.pill-hike i    { color: var(--hike); }
+.pill-ride i    { color: var(--ride); }
+.pill-run i     { color: var(--run); }
+.pill-trailrun i { color: var(--trail-run); }
+
+/* Hero CTA */
+.hero-cta-wrap {
+  margin-top: 36px;
+  opacity: 0;
+  transform: translateY(16px);
+  animation: fadeUp 0.6s ease-out 1.2s forwards;
+}
+
+.btn-hero {
+  padding: 18px 44px;
+  background: linear-gradient(135deg, var(--forest-2), var(--forest-4));
+  color: #fff;
+  border: none;
+  border-radius: 28px;
+  font-family: var(--font);
+  font-size: 17px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s;
+  box-shadow: 0 4px 24px rgba(58, 114, 80, 0.25);
+}
+
+.btn-hero:hover {
+  transform: scale(1.08);
+  box-shadow: 0 8px 36px rgba(58, 114, 80, 0.35);
+}
+
+.btn-hero .ar {
+  transition: transform 0.2s;
+}
+
+.btn-hero:hover .ar {
+  transform: translateX(4px);
+}
+
+/* ── Stats Section ───────────────────────────────────── */
+.stats-section {
+  padding: 80px 24px;
+}
+
+.stats-section::before {
+  content: '';
+  display: block;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--forest-1), var(--forest-2), var(--forest-3), var(--forest-4), transparent);
+  margin-bottom: 40px;
+}
+
+.stats-title {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--text-3);
+  margin-bottom: 40px;
+}
+
+.stats-float {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.fc {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 24px;
+  padding: 32px 24px;
+  text-align: center;
+  flex: 1;
+  max-width: 210px;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+  opacity: 0;
+  transform: translateY(40px);
+}
+
+.fc.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fc:hover {
+  transform: translateY(-12px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+}
+
+.fc .fi { font-size: 24px; margin-bottom: 12px; }
+.fc:nth-child(1) .fi { color: var(--hike); }
+.fc:nth-child(2) .fi { color: var(--ride); }
+.fc:nth-child(3) .fi { color: var(--run); }
+.fc:nth-child(4) .fi { color: var(--trail-run); }
+
+.fc .fv {
+  font-size: 42px;
+  font-weight: 900;
+  letter-spacing: -2px;
+  line-height: 1;
+  margin-bottom: 6px;
+  color: var(--text-1);
+}
+
+.fc .fl {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-3);
+}
+
+/* ── Activity Cards ──────────────────────────────────── */
+.cards-section {
+  padding: 80px 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.cards-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.cards-header h2 {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 900;
+  letter-spacing: -1px;
+}
+
+.cards-header p {
+  font-size: 16px;
+  color: var(--text-2);
+  margin-top: 8px;
+}
+
+.cg {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.pc {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 36px;
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+  opacity: 0;
+  transform: translateY(30px);
+  text-decoration: none;
+  color: inherit;
+}
+
+.pc.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.pc:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
+}
+
+.pci {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pc:hover .pci {
+  transform: scale(1.15) rotate(-5deg);
+}
+
+.pc[data-type="Hike"] .pci     { background: rgba(255, 51, 102, 0.1);  color: var(--hike); }
+.pc[data-type="Ride"] .pci     { background: rgba(99, 102, 241, 0.1);  color: var(--ride); }
+.pc[data-type="Run"] .pci      { background: rgba(255, 149, 0, 0.1);   color: var(--run); }
+.pc[data-type="TrailRun"] .pci { background: rgba(191, 90, 242, 0.1);  color: var(--trail-run); }
+
+.pc[data-type="Hike"] .pcc     { color: var(--hike); }
+.pc[data-type="Ride"] .pcc     { color: var(--ride); }
+.pc[data-type="Run"] .pcc      { color: var(--run); }
+.pc[data-type="TrailRun"] .pcc { color: var(--trail-run); }
+
+.pcl {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.pcc {
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: -1.5px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.pcm {
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.pca {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-3);
+  transition: color 0.2s, gap 0.2s;
+}
+
+.pc:hover .pca {
+  color: var(--text-1);
+  gap: 8px;
+}
+
+/* ── CTA Section ─────────────────────────────────────── */
+.cta-section {
+  padding: 100px 24px;
+  text-align: center;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.cta-section h2 {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  margin-bottom: 12px;
+}
+
+.cta-section p {
+  font-size: 16px;
+  color: var(--text-2);
+  margin-bottom: 36px;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+.btn-strava {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 40px;
+  background: #fc4c02;
+  color: #fff;
+  border-radius: 28px;
+  font-family: var(--font);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s;
+}
+
+.btn-strava:hover {
+  transform: scale(1.06);
+  box-shadow: 0 8px 32px rgba(252, 76, 2, 0.25);
+}
+
+/* ── Footer ──────────────────────────────────────────── */
+.landing-footer {
+  padding: 32px 24px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-3);
+  border-top: 1px solid var(--border);
+}
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  .stats-float { flex-wrap: wrap; }
+  .cg { grid-template-columns: 1fr; }
+}
+
+/* ── Reduced motion ──────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .fc, .pc { opacity: 1; transform: none; }
+  .hero h1 .w, .hero-sub, .hero-pills, .hero-cta-wrap {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
