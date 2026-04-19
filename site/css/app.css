@@ -1,5 +1,9 @@
 /* ── App Page (uses shared.css for base) ─────────────── */
-body { overflow: hidden; }
+body {
+  overflow: hidden;
+  --font: 'Inter', -apple-system, sans-serif;
+  font-family: var(--font);
+}
 
 /* ── Sidebar ──────────────────────────────────────────── */
 #sidebar {
@@ -351,9 +355,10 @@ body.drawer-open .leaflet-top.leaflet-left {
 .leaflet-control-zoom-out { border-radius: 0 0 6px 6px !important; }
 
 .leaflet-control-recenter {
-  margin-top: 6px !important;
+  margin-top: 8px !important;
   border: none !important;
   box-shadow: none !important;
+  clear: both !important;
 }
 .leaflet-control-recenter a {
   display: flex !important;
@@ -428,14 +433,16 @@ body.drawer-open .leaflet-top.leaflet-left {
 #drawer-wrap {
   position: fixed;
   bottom: 20px;
-  left: 50%;
-  width: min(calc(100vw - 64px), 720px);
-  transform: translate(-50%, calc(100% + 40px));
+  left: calc(16px + var(--sidebar-w) + 12px);
+  right: 16px;
+  transform: translateY(calc(100% + 40px));
   z-index: 500;
   pointer-events: none;
-  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+              left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
-#drawer-wrap.open { transform: translate(-50%, 0); }
+body.sidebar-collapsed #drawer-wrap { left: 16px; }
+#drawer-wrap.open { transform: translateY(0); }
 
 #detail-drawer {
   height: 210px;

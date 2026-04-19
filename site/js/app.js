@@ -33,7 +33,7 @@ const map = L.map('map', {
 
 // Re-center control — sits below the +/− zoom buttons
 const RecenterControl = L.Control.extend({
-  options: { position: 'bottomleft' },
+  options: { position: 'topleft' },
   onAdd() {
     const c = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-recenter');
     const a = L.DomUtil.create('a', '', c);
@@ -161,10 +161,12 @@ function renderTypePills() {
 }
 
 function toggleType(category) {
-  if (activeTypes.size === 1 && activeTypes.has(category)) {
-    activeTypes = new Set(Object.keys(ACTIVITY_TYPES));
+  const allKeys = Object.keys(ACTIVITY_TYPES);
+  if (activeTypes.has(category)) {
+    activeTypes.delete(category);
+    if (activeTypes.size === 0) activeTypes = new Set(allKeys);
   } else {
-    activeTypes = new Set([category]);
+    activeTypes.add(category);
   }
   renderTypePills();
   applyFilters();

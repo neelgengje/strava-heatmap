@@ -116,7 +116,7 @@ body { overflow-y: auto; overflow-x: hidden; }
 
 .hero-sub {
   margin: 24px auto 0;
-  font-size: 19px;
+  font-size: 24px;
   font-weight: 400;
   color: var(--text-2);
   line-height: 1.6;
@@ -143,9 +143,9 @@ body { overflow-y: auto; overflow-x: hidden; }
 }
 
 .pill {
-  padding: 8px 18px;
-  border-radius: 24px;
-  font-size: 14px;
+  padding: 11px 22px;
+  border-radius: 26px;
+  font-size: 17px;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -160,7 +160,7 @@ body { overflow-y: auto; overflow-x: hidden; }
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
-.pill i { font-size: 18px; }
+.pill i { font-size: 22px; }
 .pill-hike i    { color: var(--hike); }
 .pill-ride i    { color: var(--ride); }
 .pill-run i     { color: var(--run); }
@@ -176,13 +176,13 @@ body { overflow-y: auto; overflow-x: hidden; }
 }
 
 .btn-hero {
-  padding: 18px 44px;
+  padding: 22px 52px;
   background: linear-gradient(135deg, var(--forest-2), var(--forest-4));
   color: #fff;
   border: none;
-  border-radius: 28px;
+  border-radius: 32px;
   font-family: var(--font);
-  font-size: 17px;
+  font-size: 20px;
   font-weight: 800;
   cursor: pointer;
   display: inline-flex;

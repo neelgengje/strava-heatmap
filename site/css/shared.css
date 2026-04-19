@@ -24,7 +24,7 @@
   --forest-2:    #3a7250;
   --forest-3:    #4a8a62;
   --forest-4:    #5ea878;
-  --nav-h:       48px;
+  --nav-h:       56px;
   --sidebar-w:   320px;
   --radius:      10px;
   --font:        'Source Serif Pro', Georgia, serif;
@@ -60,13 +60,13 @@ a { color: inherit; text-decoration: none; }
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 16px;
+  font-size: 22px;
   font-weight: 700;
   letter-spacing: -0.4px;
   color: var(--text-1);
 }
 
-.nav-brand-icon { font-size: 20px; line-height: 1; }
+.nav-brand svg { width: 26px; height: 26px; }
 
 .nav-spacer { flex: 1; }
 
