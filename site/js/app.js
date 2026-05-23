@@ -141,10 +141,16 @@ function bindDelegatedHandlers() {
 }
 
 // ── Type Filter Pills ────────────────────────────────────
+function activitiesForYear() {
+  const yearEl = document.getElementById('year-filter');
+  const year = yearEl ? yearEl.value : '';
+  return year ? activities.filter(a => a.date.startsWith(year)) : activities;
+}
+
 function renderTypePills() {
   const el = document.getElementById('type-filters');
   const counts = {};
-  activities.forEach(a => {
+  activitiesForYear().forEach(a => {
     const cat = a.category || 'Hike';
     counts[cat] = (counts[cat] || 0) + 1;
   });
@@ -223,7 +229,7 @@ async function loadActivities() {
 
 // ── Stats ─────────────────────────────────────────────────
 function renderStats() {
-  const active = activities.filter(a => activeTypes.has(a.category || 'Hike'));
+  const active = activitiesForYear().filter(a => activeTypes.has(a.category || 'Hike'));
   const totalCount = active.length;
   const totalMiles = active.reduce((s, a) => s + a.distance_mi, 0);
   const totalElev  = active.reduce((s, a) => s + a.elev_gain_ft, 0);
@@ -288,6 +294,8 @@ function applyFilters() {
     return matchType && matchName && matchYear;
   });
 
+  renderTypePills();
+  renderStats();
   renderSidebar();
 }
 
