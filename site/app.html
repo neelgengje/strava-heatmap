@@ -71,9 +71,10 @@
         </svg>
         <input id="search" type="text" placeholder="Search activities…" oninput="applyFilters()" />
       </div>
-      <select id="year-filter" onchange="applyFilters()">
+      <select id="year-filter" onchange="onYearChange()">
         <option value="">All years</option>
       </select>
+      <button id="reset-filters" onclick="resetFilters()">Reset filters</button>
     </div>
 
     <!-- List -->

@@ -141,10 +141,21 @@ function bindDelegatedHandlers() {
 }
 
 // ── Type Filter Pills ────────────────────────────────────
-function activitiesForYear() {
+function selectedYear() {
   const yearEl = document.getElementById('year-filter');
-  const year = yearEl ? yearEl.value : '';
+  return yearEl ? yearEl.value : '';
+}
+
+function activitiesForYear() {
+  const year = selectedYear();
   return year ? activities.filter(a => a.date.startsWith(year)) : activities;
+}
+
+function isMapVisible(trail) {
+  if (!activeTypes.has(trail.category)) return false;
+  const year = selectedYear();
+  if (year && !trail.date.startsWith(year)) return false;
+  return true;
 }
 
 function renderTypePills() {
@@ -299,6 +310,22 @@ function applyFilters() {
   renderSidebar();
 }
 
+function onYearChange() {
+  if (selectedName) clearSelection();
+  applyFilters();
+  renderMap();
+}
+
+function resetFilters() {
+  document.getElementById('search').value = '';
+  document.getElementById('year-filter').value = '';
+  activeTypes = new Set(Object.keys(ACTIVITY_TYPES));
+  if (selectedName) clearSelection();
+  applyFilters();
+  renderMap();
+  map.fitBounds(BAY_AREA_BOUNDS, fitPadding());
+}
+
 // ── Map rendering ─────────────────────────────────────────
 function renderMap() {
   polylineLayers.forEach(({ glow, core }) => { map.removeLayer(glow); map.removeLayer(core); });
@@ -307,7 +334,7 @@ function renderMap() {
   startMarkers = [];
 
   trails.forEach(trail => {
-    const visible = activeTypes.has(trail.category);
+    const visible = isMapVisible(trail);
     const latlngs = trail.coords.map(([lat, lng]) => [lat, lng]);
     const cfg     = typeForCategory(trail.category);
     const color   = cfg.color;
@@ -379,7 +406,8 @@ function selectTrail(key) {
 
   polylineLayers.forEach(({ glow, core, category: c, coreW }, k) => {
     const sel = k === selectedName;
-    const visible = activeTypes.has(c);
+    const layerTrail = trails.find(t => t.key === k);
+    const visible = layerTrail && isMapVisible(layerTrail);
     if (!visible) return;
     const baseColor = typeForCategory(c).color;
     glow.setStyle({ opacity: sel ? 0.5 : 0.03, color: sel ? selColor : baseColor });
@@ -416,8 +444,9 @@ function clearSelection() {
   renderSidebar();
   hideDrawer();
 
-  polylineLayers.forEach(({ glow, core, category, coreW }) => {
-    const visible = activeTypes.has(category);
+  polylineLayers.forEach(({ glow, core, category, coreW }, key) => {
+    const layerTrail = trails.find(t => t.key === key);
+    const visible = layerTrail && isMapVisible(layerTrail);
     const color = typeForCategory(category).color;
     glow.setStyle({ opacity: visible ? 0.08 : 0, color });
     core.setStyle({ opacity: visible ? 0.55 : 0, weight: coreW, color });

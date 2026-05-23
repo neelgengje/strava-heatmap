@@ -208,6 +208,24 @@ body.sidebar-collapsed #type-filters { left: 64px; }
 #search::placeholder { color: var(--text-3); }
 #search:focus { border-color: var(--text-3); }
 
+#reset-filters {
+  padding: 7px 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-3);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
+}
+#reset-filters:hover {
+  color: var(--text-1);
+  border-color: var(--text-3);
+  background: var(--surface-2);
+}
+
 #year-filter {
   padding: 7px 10px;
   background: var(--surface-3);
