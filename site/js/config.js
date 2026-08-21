@@ -1,54 +1,50 @@
 // ── Activity Type Configuration ───────────────────────────
+// Colors use the neon palette from the Alpine Dusk design.
 const ACTIVITY_TYPES = {
   Hike: {
-    label: 'Hikes',
-    icon: '\u26F0',
+    label: 'Hiking',
+    icon: '⛰',
     pIcon: 'ph-mountains',
-    color: '#ff3366',
-    freqColors: ['#ff6688','#ff3366','#e6204e','#cc1040','#991033'],
+    color: '#C5FF3D',   // neon lime
+    chartColor: 'rgba(197, 255, 61,',
     stats: ['miles', 'elevation', 'time'],
     drawerVerb: 'Hiked',
-    chartColor: 'rgba(255, 51, 102,',
   },
   Ride: {
-    label: 'Rides',
-    icon: '\uD83D\uDEB4',
+    label: 'Riding',
+    icon: '🚴',
     pIcon: 'ph-bicycle',
-    color: '#6366f1',
-    freqColors: ['#8b8ef5','#6366f1','#5254d8','#4244be','#3234a0'],
+    color: '#06D6F5',   // electric cyan
+    chartColor: 'rgba(6, 214, 245,',
     stats: ['miles', 'elevation', 'time', 'speed'],
     drawerVerb: 'Ridden',
-    chartColor: 'rgba(99, 102, 241,',
   },
   Run: {
-    label: 'Runs',
-    icon: '\uD83C\uDFC3',
+    label: 'Running',
+    icon: '🏃',
     pIcon: 'ph-person-simple-run',
-    color: '#ff9500',
-    freqColors: ['#ffb344','#ff9500','#e68400','#cc7200','#995500'],
+    color: '#FF5E3A',   // neon orange
+    chartColor: 'rgba(255, 94, 58,',
     stats: ['miles', 'pace', 'time'],
     drawerVerb: 'Run',
-    chartColor: 'rgba(255, 149, 0,',
   },
   TrailRun: {
-    label: 'Trail Runs',
-    icon: '\uD83C\uDF32',
+    label: 'Trail Running',
+    icon: '🌲',
     pIcon: 'ph-tree-evergreen',
-    color: '#bf5af2',
-    freqColors: ['#d088f5','#bf5af2','#a840d8','#9030be','#7020a0'],
+    color: '#FF3E8E',   // hot pink
+    chartColor: 'rgba(255, 62, 142,',
     stats: ['miles', 'elevation', 'pace', 'time'],
     drawerVerb: 'Run',
-    chartColor: 'rgba(191, 90, 242,',
   },
   Kayak: {
-    label: 'Kayak',
-    icon: '\uD83D\uDEF6',
+    label: 'Kayaking',
+    icon: '🛶',
     pIcon: 'ph-boat',
-    color: '#00b4d8',
-    freqColors: ['#7ad8ec','#00b4d8','#0093b0','#007289','#00556b'],
+    color: '#C44EFF',   // neon magenta
+    chartColor: 'rgba(196, 78, 255,',
     stats: ['miles', 'time', 'speed'],
     drawerVerb: 'Paddled',
-    chartColor: 'rgba(0, 180, 216,',
   },
 };
 
@@ -68,13 +64,4 @@ function formatPace(paceMinMi) {
 
 function typeForCategory(category) {
   return ACTIVITY_TYPES[category] || ACTIVITY_TYPES.Hike;
-}
-
-function freqColorForType(category, freq) {
-  const colors = typeForCategory(category).freqColors;
-  if (freq >= 6) return colors[4];
-  if (freq >= 4) return colors[3];
-  if (freq >= 3) return colors[2];
-  if (freq >= 2) return colors[1];
-  return colors[0];
 }

@@ -22,8 +22,7 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Source+Serif+Pro:wght@400;600;700;900&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=JetBrains+Mono:wght@400;500;600&family=Merriweather:ital,wght@0,400;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/shared.css" />
   <link rel="stylesheet" href="/css/landing.css" />
 </head>
@@ -32,48 +31,111 @@
   <!-- Nav -->
   <nav class="top-nav">
     <a class="nav-brand" href="/">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20L10 6L14 14L18 10L21 20H3Z"/></svg>
-      Trail Atlas
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M8 16 L12 7 L16 16 L12 13 Z" fill="currentColor" stroke="none"/>
+      </svg>
+      TRAIL · LOG
     </a>
     <div class="nav-spacer"></div>
-    <div class="nav-links" id="nav-links"></div>
+    <div class="nav-links">
+      <a href="/" class="nav-link active">home</a>
+      <a href="/app.html" class="nav-link">map</a>
+      <a href="/stats.html" class="nav-link">stats</a>
+    </div>
   </nav>
 
-  <!-- Hero -->
-  <section class="hero">
-    <canvas class="hero-canvas" aria-hidden="true"></canvas>
-    <div class="vignette" aria-hidden="true"></div>
+  <div class="landing-wrap">
 
-    <div class="hero-content">
-      <h1><span class="w">Every</span> <span class="w">trail</span> <span class="w">tells</span> <span class="w">a</span> <span class="w pop">story.</span></h1>
-      <p class="hero-sub">Your outdoor adventures, beautifully mapped.</p>
-      <div class="hero-pills" id="hero-pills" style="display:none"></div>
-      <div class="hero-kpis" id="hero-kpis" style="display:none">
-        <div class="hero-kpi">
-          <div class="hero-kpi-value" id="hk-total" data-target="0">0</div>
-          <div class="hero-kpi-label">Activities</div>
+    <!-- Two-column hero -->
+    <div class="landing-hero">
+
+      <!-- Left: typographic hero -->
+      <div class="hero-left">
+        <div>
+          <p class="hero-eyebrow">a personal field journal</p>
+          <h1 class="hero-headline">miles of dirt<br>and quiet.</h1>
+          <p class="hero-sub">Every footstep, paddle stroke and pedal turn — from January 2022 to today, drawn out by hand.</p>
         </div>
-        <div class="hero-kpi">
-          <div class="hero-kpi-value" id="hk-miles" data-target="0">0</div>
-          <div class="hero-kpi-label">Miles</div>
+
+        <!-- Big stat block -->
+        <div class="stat-block">
+          <div class="stat-main">
+            <p class="stat-eyebrow">so far —</p>
+            <div class="stat-number" id="stat-count">—</div>
+            <p class="stat-label">days outside</p>
+          </div>
+          <div class="stat-secondary">
+            <div><strong id="stat-miles">—</strong> miles</div>
+            <div><strong id="stat-elev">—</strong> ft up</div>
+            <div><strong id="stat-hours">—</strong> hours</div>
+            <div><strong id="stat-sports">5</strong> sports</div>
+          </div>
         </div>
-        <div class="hero-kpi">
-          <div class="hero-kpi-value" id="hk-elev" data-target="0" data-suffix="K">0</div>
-          <div class="hero-kpi-label">Ft Gained</div>
-        </div>
-        <div class="hero-kpi">
-          <div class="hero-kpi-value" id="hk-years" data-target="0">0</div>
-          <div class="hero-kpi-label">Years Active</div>
+
+        <!-- CTA row -->
+        <div class="cta-row">
+          <a href="/app.html" class="btn-cta">
+            OPEN THE MAP
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M14 6l6 6-6 6"/>
+            </svg>
+          </a>
+          <span class="cta-caption">or browse the year ↘</span>
         </div>
       </div>
-      <div class="hero-cta-wrap" id="hero-cta"></div>
-    </div>
-  </section>
 
-  <!-- Footer -->
-  <footer class="landing-footer">Built with Strava data</footer>
+      <!-- Right: hero photo + overlays -->
+      <div class="hero-right">
+        <img src="/img/hero.jpg" alt="Trail view" class="hero-photo">
+        <div class="photo-gradient"></div>
 
-  <script src="/js/hero-bg.js"></script>
+        <!-- Decorative route line SVG -->
+        <svg viewBox="0 0 100 140" preserveAspectRatio="none" class="route-overlay" aria-hidden="true">
+          <path d="M2,62 C12,58 22,56 32,55 C42,55 50,57 58,60 C66,63 72,67 78,72 C82,76 86,82 88,90 C90,98 89,108 86,120"
+                fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M2,62 C12,58 22,56 32,55 C42,55 50,57 58,60 C66,63 72,67 78,72 C82,76 86,82 88,90 C90,98 89,108 86,120"
+                fill="none" stroke="#E5F53B" stroke-width="0.9" stroke-linecap="round"
+                stroke-dasharray="1.8 1.4" filter="drop-shadow(0 0 6px rgba(229,245,59,0.65))"/>
+          <circle cx="2" cy="62" r="1.6" fill="#E5F53B" filter="drop-shadow(0 0 4px #E5F53B)"/>
+          <circle cx="2" cy="62" r="3.6" fill="none" stroke="#E5F53B" stroke-width="0.4" opacity="0.6"/>
+          <circle cx="86" cy="120" r="1.2" fill="#fff" stroke="#E5F53B" stroke-width="0.6"/>
+        </svg>
+
+        <!-- Location stamp -->
+        <div class="photo-stamp" id="photo-stamp">◐ latest entry · —</div>
+
+        <!-- Bottom caption (filled by JS) -->
+        <div class="photo-caption">
+          <div>
+            <div class="caption-eyebrow">latest entry</div>
+            <div class="caption-name" id="caption-name">—</div>
+            <div class="caption-stats-row" id="caption-stats"></div>
+          </div>
+          <div class="caption-coords" id="caption-coords"></div>
+        </div>
+      </div>
+
+    </div><!-- /landing-hero -->
+
+    <!-- Recent Waypoints strip -->
+    <section class="waypoints">
+      <div class="waypoints-header">
+        <div class="waypoints-title">
+          <span class="waypoints-eyebrow">◜ recent waypoints</span>
+          <em class="waypoints-subtitle">the last five times out.</em>
+        </div>
+        <a href="/app.html" class="waypoints-view-all">
+          view all · <span id="total-count">—</span> entries →
+        </a>
+      </div>
+      <div class="waypoints-grid" id="waypoints-grid">
+        <!-- Filled by landing.js -->
+      </div>
+    </section>
+
+  </div><!-- /landing-wrap -->
+
   <script src="/js/config.js"></script>
   <script src="/js/landing.js"></script>
 </body>
