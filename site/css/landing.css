@@ -1,400 +1,233 @@
-/* ── Landing Page — Alpine Dusk ─────────────────────────── */
+/* ── Landing Page — Pinned Print ─────────────────────────── */
 body { overflow: hidden; }
 
-/* ── Full-viewport layout below nav ──────────────────────── */
-.landing-wrap {
+:root {
+  --ar: 1.75;
+}
+
+/* ── Nav override, scoped to landing only ────────────────── */
+body.landing .top-nav {
+  background: transparent;
+  border-bottom: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+body.landing .nav-brand {
+  font-family: 'Capriola', system-ui, sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.13em;
+}
+body.landing .nav-link {
+  font-family: 'Capriola', system-ui, sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.13em;
+}
+body.landing .nav-link.active { color: var(--accent); }
+body.landing .nav-link.active::after { display: none; }
+
+/* ── Hero stage ───────────────────────────────────────────── */
+.hero {
   position: fixed;
-  top: var(--nav-h);
-  left: 0; right: 0; bottom: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-/* ── Two-column hero ─────────────────────────────────────── */
-.landing-hero {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 1fr 1.05fr;
-  min-height: 0;
-}
-
-/* ── Left column — typography + stats + CTA ──────────────── */
-.hero-left {
-  padding: 52px 48px 32px 56px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  inset: 0;
   overflow: hidden;
 }
 
-.hero-eyebrow {
-  font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.28em;
-  color: var(--ink-3);
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 18px;
+/* Cover-emulating frame, always exactly --ar, zoomed and nudged
+   left so the runner clears the pinned print. These two values
+   are coupled: zooming pushes the runner right toward the print,
+   so the nudge must more-than-cancel it, but overshooting exposes
+   the page background at the edges. Verified clean at 1280/1512/1920. */
+.hf {
+  --zoom: 1.26;
+  --nudge: -8%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(max(100%, calc(100vh * var(--ar))) * var(--zoom));
+  height: calc(max(100%, calc(100vw / var(--ar))) * var(--zoom));
+  transform: translate(-50%, -50%) translateX(var(--nudge));
 }
-.hero-eyebrow::before {
-  content: '';
-  display: inline-block;
-  width: 24px;
-  height: 1px;
-  background: currentColor;
-  flex-shrink: 0;
+.hero-art {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(7,10,11,.86) 0%, rgba(7,10,11,.50) 22%, rgba(7,10,11,.20) 46%, rgba(7,10,11,.44) 72%, rgba(7,10,11,.90) 100%),
+    radial-gradient(80% 66% at 0% 44%, rgba(7,10,11,.66) 0%, rgba(7,10,11,0) 62%);
+}
+
+/* ── Pinned print ─────────────────────────────────────────── */
+.print {
+  position: absolute;
+  right: 44px;
+  top: 50%;
+  transform: translateY(-50%) rotate(2.2deg);
+  width: min(27vw, 330px);
+  z-index: 6;
+  background: #F1F3EE;
+  padding: 11px 11px 0;
+  box-shadow: 0 26px 60px rgba(0,0,0,.62);
+  transition: transform 0.3s;
+}
+.print:hover {
+  transform: translateY(-50%) rotate(0deg);
+}
+.print img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  display: block;
+}
+.print figcaption {
+  font-family: 'Capriola', system-ui, sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: #4a5250;
+  padding: 11px 2px 13px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* ── Copy ─────────────────────────────────────────────────── */
+.wrap {
+  position: absolute;
+  inset: 0;
+  padding: calc(var(--nav-h) + 40px) 30px 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  z-index: 5;
+}
+
+.meta {
+  display: flex;
+  gap: 28px;
+  font-family: 'Capriola', system-ui, sans-serif;
+  font-size: 11.5px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(241,243,238,.46);
+  margin-bottom: 26px;
+}
+.meta i {
+  font-style: normal;
+  color: var(--accent);
 }
 
 .hero-headline {
-  font-family: var(--serif);
-  font-size: clamp(48px, 5.5vw, 78px);
-  font-style: italic;
-  line-height: 0.94;
+  font-family: 'Archivo', system-ui, sans-serif;
+  font-size: clamp(28px, 4.1vw, 60px);
+  font-weight: 700;
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  max-width: 15ch;
   color: var(--ink);
-  letter-spacing: -0.01em;
 }
+.cursor {
+  display: inline-block;
+  width: 0.46em;
+  height: 0.78em;
+  background: var(--accent);
+  vertical-align: -0.03em;
+  margin-left: 0.13em;
+  animation: blink 1.15s steps(1) infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
 
 .hero-sub {
-  font-family: var(--serif);
-  font-size: 18px;
-  color: var(--ink-2);
-  line-height: 1.5;
-  max-width: 440px;
+  font-family: 'Capriola', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.75;
+  max-width: 44ch;
+  color: rgba(241,243,238,.66);
   margin-top: 22px;
-}
-
-/* ── Stat block ──────────────────────────────────────────── */
-.stat-block {
-  display: flex;
-  align-items: flex-end;
-  gap: 20px;
-}
-
-.stat-main {
-  border-left: 2px solid var(--accent);
-  padding-left: 18px;
-}
-
-.stat-eyebrow {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.22em;
-  color: var(--ink-3);
-  text-transform: uppercase;
-  margin-bottom: 4px;
-}
-
-.stat-number {
-  font-family: var(--display);
-  font-size: clamp(56px, 7vw, 96px);
-  font-weight: 900;
-  line-height: 0.9;
-  color: var(--accent);
-  letter-spacing: -0.04em;
-  text-shadow: 0 0 36px rgba(229,245,59,0.4);
-}
-
-.stat-label {
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--accent);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  font-weight: 600;
-  margin-top: 6px;
-  text-shadow: 0 0 18px rgba(229,245,59,0.5);
-}
-
-.stat-secondary {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--ink-3);
-  line-height: 1.8;
-  margin-bottom: 4px;
-}
-.stat-secondary strong {
-  color: var(--ink);
-  font-weight: 600;
-}
-
-/* ── CTA row ─────────────────────────────────────────────── */
-.cta-row {
-  display: flex;
-  align-items: center;
-  gap: 20px;
 }
 
 .btn-cta {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px 26px;
+  gap: 11px;
+  margin-top: 32px;
+  padding: 15px 26px;
   background: var(--accent);
-  color: var(--paper);
-  font-family: var(--display);
-  font-weight: 700;
-  font-size: 14px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  cursor: pointer;
-  box-shadow: var(--accent-glow);
-  transition: opacity 0.15s;
+  color: #0d1206;
+  font-family: 'Capriola', system-ui, sans-serif;
+  font-size: 14.5px;
+  letter-spacing: 0.04em;
+  align-self: flex-start;
   text-decoration: none;
+  cursor: pointer;
+  clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+  transition: filter 0.2s, transform 0.2s;
 }
-.btn-cta:hover { opacity: 0.9; }
+.btn-cta:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
 .btn-cta svg { flex-shrink: 0; }
 
-.cta-caption {
-  font-family: var(--mono);
-  font-size: 10.5px;
-  color: var(--ink-3);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-/* ── Right column — hero photo ───────────────────────────── */
-.hero-right {
-  position: relative;
-  overflow: hidden;
-  background: var(--paper-2);
-}
-
-.hero-photo {
+/* ── Figures along the baseline ──────────────────────────── */
+.base {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
+  left: 30px;
+  right: 30px;
+  bottom: 34px;
+  z-index: 5;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+}
+.base .lab {
   display: block;
-}
-
-.photo-gradient {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(0,0,0,0.18) 0%,
-    transparent 25%,
-    transparent 65%,
-    rgba(0,0,0,0.50) 100%
-  );
-  pointer-events: none;
-}
-
-.route-overlay {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.photo-stamp {
-  position: absolute;
-  top: 18px; left: 18px;
-  font-family: var(--mono);
-  font-size: 9.5px;
-  letter-spacing: 0.2em;
-  color: rgba(255,255,255,0.95);
-  text-transform: uppercase;
-  padding: 5px 9px;
-  background: rgba(0,0,0,0.35);
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(255,255,255,0.18);
-  z-index: 2;
-  white-space: nowrap;
-  overflow: hidden;
-  max-width: calc(100% - 36px);
-  text-overflow: ellipsis;
-}
-
-.photo-caption {
-  position: absolute;
-  bottom: 22px; left: 22px; right: 22px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  color: #fff;
-  z-index: 2;
-}
-
-.caption-eyebrow {
-  font-family: var(--mono);
-  font-size: 9.5px;
-  letter-spacing: 0.16em;
-  opacity: 0.8;
-  text-transform: uppercase;
-}
-.caption-name {
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 22px;
-  margin-top: 2px;
-  line-height: 1.2;
-}
-.caption-stats-row {
-  font-family: var(--mono);
-  font-size: 11px;
-  opacity: 0.85;
-  margin-top: 4px;
-  display: flex;
-  gap: 14px;
-}
-.caption-coords {
-  font-family: var(--mono);
-  font-size: 9.5px;
-  letter-spacing: 0.2em;
-  opacity: 0.7;
-  text-transform: uppercase;
-  text-align: right;
-}
-
-/* ── Waypoints strip ─────────────────────────────────────── */
-.waypoints {
-  height: 220px;
-  flex-shrink: 0;
-  border-top: 1px solid var(--line);
-  background: var(--paper-2);
-  display: flex;
-  flex-direction: column;
-}
-
-.waypoints-header {
-  padding: 16px 56px 0;
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  flex-shrink: 0;
-}
-
-.waypoints-title {
-  display: flex;
-  align-items: baseline;
-  gap: 14px;
-}
-
-.waypoints-eyebrow {
-  font-family: var(--mono);
+  font-family: 'Capriola', system-ui, sans-serif;
   font-size: 10.5px;
-  letter-spacing: 0.22em;
-  color: var(--ink-3);
+  letter-spacing: 0.18em;
   text-transform: uppercase;
+  color: rgba(241,243,238,.46);
+  margin-bottom: 8px;
 }
-
-.waypoints-subtitle {
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 19px;
-  color: var(--ink);
-}
-
-.waypoints-view-all {
-  font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.14em;
-  color: var(--ink-3);
-  text-transform: uppercase;
-  transition: color 0.15s;
-}
-.waypoints-view-all:hover { color: var(--ink-2); }
-
-.waypoints-grid {
-  flex: 1;
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
-  padding: 12px 56px 16px;
-  min-height: 0;
-}
-
-.waypoint-card {
-  background: var(--paper);
-  border: 1px solid var(--line);
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  overflow: hidden;
-}
-
-.waypoint-card-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.waypoint-icon {
-  font-size: 12px;
+.base .num {
+  display: block;
+  font-family: 'Archivo', system-ui, sans-serif;
+  font-size: clamp(22px, 2.6vw, 38px);
+  font-weight: 800;
   line-height: 1;
-}
-
-.waypoint-date {
-  font-family: var(--mono);
-  font-size: 9.5px;
-  color: var(--ink-3);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.waypoint-route {
-  flex: 1;
-  background: var(--paper-2);
-  border: 1px solid var(--line-2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 52px;
-  overflow: hidden;
-}
-
-.waypoint-name {
-  font-family: var(--serif);
-  font-size: 14px;
-  font-style: italic;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
   color: var(--ink);
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.waypoint-stats {
-  font-family: var(--mono);
-  font-size: 9.5px;
-  color: var(--ink-2);
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
 }
 
 /* ── Responsive ──────────────────────────────────────────── */
-@media (max-width: 1023px) {
-  .landing-hero {
-    grid-template-columns: 1fr;
-    overflow-y: auto;
-  }
-  .hero-right {
-    min-height: 280px;
-  }
-  body { overflow-y: auto; }
-  .landing-wrap { position: static; min-height: calc(100dvh - var(--nav-h)); }
-  .waypoints { height: auto; }
-  .waypoints-grid { grid-template-columns: repeat(3, 1fr); height: 200px; }
-  .hero-headline { font-size: 52px; }
-  .stat-number { font-size: 72px; }
-  .hero-left { padding: 36px 32px; }
-  .waypoints-header { padding: 14px 32px 0; }
-  .waypoints-grid { padding: 10px 32px 14px; }
+@media (max-aspect-ratio: 3/2) {
+  .hero-art { object-position: 66% 55%; }
+}
+
+@media (max-width: 1000px) {
+  .print { display: none; }
+}
+
+@media (max-aspect-ratio: 1/1) {
+  .wrap { padding: calc(var(--nav-h) + 22px) 18px 140px; }
+  .meta { font-size: 9.5px; gap: 5px 14px; margin-bottom: 16px; }
+  .hero-headline { font-size: clamp(25px, 6.8vw, 36px); }
+  .hero-sub { font-size: 12px; margin-top: 15px; max-width: 38ch; }
+  .btn-cta { margin-top: 20px; padding: 11px 17px; font-size: 11px; }
+  .base { left: 18px; right: 18px; bottom: 20px; flex-wrap: wrap; gap: 12px 20px; justify-content: flex-start; }
+  .base > div { min-width: 26%; }
+  .base .num { font-size: 19px; }
 }
 
 @media (max-width: 767px) {
-  .waypoints-grid { grid-template-columns: repeat(2, 1fr); height: auto; }
-  .hero-left { padding: 28px 24px; }
-  .waypoints-header { padding: 12px 24px 0; }
-  .waypoints-grid { padding: 8px 24px 12px; }
+  .top-nav { padding: 0 18px; }
 }
 
 /* ── Reduced motion ──────────────────────────────────────── */
