@@ -66,10 +66,10 @@ body.landing .nav-link.active::after { display: none; }
 /* ── Pinned print ─────────────────────────────────────────── */
 .print {
   position: absolute;
-  right: 44px;
-  top: 50%;
+  right: clamp(18px, 6vw, 90px);
+  top: calc(50% - 24px);
   transform: translateY(-50%) rotate(2.2deg);
-  width: min(27vw, 330px);
+  width: min(clamp(190px, 26vw, 370px), 42vh);
   z-index: 6;
   background: #F1F3EE;
   padding: 11px 11px 0;
@@ -101,7 +101,7 @@ body.landing .nav-link.active::after { display: none; }
 .wrap {
   position: absolute;
   inset: 0;
-  padding: calc(var(--nav-h) + 40px) 30px 150px;
+  padding: calc(var(--nav-h) + 40px) calc(min(clamp(190px, 26vw, 370px), 42vh) + clamp(18px, 6vw, 90px) + 40px) 150px 30px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -211,11 +211,19 @@ body.landing .nav-link.active::after { display: none; }
   .hero-art { object-position: 66% 55%; }
 }
 
-@media (max-width: 1000px) {
-  .print { display: none; }
+@media (max-height: 760px) and (min-aspect-ratio: 1/1) {
+  .wrap { padding-top: calc(var(--nav-h) + 16px); padding-bottom: 112px; }
+  .meta { margin-bottom: 14px; font-size: 10.5px; }
+  .hero-headline { font-size: clamp(26px, 3.4vw, 42px); }
+  .hero-sub { font-size: 13px; margin-top: 14px; line-height: 1.6; }
+  .btn-cta { margin-top: 18px; padding: 12px 20px; font-size: 13px; }
+  .base { bottom: 22px; }
+  .base .num { font-size: clamp(20px, 2.1vw, 28px); }
+  .base .lab { margin-bottom: 5px; }
 }
 
 @media (max-aspect-ratio: 1/1) {
+  .print { display: none; }
   .wrap { padding: calc(var(--nav-h) + 22px) 18px 140px; }
   .meta { font-size: 9.5px; gap: 5px 14px; margin-bottom: 16px; }
   .hero-headline { font-size: clamp(25px, 6.8vw, 36px); }

@@ -11,11 +11,11 @@
   </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Trail Atlas — Map</title>
+  <title>Trail Atlas</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=JetBrains+Mono:wght@400;500;600&family=Merriweather:ital,wght@0,400;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="/css/shared.css" />
   <link rel="stylesheet" href="/css/app.css" />
@@ -25,72 +25,68 @@
   <!-- Top Nav -->
   <nav class="top-nav">
     <a class="nav-brand" href="/">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="9"/>
-        <path d="M8 16 L12 7 L16 16 L12 13 Z" fill="currentColor" stroke="none"/>
-      </svg>
-      TRAIL · LOG
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20L10 6L14 14L18 10L21 20H3Z"/></svg>
+      Trail Atlas
     </a>
-    <div class="nav-links">
-      <a href="/" class="nav-link">home</a>
-      <a href="/app.html" class="nav-link active">map</a>
-    </div>
     <div class="nav-spacer"></div>
-    <!-- Search pill -->
-    <div style="display:flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid var(--line);border-radius:999px;background:var(--paper-2)">
-      <svg width="12" height="12" viewBox="0 0 20 20" fill="none" style="color:var(--ink-3)">
-        <circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.6"/>
-        <path d="M13 13l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-      </svg>
-      <input id="search" type="text" placeholder="search routes…" oninput="applyFilters()"
-        style="background:transparent;border:none;outline:none;font-family:var(--mono);font-size:11px;color:var(--ink-3);width:130px;"
-        onfocus="this.style.color='var(--ink)'" onblur="this.style.color='var(--ink-3)'">
-    </div>
   </nav>
 
-  <!-- Sidebar collapse toggle -->
+  <!-- Type filter pills — floating on map -->
+  <div id="type-filters"></div>
+
+  <!-- Sidebar collapse/expand toggle -->
   <button id="sidebar-toggle" aria-label="Toggle sidebar">
-    <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <polyline points="12 5 7 10 12 15"/>
     </svg>
   </button>
 
-  <!-- Sidebar -->
   <div id="sidebar">
 
-    <!-- Header -->
-    <div id="sidebar-header">
-      <div id="sidebar-header-meta">
-        <div id="sidebar-count-text" class="sidebar-count-text">— activities</div>
-        <div class="sidebar-sort">▼ date</div>
+    <!-- Stats -->
+    <div id="stats-bar" class="hidden">
+      <div id="stats-top">
+        <div class="stat">
+          <div class="stat-value" id="stat-count">&mdash;</div>
+          <div class="stat-label" id="stat-count-label">Activities</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="stat-miles">&mdash;</div>
+          <div class="stat-label">Miles</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="stat-elev">&mdash;</div>
+          <div class="stat-label">Ft Gained</div>
+        </div>
       </div>
-      <div class="sidebar-title">The map.</div>
+      <div id="time-stats"></div>
     </div>
 
-    <!-- Filters -->
-    <div id="sidebar-filters">
-      <div class="filter-label">year</div>
-      <div id="year-seg" class="year-seg" style="grid-template-columns: repeat(1, 1fr)">
-        <!-- filled by JS -->
+    <!-- Controls -->
+    <div id="controls" style="display:none">
+      <div id="search-wrap">
+        <svg id="search-icon" viewBox="0 0 20 20" fill="none">
+          <circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M13 13l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        <input id="search" type="text" placeholder="Search activities…" oninput="applyFilters()" />
       </div>
-      <div id="type-list" class="type-list">
-        <!-- filled by JS -->
-      </div>
-      <div id="search-wrap" style="display:none"><!-- search moved to nav --></div>
+      <select id="year-filter" onchange="onYearChange()">
+        <option value="">All years</option>
+      </select>
       <button id="reset-filters" onclick="resetFilters()">Reset filters</button>
     </div>
 
-    <!-- Activity list -->
+    <!-- List -->
     <ul id="activity-list"></ul>
 
   </div>
 
-  <!-- Map canvas -->
   <div id="map"></div>
 
   <!-- Detail drawer -->
   <div id="drawer-wrap">
-    <button id="drawer-close" onclick="clearSelection()" aria-label="Close">&#10005;</button>
+    <button id="drawer-close" onclick="clearSelection()" aria-label="Close details">&#10005;</button>
     <div id="detail-drawer">
       <div id="drawer-content"></div>
     </div>
