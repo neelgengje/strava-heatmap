@@ -238,6 +238,42 @@ body.landing .nav-link.active::after { display: none; }
   .top-nav { padding: 0 18px; }
 }
 
+
+/* ── Page-load entrance: "Develop" ────────────────────────────
+   Both images start dark and desaturated and develop up to full
+   colour, like a print coming up in a tray. Copy resolves out of
+   blur; the print drops in tilted and settles. Entrance only, the
+   page is completely still once it finishes. ─────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-art { animation: develop 2.2s cubic-bezier(.4,0,.2,1) backwards; }
+  @keyframes develop {
+    from { filter: saturate(.1) contrast(.75) brightness(.5); }
+    60%  { filter: saturate(.7) contrast(.95) brightness(.9); }
+    to   { filter: none; }
+  }
+  .print img { animation: develop 2.4s cubic-bezier(.4,0,.2,1) .45s backwards; }
+
+  .print { animation: print-drop 1.1s cubic-bezier(.2,.9,.3,1) .3s backwards; }
+  @keyframes print-drop {
+    from { opacity: 0; transform: translateY(-50%) rotate(9deg) translateY(-40px); }
+    to   { opacity: 1; transform: translateY(-50%) rotate(2.2deg); }
+  }
+
+  .meta, .hero-headline, .hero-sub, .btn-cta { animation: resolve .9s ease-out backwards; }
+  .meta          { animation-delay: .15s; }
+  .hero-headline { animation-delay: .30s; }
+  .hero-sub      { animation-delay: .45s; }
+  .btn-cta       { animation-delay: .60s; }
+  @keyframes resolve { from { opacity: 0; filter: blur(6px); } to { opacity: 1; filter: none; } }
+
+  .base > div { animation: resolve .8s ease-out backwards; }
+  .base > div:nth-child(1) { animation-delay: .80s; }
+  .base > div:nth-child(2) { animation-delay: .90s; }
+  .base > div:nth-child(3) { animation-delay: 1.00s; }
+  .base > div:nth-child(4) { animation-delay: 1.10s; }
+  .base > div:nth-child(5) { animation-delay: 1.20s; }
+}
+
 /* ── Reduced motion ──────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
