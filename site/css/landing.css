@@ -1,4 +1,4 @@
-/* ── Landing Page — Pinned Print ─────────────────────────── */
+/* ── Landing Page: Pinned Print ─────────────────────────── */
 body { overflow: hidden; }
 
 :root {
@@ -74,10 +74,15 @@ body.landing .nav-link.active::after { display: none; }
   background: #F1F3EE;
   padding: 11px 11px 0;
   box-shadow: 0 26px 60px rgba(0,0,0,.62);
-  transition: transform 0.3s;
+  transition: transform .5s cubic-bezier(.4,0,.2,1), box-shadow .5s cubic-bezier(.4,0,.2,1);
 }
+/* Pop: the print steps out of its pin, straightens, grows, and moves
+   left over the copy column. It sits above .wrap (z-index 6 vs 5) so
+   the overlap is deliberate. The left travel is capped in px so it
+   cannot swallow the headline on a narrow window. */
 .print:hover {
-  transform: translateY(-50%) rotate(0deg);
+  transform: translateX(calc(-1 * clamp(44px, 7vw, 110px))) translateY(-50%) rotate(0deg) scale(1.18);
+  box-shadow: 0 40px 84px rgba(0,0,0,.74), 0 0 0 1px rgba(229,245,59,.6);
 }
 .print img {
   width: 100%;
@@ -220,6 +225,12 @@ body.landing .nav-link.active::after { display: none; }
   .base { bottom: 22px; }
   .base .num { font-size: clamp(20px, 2.1vw, 28px); }
   .base .lab { margin-bottom: 5px; }
+  /* At rest the print clears the nav by only a couple of px on a short
+     window, so the pop has to grow a little less and drop a little
+     lower or its top edge ends up behind the nav. */
+  .print:hover {
+    transform: translateX(calc(-1 * clamp(36px, 6vw, 88px))) translateY(calc(-50% + 22px)) rotate(0deg) scale(1.12);
+  }
 }
 
 @media (max-aspect-ratio: 1/1) {
@@ -274,8 +285,52 @@ body.landing .nav-link.active::after { display: none; }
   .base > div:nth-child(5) { animation-delay: 1.20s; }
 }
 
+
+/* ── Cursor track ─────────────────────────────────────────────
+   The pointer lays down a fine survey line with hollow pips, drawn
+   by /js/track.js. The layer fades out under the nav so the ink
+   never smears through the nav's backdrop blur, and the ink group
+   is masked with a hole over the pinned print. ───────────────── */
+#track-layer {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 30;
+  overflow: visible;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, transparent calc(var(--nav-h) - 10px), #000 calc(var(--nav-h) + 12px));
+  mask-image: linear-gradient(to bottom, transparent 0, transparent calc(var(--nav-h) - 10px), #000 calc(var(--nav-h) + 12px));
+}
+#track-layer path.seg {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  animation: seg-draw 1.4s cubic-bezier(.2,.7,.3,1) forwards;
+}
+@keyframes seg-draw {
+  0%   { opacity: 0;  stroke-dashoffset: var(--len); }
+  11%  { opacity: .9; stroke-dashoffset: 0; }
+  58%  { opacity: .3; stroke-dashoffset: 0; }
+  100% { opacity: 0;  stroke-dashoffset: 0; }
+}
+#track-layer circle.pip {
+  fill: var(--accent);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pip-mark 1.4s cubic-bezier(.2,.7,.3,1) forwards;
+}
+@keyframes pip-mark {
+  0%   { opacity: 0;   transform: scale(.3); }
+  14%  { opacity: .95; transform: scale(1); }
+  58%  { opacity: .28; transform: scale(1); }
+  100% { opacity: 0;   transform: scale(1); }
+}
+
 /* ── Reduced motion ──────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
+  #track-layer { display: none !important; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
