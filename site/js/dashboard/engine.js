@@ -136,6 +136,11 @@ const TrackLayer = L.Layer.extend({
   onAdd(map) {
     this._map = map;
     this._canvas = L.DomUtil.create('canvas', 'track-layer-canvas');
+    // Required for _onFlyMove's scale to anchor at the canvas's own local
+    // (0,0) — matching how its offset is computed as a top-left position —
+    // rather than the CSS default (center), which would scale around the
+    // middle of the viewport and throw the translate math off.
+    this._canvas.style.transformOrigin = '0 0';
     const pane = map.getPane('overlayPane');
     pane.appendChild(this._canvas);
     this._ctx = this._canvas.getContext('2d');
@@ -164,15 +169,20 @@ const TrackLayer = L.Layer.extend({
     map.off('move', this._onFlyMove, this);
   },
 
-  // Repositioning the canvas element is cheap (a translate-only DOM write) so
-  // it happens on every 'move' frame, keeping it glued to the basemap through
-  // the pan. Only the expensive part — reprojecting every point and redrawing
-  // — is throttled below (~15ms here, too slow to run unthrottled on every
-  // 'move'). Splitting these matters: throttling the reposition too meant the
-  // canvas visibly drifted from the panning basemap between ticks and snapped
-  // back each tick, reading as the trails vibrating during the flight.
+  // Translating the canvas element every frame (cheap: a DOM write) kept it
+  // glued to the basemap through a pan, but a flyTo also changes zoom
+  // continuously — and between the throttled full reprojects below, the
+  // already-drawn bitmap (rasterized at the zoom level of the last _reset())
+  // was displayed at that stale size while the basemap kept zooming under it,
+  // popping back to the correct size each throttle tick. That's what read as
+  // the trails flickering. Scaling the canvas element itself — the same trick
+  // _onZoomAnim uses for a discrete zoom step — keeps the raster's apparent
+  // size tracking the live zoom every frame, not just at each reproject.
   _onFlyMove() {
-    L.DomUtil.setPosition(this._canvas, this._map.containerPointToLayerPoint([0, 0]));
+    const map = this._map;
+    const scale = map.getZoomScale(map.getZoom(), this._resetZoom);
+    const offset = map.latLngToLayerPoint(this._originLatLng);
+    L.DomUtil.setTransform(this._canvas, offset, scale);
     if (this._flyMoveTO) return;
     this._flyMoveTO = setTimeout(() => {
       this._flyMoveTO = null;
@@ -186,6 +196,9 @@ const TrackLayer = L.Layer.extend({
     const map = this._map;
     const size = map.getSize();
     const topLeft = map.containerPointToLayerPoint([0, 0]);
+    // A plain setPosition (translate only) also clears any scale left over
+    // from _onFlyMove/_onZoomAnim, which is correct here: fresh content is
+    // about to be drawn at the current zoom's native resolution.
     L.DomUtil.setPosition(this._canvas, topLeft);
 
     const dpr = window.devicePixelRatio || 1;
@@ -196,6 +209,10 @@ const TrackLayer = L.Layer.extend({
     this._ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     this._origin = map.containerPointToLayerPoint([0, 0]);
+    // Reference point/zoom for _onFlyMove's live scale-and-translate tracking
+    // until the next reset.
+    this._originLatLng = map.containerPointToLatLng([0, 0]);
+    this._resetZoom = map.getZoom();
     this._project();
     this._restGroupsDirty = true;
     this._draw();
