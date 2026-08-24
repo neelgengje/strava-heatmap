@@ -1,7 +1,7 @@
-/* ── Shared prototype tokens ──────────────────────────────────
-   Light paper surface, matching app.css. --accent is rust here (acid
-   yellow is ~1.3:1 on this paper); acid yellow stays reserved for
-   ink-dark surfaces via --accent-dark-surface. ─────────────────── */
+/* ── Dashboard base tokens ────────────────────────────────────
+   Light-paper defaults; app.css (the actual theme) overrides most of
+   these at :root. --accent is rust here (acid yellow is ~1.3:1 on this
+   paper); acid yellow is reserved for ink-dark surfaces. ──────────── */
 :root {
   --paper:      #eae6df;
   --paper-2:    #f4f1ec;

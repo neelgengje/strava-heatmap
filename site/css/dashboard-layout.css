@@ -1,6 +1,6 @@
-/* ── v2 shared layout ─────────────────────────────────────────
-   Structure only — the variant's own style.css loads after this and
-   overrides palette/glass tokens plus any geometry it needs to change. */
+/* ── Dashboard layout ─────────────────────────────────────────
+   Structure only — app.css loads after this and overrides palette/glass
+   tokens plus any geometry it needs to change. */
 
 body.proto-v2 { overflow: hidden; }
 
@@ -14,14 +14,6 @@ body.proto-v2 {
   --occlusion-bottom: 248px;
 }
 body.proto-v2.drawer-collapsed { --occlusion-left: 40px; }
-
-.back-link {
-  position: fixed; top: 14px; left: 16px; z-index: 4000;
-  font-family: var(--label); font-size: 10.5px; letter-spacing: 0.1em;
-  color: var(--ink-3); background: var(--glass-bg); padding: 6px 12px;
-  border-radius: 20px; border: 1px solid var(--glass-border);
-}
-.back-link:hover { color: var(--ink); }
 
 #map { position: fixed; inset: 0; touch-action: none; }
 .leaflet-control-attribution { display: none; }
