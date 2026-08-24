@@ -44,7 +44,7 @@ body { background: var(--page-bg); }
 .activity-item.selected::before { content: none; }
 .activity-item.selected { background: var(--select-bg); }
 
-.activity-meta { font-size: 11.5px; }
+.activity-meta { font-size: 13px; }
 
 /* .activity-name is a <span> (inline) — text-overflow:ellipsis never
    actually applies to inline elements, so a long title just overflowed
@@ -86,7 +86,7 @@ body { background: var(--page-bg); }
 }
 .brand-island .brand {
   display: flex; align-items: center; gap: 14px;
-  font-family: var(--display); font-size: 13px; font-weight: 700;
+  font-family: var(--display); font-size: 14.5px; font-weight: 700;
   letter-spacing: 0.5em; text-transform: uppercase; color: var(--ink);
   text-decoration: none;
 }
@@ -103,10 +103,10 @@ body { background: var(--page-bg); }
 .drawer-filters > div { flex: 1; min-width: 0; }
 .drawer-filters .year-select-trigger {
   width: 100%; justify-content: space-between;
-  padding: 8px 10px; font-size: 11.5px;
+  padding: 8px 10px; font-size: 13px;
 }
 .drawer-filters .year-select-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.drawer-filters .clear-filters-btn { flex-shrink: 0; padding: 8px 12px; font-size: 11px; }
+.drawer-filters .clear-filters-btn { flex-shrink: 0; padding: 8px 12px; font-size: 12.5px; }
 
 /* ── Drawer: flex column so the stats header has a fixed height
    and the list takes the rest. ───────────────────────────────*/
@@ -131,8 +131,8 @@ body.drawer-collapsed .drawer-toggle { left: 27px; }
   border-bottom: 1px solid var(--glass-border);
 }
 .drawer-stats .dstat2 { flex: 1; text-align: center; }
-.drawer-stats .figure { font-size: 22px; display: block; color: var(--ink); }
-.drawer-stats .label { font-size: 10px; display: block; margin-top: 4px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.06em; }
+.drawer-stats .figure { font-size: 24.5px; display: block; color: var(--ink); }
+.drawer-stats .label { font-size: 11.5px; display: block; margin-top: 4px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.06em; }
 
 /* ── Detail panel: inline inside the drawer, under the selected
    row. Height animates from 0 as a normal-flow list item. ────*/
