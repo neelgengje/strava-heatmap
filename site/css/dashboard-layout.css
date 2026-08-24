@@ -153,15 +153,17 @@ body.drawer-collapsed .drawer-toggle svg { transform: rotate(180deg); }
   border-radius: 7px;
   display: flex; align-items: center; justify-content: center;
 }
-/* Anchored top-left rather than centered: centering pushed the route into
-   the bottom-right corner, right under the .activity-emoji badge. */
-.activity-thumb svg { position: absolute; top: 3px; left: 3px; width: 68%; height: 68%; }
+.activity-thumb svg { width: 88%; height: 88%; }
+/* Pulled further outside the box (vs. sitting just inside it) so the badge
+   only clips its own corner, not the route drawn underneath — the route's
+   own padding keeps it off the edges, but a wide-flat shape can still reach
+   into the corners the badge used to sit inside. */
 .activity-emoji {
-  position: absolute; right: -3px; bottom: -3px;
+  position: absolute; right: -6px; bottom: -6px;
   font-size: 13.5px; line-height: 1;
   background: var(--glass-bg);
   border-radius: 50%;
-  width: 17px; height: 17px;
+  width: 16px; height: 16px;
   display: flex; align-items: center; justify-content: center;
   box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
