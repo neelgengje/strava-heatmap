@@ -29,10 +29,10 @@
   --act-kayak: #C44EFF;
 
   /* Typography */
-  --serif:   'Lora', Georgia, serif;
-  --display: 'Lora', system-ui, sans-serif;
-  --mono:    'Lora', 'Courier New', monospace;
-  --body:    'Lora', system-ui, sans-serif;
+  --serif:   'Source Serif Pro', Georgia, serif;
+  --display: 'Source Sans Pro', system-ui, sans-serif;
+  --mono:    'Source Sans Pro', 'Courier New', monospace;
+  --body:    'Source Sans Pro', system-ui, sans-serif;
 
   /* Layout */
   --nav-h:     60px;

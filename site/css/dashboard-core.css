@@ -26,10 +26,10 @@
   --text-3: var(--ink-3);
   --border: var(--line);
 
-  --serif:   'Lora', Georgia, serif;
-  --label:   'Lora', system-ui, sans-serif;
-  --display: 'Lora', system-ui, sans-serif;
-  --body:    'Lora', system-ui, sans-serif;
+  --serif:   'Source Serif Pro', Georgia, serif;
+  --label:   'Source Sans Pro', system-ui, sans-serif;
+  --display: 'Source Sans Pro', system-ui, sans-serif;
+  --body:    'Source Sans Pro', system-ui, sans-serif;
   --font: var(--body);
   --font-display: var(--display);
 
