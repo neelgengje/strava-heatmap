@@ -151,8 +151,7 @@ const TrackLayer = L.Layer.extend({
     // fired. Without this, the canvas is left completely static for the whole
     // flight (the tiles/pane pan for free, but nothing reprojects our points)
     // and only catches up once moveend hits _reset(), reading as stray trails
-    // that snap into place. A full _reset() costs ~15ms here, too slow to run
-    // unthrottled on every 'move', so this settles for a coarser cadence.
+    // that snap into place.
     map.on('move', this._onFlyMove, this);
     this._reset();
   },
@@ -165,7 +164,15 @@ const TrackLayer = L.Layer.extend({
     map.off('move', this._onFlyMove, this);
   },
 
+  // Repositioning the canvas element is cheap (a translate-only DOM write) so
+  // it happens on every 'move' frame, keeping it glued to the basemap through
+  // the pan. Only the expensive part — reprojecting every point and redrawing
+  // — is throttled below (~15ms here, too slow to run unthrottled on every
+  // 'move'). Splitting these matters: throttling the reposition too meant the
+  // canvas visibly drifted from the panning basemap between ticks and snapped
+  // back each tick, reading as the trails vibrating during the flight.
   _onFlyMove() {
+    L.DomUtil.setPosition(this._canvas, this._map.containerPointToLayerPoint([0, 0]));
     if (this._flyMoveTO) return;
     this._flyMoveTO = setTimeout(() => {
       this._flyMoveTO = null;

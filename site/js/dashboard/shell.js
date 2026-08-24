@@ -77,7 +77,7 @@ class Dashboard {
     this._homeBounds = bounds;
     // Occlusion-aware padding, not flat [80,80]: the drawer covers part of the
     // container, so symmetric padding would center content off to one side.
-    this.map.fitBounds(bounds, this._occlusionPadding());
+    this.map.fitBounds(bounds, this._homePadding());
 
     this.map.on('click', e => {
       const key = this.layer.hitTest(this.map.latLngToContainerPoint(e.latlng), 10);
@@ -282,15 +282,24 @@ class Dashboard {
     };
   }
 
+  // Home view only: the drawer's own occlusion padding already keeps the Bay
+  // Area clear of it, but that centers the fit in the space right of the
+  // drawer specifically, which reads as pushed too far right in the full
+  // window. Padding the right side a bit more nudges the visual center left
+  // without touching per-trail selection framing (still plain _occlusionPadding()).
+  _homePadding() {
+    const pad = this._occlusionPadding();
+    return { ...pad, paddingBottomRight: pad.paddingBottomRight.add(L.point(160, 0)) };
+  }
+
   // Re-centers into whatever space is currently free — call after
   // something changes how much of the map the chrome covers.
   refitToOcclusion() {
-    const pad = this._occlusionPadding();
     if (this.selectedKey) {
       const t = this.byKey.get(this.selectedKey);
-      if (t) this._setViewSafely(L.latLngBounds(t.coords), { ...pad, maxZoom: 17 });
+      if (t) this._setViewSafely(L.latLngBounds(t.coords), { ...this._occlusionPadding(), maxZoom: 17 });
     } else {
-      this._setViewSafely(this._homeBounds, pad);
+      this._setViewSafely(this._homeBounds, this._homePadding());
     }
   }
 
@@ -306,8 +315,7 @@ class Dashboard {
 
   resetView() {
     this.deselect();
-    const pad = this._occlusionPadding();
-    this._flyToBoundsSafely(this._homeBounds, pad, 0.8);
+    this._flyToBoundsSafely(this._homeBounds, this._homePadding(), 0.8);
   }
 
   playDrawIn() {

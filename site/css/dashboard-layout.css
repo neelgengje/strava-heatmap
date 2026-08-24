@@ -34,7 +34,7 @@ body.proto-v2.drawer-collapsed { --occlusion-left: 40px; }
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   color: var(--ink-2) !important;
   border: 1px solid var(--glass-border) !important;
-  font-size: 18px !important;
+  font-size: 19.3px !important;
   transition: background 0.12s, color 0.12s !important;
 }
 .leaflet-control-zoom a:hover { color: var(--ink) !important; }
@@ -72,7 +72,7 @@ body.proto-v2.drawer-collapsed { --occlusion-left: 40px; }
 /* ── Topbar ───────────────────────────────────────────────── */
 .brand {
   display: flex; align-items: center; gap: 9px;
-  font-family: var(--display); font-size: 14.5px; font-weight: 700;
+  font-family: var(--display); font-size: 15.5px; font-weight: 700;
   letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink);
   flex-shrink: 0;
 }
@@ -85,7 +85,7 @@ body.proto-v2.drawer-collapsed { --occlusion-left: 40px; }
   border: 1.5px solid var(--line);
   border-radius: 20px;
   color: var(--ink-3);
-  font-family: var(--body); font-size: 13px; font-weight: 600;
+  font-family: var(--body); font-size: 13.9px; font-weight: 600;
   cursor: pointer;
   transition: color 0.15s, border-color 0.15s;
 }
@@ -160,7 +160,7 @@ body.drawer-collapsed .drawer-toggle svg { transform: rotate(180deg); }
    into the corners the badge used to sit inside. */
 .activity-emoji {
   position: absolute; right: -6px; bottom: -6px;
-  font-size: 13.5px; line-height: 1;
+  font-size: 14.4px; line-height: 1;
   background: var(--glass-bg);
   border-radius: 50%;
   width: 16px; height: 16px;
@@ -170,16 +170,16 @@ body.drawer-collapsed .drawer-toggle svg { transform: rotate(180deg); }
 
 .activity-body { min-width: 0; flex: 1; }
 .activity-name {
-  font-size: 14px; font-weight: 600; color: var(--ink);
+  font-size: 15px; font-weight: 600; color: var(--ink);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.activity-meta { font-size: 12px; color: var(--ink-3); margin-top: 3px; display: flex; gap: 8px; }
+.activity-meta { font-size: 12.8px; color: var(--ink-3); margin-top: 3px; display: flex; gap: 8px; }
 
 /* ── Proximity hover label ───────────────────────────────────*/
 .hover-label {
   position: fixed; z-index: 1700;
   padding: 8px 13px;
-  font-size: 13.5px;
+  font-size: 14.4px;
   pointer-events: none;
   opacity: 0;
   transform: translate(14px, -50%) scale(0.96);
@@ -188,7 +188,7 @@ body.drawer-collapsed .drawer-toggle svg { transform: rotate(180deg); }
 }
 .hover-label.show { opacity: 1; transform: translate(14px, -50%) scale(1); }
 .hover-label .hl-name { font-weight: 700; color: var(--ink); }
-.hover-label .hl-meta { color: var(--ink-3); font-size: 12px; margin-top: 2px; }
+.hover-label .hl-meta { color: var(--ink-3); font-size: 12.8px; margin-top: 2px; }
 
 /* ── Detail panel — hidden at rest, appears only on selection ─*/
 .detail-panel {
@@ -209,15 +209,15 @@ body.drawer-collapsed .detail-panel { left: 16px; }
 .detail-top { display: flex; align-items: center; gap: 22px; margin-bottom: 12px; }
 .detail-id { min-width: 0; }
 .detail-title {
-  font-family: var(--serif); font-style: italic; font-size: 21px; color: var(--ink);
+  font-family: var(--serif); font-style: italic; font-size: 22.5px; color: var(--ink);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 300px;
 }
-.detail-date { font-family: var(--label); font-size: 11.5px; color: var(--ink-3); margin-top: 4px; }
+.detail-date { font-family: var(--label); font-size: 12.3px; color: var(--ink-3); margin-top: 4px; }
 
 .detail-stats { display: flex; gap: 20px; flex-shrink: 0; }
 .detail-stats .dstat { text-align: center; }
-.detail-stats .dstat-v { font-size: 18px; font-weight: 700; color: var(--ink); }
-.detail-stats .dstat-l { font-size: 11px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+.detail-stats .dstat-v { font-size: 19.3px; font-weight: 700; color: var(--ink); }
+.detail-stats .dstat-l { font-size: 11.8px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
 
 /* Replay and Close as one group, Replay first — replaces the earlier
    layout where Close was absolutely positioned over Replay's
@@ -233,7 +233,7 @@ body.drawer-collapsed .detail-panel { left: 16px; }
   background: var(--ink);
   color: var(--paper);
   border: none; border-radius: 20px;
-  font-family: var(--label); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+  font-family: var(--label); font-size: 12.8px; letter-spacing: 0.1em; text-transform: uppercase;
   cursor: pointer;
   transition: transform 0.15s, opacity 0.15s;
 }
@@ -243,7 +243,7 @@ body.drawer-collapsed .detail-panel { left: 16px; }
 .detail-close {
   width: 34px; height: 34px; border-radius: 50%;
   background: var(--glass-bg); border: 1px solid var(--glass-border);
-  color: var(--ink-2); cursor: pointer; font-size: 13.5px;
+  color: var(--ink-2); cursor: pointer; font-size: 14.4px;
   display: flex; align-items: center; justify-content: center;
   transition: color 0.12s, background 0.12s;
 }
