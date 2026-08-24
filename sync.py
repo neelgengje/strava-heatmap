@@ -17,6 +17,7 @@ Output:
 
 import argparse
 import json
+import math
 import os
 import sys
 import threading
@@ -139,6 +140,54 @@ def authenticate():
     print('Authenticated successfully.')
 
 
+# ── Route simplification ────────────────────────────────────────────────────
+# Strava's summary_polyline is already a lossy, fixed-precision reduction of
+# the real GPS trace — for a switchback-heavy trail that can throw away real
+# shape detail. Deriving coords from the full-resolution latlng stream (which
+# we fetch anyway for the elevation chart) via our own tolerance-based RDP
+# keeps a route's real corners in proportion to how much it actually curves,
+# instead of Strava's fixed reduction losing detail on complex routes while
+# over-representing straight ones.
+
+METERS_PER_DEGREE_LAT = 111320
+
+def _project_meters(latlng):
+    lats = [p[0] for p in latlng]
+    mid_lat = sum(lats) / len(lats)
+    lng_scale = max(0.15, math.cos(mid_lat * math.pi / 180))
+    return [(lng * lng_scale * METERS_PER_DEGREE_LAT, lat * METERS_PER_DEGREE_LAT) for lat, lng in latlng]
+
+def _rdp(points, epsilon):
+    """points: list of ((x, y), (lat, lng)) — decides which to keep using the
+    projected (x, y) but returns the original (lat, lng), unprojected."""
+    if len(points) < 3:
+        return points
+    (x1, y1), _ = points[0]
+    (x2, y2), _ = points[-1]
+    dx, dy = x2 - x1, y2 - y1
+    length = (dx * dx + dy * dy) ** 0.5 or 1e-9
+    max_dist, index = -1, 0
+    for i in range(1, len(points) - 1):
+        (x, y), _ = points[i]
+        d = abs((x - x1) * dy - (y - y1) * dx) / length
+        if d > max_dist:
+            max_dist, index = d, i
+    if max_dist > epsilon:
+        left = _rdp(points[:index + 1], epsilon)
+        right = _rdp(points[index:], epsilon)
+        return left[:-1] + right
+    return [points[0], points[-1]]
+
+def simplify_latlng(latlng, epsilon_m=4):
+    """Reduce a full-resolution [lat, lng] stream to its geometrically
+    significant points, in a locally-projected meter space so epsilon has a
+    consistent real-world meaning regardless of the route's latitude."""
+    if len(latlng) < 3:
+        return [[lat, lng] for lat, lng in latlng]
+    paired = list(zip(_project_meters(latlng), latlng))
+    return [[lat, lng] for (_, (lat, lng)) in _rdp(paired, epsilon_m)]
+
+
 # ── Activity fetch & normalize ────────────────────────────────────────────────
 
 def normalize_activity(a):
@@ -233,7 +282,14 @@ def fetch_stream(activity_id, headers):
 def main():
     parser = argparse.ArgumentParser(description='Sync Strava activities to site/data/')
     parser.add_argument('--full', action='store_true', help='Full re-sync from scratch')
+    parser.add_argument('--rebuild-coords', action='store_true',
+                         help='Re-derive coords for every cached activity from its already-'
+                              'downloaded stream file (no API calls) instead of the summary_polyline')
     args = parser.parse_args()
+
+    if args.rebuild_coords:
+        rebuild_coords()
+        return
 
     # Authenticate if needed
     if not load_tokens():
@@ -262,6 +318,32 @@ def main():
     new_acts = fetch_new_activities(known_ids, headers)
     print(f'Found {len(new_acts)} new activities.')
 
+    # Streams first, before writing activities.json: the full-resolution
+    # latlng stream lets us derive coords via our own tolerance-based
+    # simplification instead of trusting Strava's summary_polyline, which is
+    # already a fixed, lossy reduction that can lose real shape detail on
+    # complex routes.
+    if new_acts:
+        print(f'Fetching elevation streams for {len(new_acts)} new activities…')
+        for i, a in enumerate(new_acts, 1):
+            stream_path = os.path.join(STREAMS_DIR, f"{a['id']}.json")
+            if os.path.exists(stream_path):
+                with open(stream_path) as f:
+                    stream = json.load(f)
+            else:
+                stream = fetch_stream(a['id'], headers)
+                if stream:
+                    with open(stream_path, 'w') as f:
+                        json.dump(stream, f)
+                # Strava rate limit: 200 requests per 15 min. Sleep briefly between fetches.
+                if i % 50 == 0:
+                    print(f'  {i}/{len(new_acts)} — pausing 5s for rate limit…')
+                    time.sleep(5)
+            if stream and stream.get('latlng'):
+                a['coords'] = simplify_latlng(stream['latlng'])
+
+        print('Streams done.')
+
     all_acts = new_acts + cached  # newest-first
 
     # Write activities.json
@@ -276,25 +358,37 @@ def main():
         json.dump(stats, f)
     print(f'Wrote {STATS_OUT}.')
 
-    # Fetch streams for new activities (incremental)
-    if new_acts:
-        print(f'Fetching elevation streams for {len(new_acts)} new activities…')
-        for i, a in enumerate(new_acts, 1):
-            stream_path = os.path.join(STREAMS_DIR, f"{a['id']}.json")
-            if os.path.exists(stream_path):
-                continue
-            stream = fetch_stream(a['id'], headers)
-            if stream:
-                with open(stream_path, 'w') as f:
-                    json.dump(stream, f)
-            # Strava rate limit: 200 requests per 15 min. Sleep briefly between fetches.
-            if i % 50 == 0:
-                print(f'  {i}/{len(new_acts)} — pausing 5s for rate limit…')
-                time.sleep(5)
-
-        print(f'Streams done.')
-
     print('\nAll done! Run `git add site/data && git push` to publish.')
+
+
+def rebuild_coords():
+    """One-time migration: re-derive coords for every activity already in
+    activities.json from its local stream file (already downloaded for the
+    elevation chart), no Strava API calls needed."""
+    if not os.path.exists(ACTIVITIES_OUT):
+        print(f'{ACTIVITIES_OUT} not found.')
+        sys.exit(1)
+    with open(ACTIVITIES_OUT) as f:
+        activities = json.load(f)
+
+    updated, missing = 0, 0
+    for a in activities:
+        stream_path = os.path.join(STREAMS_DIR, f"{a['id']}.json")
+        if not os.path.exists(stream_path):
+            missing += 1
+            continue
+        with open(stream_path) as f:
+            stream = json.load(f)
+        if not stream.get('latlng'):
+            missing += 1
+            continue
+        a['coords'] = simplify_latlng(stream['latlng'])
+        updated += 1
+
+    with open(ACTIVITIES_OUT, 'w') as f:
+        json.dump(activities, f)
+    print(f'Rebuilt coords for {updated} activities ({missing} had no local stream, left as-is).')
+    print(f'Wrote {ACTIVITIES_OUT}.')
 
 
 if __name__ == '__main__':
