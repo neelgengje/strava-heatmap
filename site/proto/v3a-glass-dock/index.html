@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trail Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@800&family=Capriola&family=DM+Serif+Display:ital@1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="/css/shared.css" />
+<link rel="stylesheet" href="/proto/core/core.css" />
+<link rel="stylesheet" href="/proto/core/v2-layout.css" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body class="proto-v2">
+
+  <a class="back-link" href="/proto/">&larr; all prototypes</a>
+
+  <div id="map"></div>
+
+  <!-- Title island, width-matched to the drawer below it. -->
+  <header class="brand-island glass">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20L10 6L14 14L18 10L21 20H3Z"/></svg>
+      Trail Log
+    </div>
+  </header>
+
+  <!-- Stats header, then filters, then the activity list. -->
+  <aside id="drawer" class="drawer glass">
+    <div class="drawer-stats">
+      <div class="dstat2"><span class="figure" id="stat-count">&mdash;</span><span class="label">activities</span></div>
+      <div class="dstat2"><span class="figure" id="stat-miles">&mdash;</span><span class="label">miles</span></div>
+      <div class="dstat2"><span class="figure" id="stat-elev">&mdash;</span><span class="label">ft gain</span></div>
+    </div>
+    <div class="drawer-filters">
+      <div id="sport-select"></div>
+      <div id="year-select"></div>
+      <button id="clear-filters-btn" class="clear-filters-btn" type="button">Clear filters</button>
+    </div>
+    <ul id="activity-list" class="activity-list scroll-thin"></ul>
+  </aside>
+  <button id="drawer-toggle" class="drawer-toggle glass" aria-label="Toggle activity list">
+    <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="12 5 7 10 12 15"/>
+    </svg>
+  </button>
+
+  <div id="hover-label" class="hover-label glass"></div>
+
+  <!-- Opens inline under the selected row in the drawer (see style.css). -->
+  <div id="detail-panel" class="detail-panel glass">
+    <div class="detail-top">
+      <div class="detail-id">
+        <div class="detail-title" id="detail-title"></div>
+        <div class="detail-date" id="detail-date"></div>
+      </div>
+      <div class="detail-stats" id="detail-stats"></div>
+      <div class="detail-actions">
+        <button id="replay-btn" class="replay-btn" type="button">
+          <svg viewBox="0 0 20 20" width="11" height="11" fill="currentColor"><path d="M6 4L16 10L6 16Z"/></svg>
+          Replay
+        </button>
+        <button id="detail-close" class="detail-close" type="button" aria-label="Close">&#10005;</button>
+      </div>
+    </div>
+    <div class="detail-chart-wrap"><canvas id="detail-chart"></canvas></div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/js/config.js"></script>
+  <script src="/proto/core/engine.js"></script>
+  <script src="/proto/core/data.js"></script>
+  <script src="/proto/core/profile.js"></script>
+  <script src="/proto/core/icons.js"></script>
+  <script src="/proto/core/pins.js"></script>
+  <script src="/proto/core/shell.js"></script>
+  <script src="/proto/core/year-select.js"></script>
+  <script src="/proto/core/sport-select.js"></script>
+  <script src="/proto/core/app-controller.js"></script>
+  <script>initV2App({ tileTheme: 'light', controlsPosition: 'bottomleft', inlineDetail: true });</script>
+</body>
+</html>

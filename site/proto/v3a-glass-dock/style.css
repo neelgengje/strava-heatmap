@@ -1,0 +1,201 @@
+/* v3a — Glass Dock. Dark chrome (Alpine Dusk tokens) with liquid glass.
+   Detail panel opens inline inside the left drawer (app-controller.js's
+   inlineDetail mode) rather than as a separate floating panel. */
+:root {
+  --paper:   #1a2030;
+  --paper-2: #222a3c;
+  --paper-3: #2a3245;
+  --ink:     #fdfaf1;
+  --ink-2:   #e6dcc1;
+  --ink-3:   #a2957c;
+  --line:    #3c4560;
+  --accent:  #E5F53B;
+
+  --bg: var(--paper);
+  --page-bg: var(--paper);
+  --surface: var(--paper-2);
+  --surface-2: var(--paper-3);
+  --text-1: var(--ink);
+  --text-2: var(--ink-2);
+  --text-3: var(--ink-3);
+  --border: var(--line);
+
+  --glass-bg: rgba(24, 29, 44, 0.84);
+  --glass-border: rgba(120, 132, 168, 0.38);
+  --glass-blur: 22px;
+  --glass-sat: 1.4;
+
+  --select-bg: rgba(229, 245, 59, 0.10);
+  --row-hover-bg: rgba(246, 239, 223, 0.055);
+  --thumb-bg: rgba(246, 239, 223, 0.07);
+  --radius: 18px;
+  --radius-sm: 12px;
+}
+
+body { background: var(--page-bg); }
+
+.year-check { background: var(--paper-3); }
+.year-option.checked .year-check::after { border-color: #1a2030; }
+.replay-btn { background: var(--accent); color: #1a2030; }
+.detail-close { color: var(--ink-2); }
+
+/* Selection is background-only — no left-edge bar, which previously
+   borrowed the sport's own colour and read as an unwanted focus ring. */
+.activity-item.selected::before { content: none; }
+.activity-item.selected { background: var(--select-bg); }
+
+.activity-meta { font-size: 11.5px; }
+
+/* .activity-name is a <span> (inline) — text-overflow:ellipsis never
+   actually applies to inline elements, so a long title just overflowed
+   uncontained. display:block + wrap instead of truncate. */
+.activity-name {
+  display: block;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.3;
+}
+.activity-item { align-items: flex-start; padding-top: 10px; padding-bottom: 10px; }
+.activity-thumb { margin-top: 1px; }
+/* overflow-anchor:none: without it, the detail panel expanding above the
+   scroll position makes the browser auto-scroll to compensate, fighting
+   app-controller.js's own scrollIntoView(). */
+.activity-list { overflow-x: hidden; overflow-anchor: none; }
+
+/* Specular rim + deep drop shadow — most of what reads as "glass". */
+.brand-island, .drawer, .hover-label, .year-select-panel {
+  box-shadow:
+    0 24px 60px rgba(0,0,0,0.55),
+    inset 0 1px 0 rgba(255,255,255,0.14),
+    inset 0 0 0 1px rgba(255,255,255,0.05);
+}
+.clear-filters-btn, .year-select-trigger, .drawer-toggle,
+.leaflet-control-zoom a, .leaflet-control-recenter a, .replay-btn, .detail-close {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
+}
+
+/* ── Title island, width-matched to the drawer below it ───────*/
+.brand-island {
+  position: fixed;
+  top: 16px; left: 16px;
+  width: 372px; height: 58px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 24px;
+  z-index: 1500;
+}
+.brand-island .brand {
+  display: flex; align-items: center; gap: 14px;
+  font-family: var(--display); font-size: 13px; font-weight: 700;
+  letter-spacing: 0.5em; text-transform: uppercase; color: var(--ink);
+}
+.brand-island .brand svg { width: 18px; height: 18px; color: var(--accent); flex-shrink: 0; }
+
+/* ── Filters: activity/year dropdowns + Clear filters, one row
+   under the drawer's stats header. ───────────────────────────*/
+.drawer-filters {
+  display: flex; align-items: center; gap: 8px;
+  padding: 2px 6px 16px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--glass-border);
+}
+.drawer-filters > div { flex: 1; min-width: 0; }
+.drawer-filters .year-select-trigger {
+  width: 100%; justify-content: space-between;
+  padding: 8px 10px; font-size: 11.5px;
+}
+.drawer-filters .year-select-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.drawer-filters .clear-filters-btn { flex-shrink: 0; padding: 8px 12px; font-size: 11px; }
+
+/* ── Drawer: flex column so the stats header has a fixed height
+   and the list takes the rest. ───────────────────────────────*/
+.drawer {
+  width: 372px;
+  display: flex;
+  flex-direction: column;
+  /* Nearly opaque, decoupled from --glass-bg — the drawer is the main
+     reading surface and needs to stay solid regardless of the map behind it. */
+  background: rgba(15, 18, 28, 0.96);
+}
+.activity-list { flex: 1; min-height: 0; height: auto; }
+/* Offset accounts for Leaflet's own 10px control-corner margin plus the
+   1px width difference (30px toggle vs 32px controls), so centers align. */
+.drawer-toggle { left: 415px; }
+body.drawer-collapsed .drawer-toggle { left: 27px; }
+
+.drawer-stats {
+  display: flex;
+  padding: 10px 6px 20px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--glass-border);
+}
+.drawer-stats .dstat2 { flex: 1; text-align: center; }
+.drawer-stats .figure { font-size: 22px; display: block; color: var(--ink); }
+.drawer-stats .label { font-size: 10px; display: block; margin-top: 4px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* ── Detail panel: inline inside the drawer, under the selected
+   row. Height animates from 0 as a normal-flow list item. ────*/
+.detail-panel {
+  position: static;
+  width: 100%;
+  left: auto; right: auto; bottom: auto;
+  transform: none;
+  opacity: 1;
+  pointer-events: auto;
+  /* flex-shrink:0: overflow:hidden zeroes this item's normal "don't
+     shrink below content" floor (flexbox auto-min-size spec) — without
+     it, flexbox crushes the panel to a sliver to fit the visible height
+     instead of letting .activity-list scroll. */
+  flex-shrink: 0;
+  height: 0;
+  padding: 0 4px;
+  margin: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: none;
+  background: rgba(255,255,255,0.03);
+  transition: height 0.42s var(--ease-out), padding 0.42s var(--ease-out), margin 0.42s var(--ease-out);
+}
+.detail-panel.open {
+  height: 320px;
+  padding: 16px 14px 14px;
+  margin: 2px 0 8px;
+}
+
+/* flex-basis:0 (not auto) on detail-id: flex-wrap's line-break decision
+   uses each item's unshrunk size, so a long title used to push Replay/
+   Close onto their own line while a short one didn't. flex-basis:0
+   makes the wrap ignore title length — actions always share its row. */
+.detail-top { flex-wrap: wrap; row-gap: 12px; }
+.detail-id { order: 1; flex: 1 1 0; min-width: 0; }
+.detail-actions { order: 2; flex-shrink: 0; }
+.detail-stats {
+  order: 3;
+  flex-basis: 100%;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid var(--glass-border);
+}
+.detail-title { max-width: 180px; }
+.detail-chart-wrap { min-height: 140px; }
+
+/* The drawer is the only real map occlusion; controls sit in the gap
+   to its right, tracked via --controls-left-offset. */
+body.proto-v2 {
+  --occlusion-left: 404px;
+  --occlusion-top: 90px;
+  --occlusion-right: 40px;
+  --occlusion-bottom: 56px;
+  --controls-left-offset: 404px;
+}
+body.proto-v2.drawer-collapsed {
+  --occlusion-left: 40px;
+  --controls-left-offset: 16px;
+}
+
+@media (max-width: 980px) {
+  .brand-island { width: min(320px, calc(100vw - 32px)); }
+  .drawer { width: min(320px, calc(100vw - 32px)); }
+  .drawer-toggle { left: min(352px, calc(100vw - 16px)); }
+  body.proto-v2 { --controls-left-offset: 16px; }
+}

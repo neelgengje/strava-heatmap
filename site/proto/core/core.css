@@ -1,0 +1,192 @@
+/* ── Shared prototype tokens ──────────────────────────────────
+   Light paper surface, matching app.css. --accent is rust here (acid
+   yellow is ~1.3:1 on this paper); acid yellow stays reserved for
+   ink-dark surfaces via --accent-dark-surface. ─────────────────── */
+:root {
+  --paper:      #eae6df;
+  --paper-2:    #f4f1ec;
+  --paper-3:    #ece8e2;
+  --ink:        #2c2825;
+  --ink-2:      #6e6860;
+  --ink-3:      #6b6459;
+  --line:       #d5d0c8;
+  --line-2:     #e3ded6;
+  --accent:     #c44535;
+  --accent-glow: 0 0 0 rgba(0,0,0,0);
+  --accent-dark-surface: #E5F53B; /* acid, only ever on --ink-surface */
+  --ink-surface: #1a2030;
+  --ink-surface-ink: #f1e7d2;
+
+  --page-bg: var(--paper);
+  --bg: var(--paper);
+  --surface: var(--paper-2);
+  --surface-2: var(--paper-3);
+  --text-1: var(--ink);
+  --text-2: var(--ink-2);
+  --text-3: var(--ink-3);
+  --border: var(--line);
+
+  --serif:   'DM Serif Display', Georgia, serif;
+  --label:   'Capriola', system-ui, sans-serif;
+  --display: 'Archivo', system-ui, sans-serif;
+  --body:    'Inter', system-ui, sans-serif;
+  --font: var(--body);
+  --font-display: var(--display);
+
+  --radius: 14px;
+  --radius-sm: 9px;
+  --shadow-glass: 0 8px 32px rgba(44,40,37,0.10), 0 1px 2px rgba(44,40,37,0.06);
+  --shadow-lift: 0 20px 60px rgba(44,40,37,0.18);
+}
+
+body { background: var(--page-bg); color: var(--ink); }
+
+/* ── Glass panel ───────────────────────────────────────────── */
+/* Themeable via variables (defaults = the light palette above) so a
+   variant's style.css can retheme every .glass surface at once by
+   redefining these at :root, instead of overriding the whole rule. */
+:root {
+  --glass-bg: rgba(244, 241, 236, 0.86);
+  --glass-border: rgba(213, 208, 200, 0.7);
+  --glass-blur: 14px;
+  --glass-sat: 1.1;
+}
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-glass);
+}
+
+.ink-surface {
+  background: rgba(26, 32, 48, 0.94);
+  color: var(--ink-surface-ink);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lift);
+}
+.ink-surface .accent { color: var(--accent-dark-surface); }
+
+/* ── Type ─────────────────────────────────────────────────── */
+.figure {
+  font-family: var(--display);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  line-height: 1;
+}
+.label {
+  font-family: var(--label);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.headline {
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--ink);
+}
+
+/* ── Scrollbars (webkit) ──────────────────────────────────── */
+.scroll-thin { scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+.scroll-thin::-webkit-scrollbar { width: 6px; }
+.scroll-thin::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+
+/* ── Motion tokens ────────────────────────────────────────── */
+:root {
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.track-layer-canvas { position: absolute; top: 0; left: 0; pointer-events: none; }
+
+/* ── Year/activity multi-select dropdown ─────────────────────*/
+.year-select { position: relative; }
+
+.year-select-trigger {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 13px;
+  background: var(--paper-3);
+  border: 1.5px solid var(--line);
+  border-radius: 20px;
+  color: var(--ink-2);
+  font-family: var(--body); font-size: 12px; font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.year-select-trigger:hover { border-color: var(--ink-3); color: var(--ink); }
+.year-select-trigger svg { transition: transform 0.25s var(--ease-out); flex-shrink: 0; opacity: 0.6; }
+.year-select.open .year-select-trigger { border-color: var(--accent); color: var(--ink); }
+.year-select.open .year-select-trigger svg { transform: rotate(180deg); }
+
+.year-select-panel {
+  position: absolute; top: calc(100% + 8px); left: 0;
+  min-width: 168px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lift);
+  padding: 8px;
+  z-index: 2000;
+  opacity: 0;
+  transform: translateY(-6px) scale(0.98);
+  transform-origin: top left;
+  pointer-events: none;
+  transition: opacity 0.18s var(--ease-out), transform 0.18s var(--ease-out);
+}
+.year-select.open .year-select-panel { opacity: 1; transform: none; pointer-events: auto; }
+
+.year-select-list { max-height: 260px; overflow-y: auto; }
+
+.year-option {
+  display: flex; align-items: center; gap: 9px;
+  padding: 7px 8px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--ink-2);
+  transition: background 0.12s;
+}
+.year-option:hover { background: var(--paper-3); }
+.year-option.checked { color: var(--ink); font-weight: 600; }
+
+.year-check {
+  width: 15px; height: 15px; flex-shrink: 0;
+  border: 1.5px solid var(--line);
+  border-radius: 4px;
+  background: var(--paper);
+  position: relative;
+  transition: background 0.15s, border-color 0.15s;
+}
+.year-option.checked .year-check { background: var(--accent); border-color: var(--accent); }
+.year-option.checked .year-check::after {
+  content: '';
+  position: absolute; left: 4px; top: 1px;
+  width: 4px; height: 8px;
+  border: solid #fff; border-width: 0 2px 2px 0;
+  transform: rotate(40deg);
+}
+
+.year-option-label { flex: 1; }
+.year-option-count { font-size: 10.5px; color: var(--ink-3); }
+
+.year-select-clear {
+  width: 100%;
+  margin-top: 6px;
+  padding: 8px;
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--line);
+  color: var(--ink-3);
+  font-family: var(--body); font-size: 11.5px; font-weight: 600;
+  cursor: pointer;
+  transition: color 0.12s;
+}
+.year-select-clear:hover { color: var(--accent); }

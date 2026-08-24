@@ -1,0 +1,505 @@
+// ── Track Canvas Engine ─────────────────────────────────────
+// Single canvas layer rendering every track, batched-stroked by (category,
+// density bucket) — ~160 canvas calls per redraw instead of ~156,000.
+
+// ── 1. Density index ─────────────────────────────────────────
+
+const EARTH_R_LAT_M = 111320; // meters per degree latitude, ~constant
+const DENSITY_BUCKETS = 16;
+
+function cellSizeDeg(lat, cellMeters) {
+  const latSize = cellMeters / EARTH_R_LAT_M;
+  const lngSize = cellMeters / (EARTH_R_LAT_M * Math.max(0.15, Math.cos(lat * Math.PI / 180)));
+  return { latSize, lngSize };
+}
+
+function cellKey(lat, lng, latSize, lngSize) {
+  const cLat = Math.floor(lat / latSize);
+  const cLng = Math.floor(lng / lngSize);
+  return cLat + '_' + cLng;
+}
+
+function maxOf(arr) {
+  let m = -Infinity;
+  for (let i = 0; i < arr.length; i++) if (arr[i] > m) m = arr[i];
+  return m;
+}
+
+// Grid-snaps every point and counts distinct activity ids per cell for an
+// exact repeat count (blend modes like multiply/lighter can't produce a
+// readable ramp — multiply crushes to black, lighter washes to white).
+// Counts are quantized into log-scale buckets per category so rendering
+// can batch-stroke by bucket instead of per segment.
+function buildDensityIndex(tracks, cellMeters = 20, buckets = DENSITY_BUCKETS) {
+  const grids = new Map(); // category -> cellKey -> Set(activityId)
+
+  tracks.forEach(t => {
+    let grid = grids.get(t.category);
+    if (!grid) grids.set(t.category, grid = new Map());
+    const { latSize, lngSize } = cellSizeDeg(t.coords[0]?.[0] ?? 37.5, cellMeters);
+    t._latSize = latSize;
+    t._lngSize = lngSize;
+    const seen = new Set(); // a track shouldn't inflate its own cell count via dense points
+    t.coords.forEach(([lat, lng]) => {
+      const k = cellKey(lat, lng, latSize, lngSize);
+      let set = grid.get(k);
+      if (!set) grid.set(k, set = new Set());
+      if (!seen.has(k)) { set.add(t.id); seen.add(k); }
+    });
+  });
+
+  const maxByCategory = {};
+  tracks.forEach(t => {
+    const grid = grids.get(t.category);
+    t.pointFreq = t.coords.map(([lat, lng]) => {
+      const k = cellKey(lat, lng, t._latSize, t._lngSize);
+      return grid.get(k)?.size || 1;
+    });
+    t._maxFreq = maxOf(t.pointFreq);
+    if (!maxByCategory[t.category] || t._maxFreq > maxByCategory[t.category]) {
+      maxByCategory[t.category] = t._maxFreq;
+    }
+  });
+
+  tracks.forEach(t => {
+    const maxF = Math.max(2, maxByCategory[t.category] || 1);
+    const n = t.pointFreq.length;
+    t.pointBucket = new Uint8Array(n);
+    for (let i = 0; i < n; i++) {
+      t.pointBucket[i] = bucketForFreq(t.pointFreq[i], maxF, buckets);
+    }
+  });
+
+  const colorTable = {};
+  tracks.forEach(t => {
+    if (colorTable[t.category]) return;
+    colorTable[t.category] = buildBucketColors(t.category, buckets);
+  });
+
+  return { tracks, colorTable, buckets };
+}
+
+function bucketForFreq(freq, maxF, buckets) {
+  if (freq <= 1) return 0;
+  const t = Math.log(freq) / Math.log(maxF);
+  return Math.max(0, Math.min(buckets - 1, Math.round(t * (buckets - 1))));
+}
+
+function buildBucketColors(category, buckets) {
+  const stops = typeForCategory(category).freqColors; // 5 stops, cold -> hot
+  const arr = [];
+  for (let b = 0; b < buckets; b++) {
+    const t = buckets > 1 ? b / (buckets - 1) : 0;
+    const scaled = t * (stops.length - 1);
+    const i = Math.min(stops.length - 2, Math.floor(scaled));
+    const localT = scaled - i;
+    arr.push(lerpColor(stops[i], stops[i + 1], localT));
+  }
+  return arr;
+}
+
+// ── 2. Canvas track layer ────────────────────────────────────
+
+const TrackLayer = L.Layer.extend({
+
+  initialize(options) {
+    this._tracks = options.tracks || [];
+    this._colorTable = options.colorTable || {};
+    this._buckets = options.buckets || DENSITY_BUCKETS;
+    this._baseWidth = options.baseWidth ?? 2.2;
+    this._hoverWidth = options.hoverWidth ?? 3.2;
+    this._selectedWidth = options.selectedWidth ?? 4.2;
+
+    this._state = new Map(); // track.key -> { visible, drawProgress }
+    this._trackByKey = new Map();
+    this._tracks.forEach(t => {
+      this._trackByKey.set(t.key, t);
+      this._state.set(t.key, { visible: true, drawProgress: 1 });
+    });
+
+    this._hoverKey = null;
+    this._selectedKey = null;
+
+    // Hover/select fade in as an overlay on top of the base pass, and the
+    // rest of the map dims via one shared animated scalar — see
+    // _draw()/_tick(). Each entry is {value, target}, eased every frame.
+    this._hoverFades = new Map();
+    this._selectFades = new Map();
+    this._dimBlend = { value: 0, target: 0 };
+    this._animating = false;
+
+    // Cached grouped segment geometry — see _draw()'s base-pass comment.
+    this._restGroupsCache = null;
+    this._restGroupsDirty = true;
+  },
+
+  onAdd(map) {
+    this._map = map;
+    this._canvas = L.DomUtil.create('canvas', 'track-layer-canvas');
+    const pane = map.getPane('overlayPane');
+    pane.appendChild(this._canvas);
+    this._ctx = this._canvas.getContext('2d');
+
+    // viewreset alongside moveend/zoomend/resize: the same event Leaflet's
+    // own markers listen to, so firing it manually (Dashboard._settleAfter)
+    // forces every layer back in sync in one shot.
+    map.on('moveend zoomend resize viewreset', this._reset, this);
+    map.on('zoomanim', this._onZoomAnim, this);
+    this._reset();
+  },
+
+  onRemove(map) {
+    L.DomUtil.remove(this._canvas);
+    map.off('moveend zoomend resize viewreset', this._reset, this);
+    map.off('zoomanim', this._onZoomAnim, this);
+  },
+
+  // Repositions the canvas and reprojects every point. Panning is free
+  // (pane transform); this runs on zoom/resize/viewreset.
+  _reset() {
+    const map = this._map;
+    const size = map.getSize();
+    const topLeft = map.containerPointToLayerPoint([0, 0]);
+    L.DomUtil.setPosition(this._canvas, topLeft);
+
+    const dpr = window.devicePixelRatio || 1;
+    this._canvas.width = size.x * dpr;
+    this._canvas.height = size.y * dpr;
+    this._canvas.style.width = size.x + 'px';
+    this._canvas.style.height = size.y + 'px';
+    this._ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    this._origin = map.containerPointToLayerPoint([0, 0]);
+    this._project();
+    this._restGroupsDirty = true;
+    this._draw();
+  },
+
+  // Scale/translate the canvas during the zoom animation so it doesn't
+  // pop, matching how Leaflet's own canvas renderer behaves.
+  _onZoomAnim(e) {
+    const map = this._map;
+    const scale = map.getZoomScale(e.zoom);
+    const offset = map._latLngToNewLayerPoint(map.getBounds().getNorthWest(), e.zoom, e.center);
+    L.DomUtil.setTransform(this._canvas, offset, scale);
+  },
+
+  // Projects every track into pixel space and caches each one's bbox for
+  // a cheap reject in hitTest(). Cached until the next _reset().
+  _project() {
+    const map = this._map;
+    this._tracks.forEach(t => {
+      const n = t.coords.length;
+      const px = t._px = new Float64Array(n * 2);
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      for (let i = 0; i < n; i++) {
+        const p = map.latLngToLayerPoint(t.coords[i]);
+        const x = p.x - this._origin.x, y = p.y - this._origin.y;
+        px[i * 2] = x; px[i * 2 + 1] = y;
+        if (x < minX) minX = x; if (x > maxX) maxX = x;
+        if (y < minY) minY = y; if (y > maxY) maxY = y;
+      }
+      t._bbox = { minX, minY, maxX, maxY };
+    });
+  },
+
+  _draw() {
+    const ctx = this._ctx;
+    const size = this._map.getSize();
+    ctx.clearRect(0, 0, size.x, size.y);
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+
+    // Base pass: every visible track, batched by (category, bucket), stroked
+    // ascending so hot segments paint over cold. Alpha is one shared
+    // animated scalar (dimBlend); cached geometry is reused across a fade's
+    // frames, rebuilt only when visibility/projection/draw-in changes.
+    if (this._restGroupsDirty || !this._restGroupsCache) {
+      const restGroups = new Map();
+      this._tracks.forEach(t => {
+        const st = this._state.get(t.key);
+        if (!st.visible) return;
+        this._collectSegments(t, st, restGroups);
+      });
+      this._restGroupsCache = restGroups;
+      this._restGroupsDirty = false;
+    }
+    const restAlpha = 0.72 - (0.72 - 0.10) * this._dimBlend.value;
+    this._strokeGroups(this._restGroupsCache, restAlpha, this._baseWidth);
+
+    // Hover overlay: real per-bucket density colour, eased in on top of
+    // the base pass so a repeat-heavy stretch still reads hot.
+    this._hoverFades.forEach((entry, key) => {
+      if (entry.value <= 0.001) return;
+      const t = this._trackByKey.get(key);
+      const st = this._state.get(key);
+      if (!t || !st || !st.visible) return;
+      const hoverGroups = new Map();
+      this._collectSegments(t, st, hoverGroups);
+      const width = this._baseWidth + (this._hoverWidth - this._baseWidth) * entry.value;
+      this._strokeGroups(hoverGroups, entry.value, width);
+    });
+
+    // Select overlay: flat accent colour, distinct from the density heatmap.
+    this._selectFades.forEach((entry, key) => {
+      if (entry.value <= 0.001) return;
+      const t = this._trackByKey.get(key);
+      const st = this._state.get(key);
+      if (!t || !st || !st.visible) return;
+      this._drawSelected(t, st, entry.value);
+    });
+  },
+
+  // Advances eased values toward their targets and redraws, rescheduling
+  // itself via rAF until everything's converged.
+  _tick() {
+    let animating = false;
+
+    const dimDiff = this._dimBlend.target - this._dimBlend.value;
+    if (Math.abs(dimDiff) < 0.003) this._dimBlend.value = this._dimBlend.target;
+    else { this._dimBlend.value += dimDiff * 0.16; animating = true; }
+
+    if (this._easeFades(this._hoverFades, 0.26)) animating = true;
+    if (this._easeFades(this._selectFades, 0.2)) animating = true;
+
+    this._draw();
+    if (animating) requestAnimationFrame(() => this._tick());
+    else this._animating = false;
+  },
+
+  _easeFades(map, factor) {
+    let animating = false;
+    map.forEach((entry, key) => {
+      const diff = entry.target - entry.value;
+      if (Math.abs(diff) < 0.004) {
+        entry.value = entry.target;
+        if (entry.target === 0) map.delete(key);
+      } else {
+        entry.value += diff * factor;
+        animating = true;
+      }
+    });
+    return animating;
+  },
+
+  _ensureAnimating() {
+    if (this._animating) return;
+    this._animating = true;
+    requestAnimationFrame(() => this._tick());
+  },
+
+  _collectSegments(t, st, groups) {
+    const n = t.coords.length;
+    if (n < 2) return;
+    const drawUpTo = Math.max(2, Math.floor(n * st.drawProgress));
+    const px = t._px, buckets = t.pointBucket;
+
+    for (let i = 0; i < drawUpTo - 1; i++) {
+      const b = buckets[i];
+      const key = t.category + '|' + b;
+      let g = groups.get(key);
+      if (!g) groups.set(key, g = { category: t.category, bucket: b, segs: [] });
+      g.segs.push(px[i * 2], px[i * 2 + 1], px[(i + 1) * 2], px[(i + 1) * 2 + 1]);
+    }
+  },
+
+  _strokeGroups(groups, alpha, baseWidth) {
+    if (groups.size === 0) return;
+    const ctx = this._ctx;
+    ctx.globalAlpha = alpha;
+    const ordered = [...groups.values()].sort((a, b) => a.bucket - b.bucket);
+    ordered.forEach(g => {
+      ctx.strokeStyle = this._colorTable[g.category][g.bucket];
+      ctx.lineWidth = baseWidth + (g.bucket / (this._buckets - 1)) * 1.6;
+      ctx.beginPath();
+      const segs = g.segs;
+      for (let i = 0; i < segs.length; i += 4) {
+        ctx.moveTo(segs[i], segs[i + 1]);
+        ctx.lineTo(segs[i + 2], segs[i + 3]);
+      }
+      ctx.stroke();
+    });
+    ctx.globalAlpha = 1;
+  },
+
+  // Flat accent colour (not density-coloured) — a deliberate "this one is
+  // chosen" signal. `value` (0..1, eased) drives both opacity and width.
+  _drawSelected(t, st, value) {
+    const n = t.coords.length;
+    if (n < 2) return;
+    const ctx = this._ctx;
+    const px = t._px;
+    const drawUpTo = Math.max(2, Math.floor(n * st.drawProgress));
+
+    ctx.globalAlpha = value;
+    ctx.strokeStyle = '#c44535';
+    ctx.lineWidth = this._baseWidth + (this._selectedWidth - this._baseWidth) * value;
+    ctx.beginPath();
+    for (let i = 0; i < drawUpTo; i++) {
+      i === 0 ? ctx.moveTo(px[i * 2], px[i * 2 + 1]) : ctx.lineTo(px[i * 2], px[i * 2 + 1]);
+    }
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  },
+
+  // ── Public API ────────────────────────────────────────────
+
+  setVisible(key, visible) {
+    const st = this._state.get(key);
+    if (st && st.visible !== visible) {
+      st.visible = visible;
+      this._restGroupsDirty = true;
+    }
+  },
+
+  setDim() {}, // legacy no-op — dimming is now the single _dimBlend scalar
+
+  setSelected(key) {
+    if (this._selectedKey === key) return;
+    if (this._selectedKey) this._fadeTo(this._selectFades, this._selectedKey, 0);
+    this._selectedKey = key;
+    if (key) this._fadeTo(this._selectFades, key, 1);
+    this._dimBlend.target = key ? 1 : 0;
+    this._ensureAnimating();
+  },
+
+  clearSelection() {
+    if (!this._selectedKey) return;
+    this._fadeTo(this._selectFades, this._selectedKey, 0);
+    this._selectedKey = null;
+    this._dimBlend.target = 0;
+    this._ensureAnimating();
+  },
+
+  _fadeTo(map, key, target) {
+    const entry = map.get(key) || { value: 0, target: 0 };
+    entry.target = target;
+    map.set(key, entry);
+  },
+
+  redraw() {
+    this._draw();
+  },
+
+  // Full reposition + reproject, bypassing the moveend/zoomend/resize
+  // events _reset() normally waits for — a safety net for after a
+  // programmatic flyTo that doesn't cleanly settle.
+  forceResync() {
+    this._reset();
+  },
+
+  // Nearest track to a point, within `tolerance` px. Rejects on cached
+  // bbox first so a mouse move over empty map doesn't walk ~156k segments.
+  hitTest(containerPoint, tolerance = 10) {
+    const layerPoint = this._map.containerPointToLayerPoint(containerPoint);
+    const target = { x: layerPoint.x - this._origin.x, y: layerPoint.y - this._origin.y };
+
+    let best = null, bestDist = tolerance;
+    this._tracks.forEach(t => {
+      const st = this._state.get(t.key);
+      if (!st.visible) return;
+      const b = t._bbox;
+      if (!b) return;
+      if (target.x < b.minX - tolerance || target.x > b.maxX + tolerance ||
+          target.y < b.minY - tolerance || target.y > b.maxY + tolerance) return;
+
+      const px = t._px;
+      for (let i = 0; i < t.coords.length - 1; i++) {
+        const d = distToSegment(target.x, target.y, px[i*2], px[i*2+1], px[(i+1)*2], px[(i+1)*2+1]);
+        if (d < bestDist) { bestDist = d; best = t.key; }
+      }
+    });
+    return best;
+  },
+
+  // True if the hover target changed; redraw is driven by the fade loop, not the caller.
+  setHover(key) {
+    if (this._hoverKey === key) return false;
+    if (this._hoverKey) this._fadeTo(this._hoverFades, this._hoverKey, 0);
+    this._hoverKey = key;
+    if (key) this._fadeTo(this._hoverFades, key, 1);
+    this._ensureAnimating();
+    return true;
+  },
+
+  // Animates every visible track's draw-in 0->1, oldest first (caller
+  // pre-sorts tracks by date).
+  playDrawIn(durationMs = 2200) {
+    const start = performance.now();
+    const keys = this._tracks.map(t => t.key);
+    keys.forEach(k => { this._state.get(k).drawProgress = 0; });
+    // Synchronous, not just inside step() — a redraw() sandwiched between
+    // this line and the first rAF tick would otherwise flash the full map
+    // for a frame before snapping to empty.
+    this._restGroupsDirty = true;
+
+    const step = (now) => {
+      const elapsed = now - start;
+      const overallT = Math.min(1, elapsed / durationMs);
+      keys.forEach((k, i) => {
+        const trackStart = (i / keys.length) * 0.7;
+        const trackDur = 0.3;
+        const local = Math.min(1, Math.max(0, (overallT - trackStart) / trackDur));
+        this._state.get(k).drawProgress = local;
+      });
+      this._restGroupsDirty = true;
+      this._draw();
+      if (overallT < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  },
+
+  getPixelForLatLng(latlng) {
+    const p = this._map.latLngToLayerPoint(latlng);
+    return { x: p.x - this._origin.x, y: p.y - this._origin.y };
+  },
+});
+
+function distToSegment(px, py, x1, y1, x2, y2) {
+  const dx = x2 - x1, dy = y2 - y1;
+  const len2 = dx * dx + dy * dy;
+  let t = len2 === 0 ? 0 : ((px - x1) * dx + (py - y1) * dy) / len2;
+  t = Math.max(0, Math.min(1, t));
+  const cx = x1 + t * dx, cy = y1 + t * dy;
+  return Math.hypot(px - cx, py - cy);
+}
+
+function createTrackLayer(options) {
+  return new TrackLayer(options);
+}
+
+// ── 3. Continuous density colour (diagnostics only) ──────────
+// freqColorForType() (config.js) is a 5-stop ramp that saturates hard on
+// real repeat counts (routes done up to 62x); this exact-frequency
+// version is for a legend swatch or similar, never called by TrackLayer.
+function makeContinuousColorFn(tracks) {
+  const maxByCategory = {};
+  tracks.forEach(t => {
+    const m = t._maxFreq ?? maxOf(t.pointFreq);
+    if (!maxByCategory[t.category] || m > maxByCategory[t.category]) maxByCategory[t.category] = m;
+  });
+
+  return function colorForFreq(category, freq) {
+    const cfg = typeForCategory(category);
+    const stops = cfg.freqColors;
+    const maxF = Math.max(2, maxByCategory[category] || 1);
+    if (freq <= 1) return stops[0];
+    const t = Math.log(freq) / Math.log(maxF);
+    const scaled = t * (stops.length - 1);
+    const i = Math.min(stops.length - 2, Math.floor(scaled));
+    const localT = scaled - i;
+    return lerpColor(stops[i], stops[i + 1], localT);
+  };
+}
+
+function hexToRgb(hex) {
+  const v = parseInt(hex.slice(1), 16);
+  return [(v >> 16) & 255, (v >> 8) & 255, v & 255];
+}
+function rgbToHex([r, g, b]) {
+  return '#' + [r, g, b].map(c => Math.round(c).toString(16).padStart(2, '0')).join('');
+}
+function lerpColor(hexA, hexB, t) {
+  const a = hexToRgb(hexA), b = hexToRgb(hexB);
+  return rgbToHex(a.map((v, i) => v + (b[i] - v) * t));
+}
