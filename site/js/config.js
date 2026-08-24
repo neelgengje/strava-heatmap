@@ -50,6 +50,16 @@ const ACTIVITY_TYPES = {
     drawerVerb: 'Paddled',
     chartColor: 'rgba(0, 180, 216,',
   },
+  SUP: {
+    label: 'Stand Up Paddle',
+    icon: '\uD83C\uDFC4',
+    pIcon: 'ph-wave',
+    color: '#10b981',
+    freqColors: ['#6ee7c4','#10b981','#0d9488','#0f766e','#065f46'],
+    stats: ['miles', 'time', 'speed'],
+    drawerVerb: 'Paddled',
+    chartColor: 'rgba(16, 185, 129,',
+  },
 };
 
 // ── Shared Helpers ────────────────────────────────────────

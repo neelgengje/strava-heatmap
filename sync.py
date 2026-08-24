@@ -48,6 +48,7 @@ SPORT_TYPE_MAP = {
     'Run': 'Run', 'VirtualRun': 'Run',
     'TrailRun': 'TrailRun',
     'Kayaking': 'Kayak',
+    'StandUpPaddling': 'SUP',
 }
 
 os.makedirs('data', exist_ok=True)

@@ -26,10 +26,10 @@
   --text-3: var(--ink-3);
   --border: var(--line);
 
-  --serif:   'DM Serif Display', Georgia, serif;
-  --label:   'Capriola', system-ui, sans-serif;
-  --display: 'Archivo', system-ui, sans-serif;
-  --body:    'Inter', system-ui, sans-serif;
+  --serif:   'Lora', Georgia, serif;
+  --label:   'Lora', system-ui, sans-serif;
+  --display: 'Lora', system-ui, sans-serif;
+  --body:    'Lora', system-ui, sans-serif;
   --font: var(--body);
   --font-display: var(--display);
 

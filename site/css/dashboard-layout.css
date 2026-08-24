@@ -153,7 +153,9 @@ body.drawer-collapsed .drawer-toggle svg { transform: rotate(180deg); }
   border-radius: 7px;
   display: flex; align-items: center; justify-content: center;
 }
-.activity-thumb svg { width: 78%; height: 78%; }
+/* Anchored top-left rather than centered: centering pushed the route into
+   the bottom-right corner, right under the .activity-emoji badge. */
+.activity-thumb svg { position: absolute; top: 3px; left: 3px; width: 68%; height: 68%; }
 .activity-emoji {
   position: absolute; right: -3px; bottom: -3px;
   font-size: 12px; line-height: 1;

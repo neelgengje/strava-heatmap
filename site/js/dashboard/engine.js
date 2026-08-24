@@ -145,13 +145,32 @@ const TrackLayer = L.Layer.extend({
     // forces every layer back in sync in one shot.
     map.on('moveend zoomend resize viewreset', this._reset, this);
     map.on('zoomanim', this._onZoomAnim, this);
+    // flyTo (select/reset-view) drives the map through a continuous run of
+    // 'move' events and never fires 'zoomanim' — confirmed by instrumenting
+    // Leaflet's event stream during a flight, only movestart/move/zoom/moveend
+    // fired. Without this, the canvas is left completely static for the whole
+    // flight (the tiles/pane pan for free, but nothing reprojects our points)
+    // and only catches up once moveend hits _reset(), reading as stray trails
+    // that snap into place. A full _reset() costs ~15ms here, too slow to run
+    // unthrottled on every 'move', so this settles for a coarser cadence.
+    map.on('move', this._onFlyMove, this);
     this._reset();
   },
 
   onRemove(map) {
     L.DomUtil.remove(this._canvas);
+    clearTimeout(this._flyMoveTO);
     map.off('moveend zoomend resize viewreset', this._reset, this);
     map.off('zoomanim', this._onZoomAnim, this);
+    map.off('move', this._onFlyMove, this);
+  },
+
+  _onFlyMove() {
+    if (this._flyMoveTO) return;
+    this._flyMoveTO = setTimeout(() => {
+      this._flyMoveTO = null;
+      this._reset();
+    }, 80);
   },
 
   // Repositions the canvas and reprojects every point. Panning is free
