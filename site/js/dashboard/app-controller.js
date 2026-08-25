@@ -15,6 +15,22 @@ function statBlock(cfg, t) {
   }).join('');
 }
 
+// Reused for both Avg HR and Max HR tiles.
+const HEART_ICON_SVG = '<svg class="hr-icon" width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M20.8 8.6c0 4.5-8.8 10.3-8.8 10.3S3.2 13.1 3.2 8.6a4.7 4.7 0 0 1 8.8-2.3 4.7 4.7 0 0 1 8.8 2.3Z"/></svg>';
+
+// Second, quieter stat tier — HR/calories, unlike statBlock() above, are
+// per-ACTIVITY (not per-sport-type), so this isn't driven by cfg.stats.
+// Each stat only appears when the activity actually has it: most
+// historical activities predate any HR strap, and omitting the tile reads
+// better than a '--' placeholder that implies data that's just missing.
+function secondaryStatBlock(t) {
+  const items = [];
+  if (t.avg_hr != null) items.push([`${HEART_ICON_SVG}${t.avg_hr}`, 'Avg HR']);
+  if (t.max_hr != null) items.push([`${HEART_ICON_SVG}${t.max_hr}`, 'Max HR']);
+  if (t.calories != null) items.push([`<span class="cal-emoji">🔥</span>${t.calories.toLocaleString()}`, 'Calories']);
+  return items.map(([v, l]) => `<div class="dstat2nd"><div class="dstat2nd-v">${v}</div><div class="dstat2nd-l">${l}</div></div>`).join('');
+}
+
 function initV2App({ tileTheme = 'light', controlsPosition = 'topright', inlineDetail = false } = {}) {
   const els = {
     sportSelectEl: document.getElementById('sport-select'),
@@ -25,6 +41,7 @@ function initV2App({ tileTheme = 'light', controlsPosition = 'topright', inlineD
     statElev: document.getElementById('stat-elev'),
     drawer: document.getElementById('drawer'),
     drawerToggle: document.getElementById('drawer-toggle'),
+    mobileViewToggle: document.getElementById('mobile-view-toggle'),
     list: document.getElementById('activity-list'),
     hoverLabel: document.getElementById('hover-label'),
     panel: document.getElementById('detail-panel'),
@@ -32,6 +49,8 @@ function initV2App({ tileTheme = 'light', controlsPosition = 'topright', inlineD
     title: document.getElementById('detail-title'),
     date: document.getElementById('detail-date'),
     stats: document.getElementById('detail-stats'),
+    statsSecondary: document.getElementById('detail-stats-secondary'),
+    hrToggle: document.getElementById('hr-toggle'),
     chart: document.getElementById('detail-chart'),
     replayBtn: document.getElementById('replay-btn'),
   };
@@ -43,6 +62,7 @@ function initV2App({ tileTheme = 'light', controlsPosition = 'topright', inlineD
   let yearSelect = null;
   let sportSelect = null;
   let inlineRelayoutTO = null;
+  let hrVisible = false; // the HR toggle's on/off state, reset on every selection
 
   function renderList(dash) {
     const ordered = [...dash.tracks].sort((a, b) => b.date.localeCompare(a.date));
@@ -128,6 +148,15 @@ function initV2App({ tileTheme = 'light', controlsPosition = 'topright', inlineD
         els.title.textContent = t.name;
         els.date.textContent = t.date;
         els.stats.innerHTML = statBlock(cfg, t);
+        els.statsSecondary.innerHTML = secondaryStatBlock(t);
+
+        // Reset every time — #detail-panel is one reused node, so a switch
+        // left on from a previously-selected activity would otherwise carry
+        // over onto this one.
+        hrVisible = false;
+        els.hrToggle.classList.remove('on');
+        els.hrToggle.setAttribute('aria-checked', 'false');
+        els.hrToggle.classList.toggle('visible', t.avg_hr != null);
 
         // The single #detail-panel node moves to sit right after the
         // selected row instead of a separate panel showing/hiding elsewhere.
@@ -135,7 +164,24 @@ function initV2App({ tileTheme = 'light', controlsPosition = 'topright', inlineD
           const item = itemByKey.get(t.key);
           if (item && item.nextElementSibling !== els.panel) item.insertAdjacentElement('afterend', els.panel);
         }
+
+        // Panel content is now variable per activity (0, 1, or 2 extra rows
+        // depending on whether it has HR/calorie data), so the open height
+        // is measured from actual content rather than a fixed CSS number —
+        // all the content above must already be in the DOM before this, or
+        // an HR-having activity would open short. Animates from whatever
+        // height the panel is already at (0 if it was closed, its previous
+        // height if swapping between two already-open activities).
+        const wasOpen = els.panel.classList.contains('open');
         els.panel.classList.add('open');
+        els.panel.style.height = 'auto';
+        const targetHeight = els.panel.offsetHeight; // forces layout
+        if (!wasOpen) {
+          els.panel.style.height = '0px';
+          void els.panel.offsetHeight; // force a reflow before animating
+        }
+        els.panel.style.height = targetHeight + 'px';
+
         els.hoverLabel.classList.remove('show');
 
         if (!profile) profile = new ElevationProfile(els.chart, {
@@ -143,6 +189,7 @@ function initV2App({ tileTheme = 'light', controlsPosition = 'topright', inlineD
           onLeave: () => removeMarker(dash),
         });
         profile.setColor(cfg.color);
+        profile.setShowHeartRate(false);
         profile.load(t.id).catch(() => {});
 
         if (inlineDetail) {
@@ -159,6 +206,9 @@ function initV2App({ tileTheme = 'light', controlsPosition = 'topright', inlineD
       onDeselect: () => {
         itemByKey.forEach(item => item.classList.remove('selected'));
         els.panel.classList.remove('open');
+        // Clears the inline height the open sequence set — otherwise it
+        // would keep overriding the CSS height:0 and block the collapse.
+        els.panel.style.height = '';
         removeMarker(dash);
         profile?.stopReplay();
         if (inlineDetail) {
@@ -184,6 +234,12 @@ function initV2App({ tileTheme = 'light', controlsPosition = 'topright', inlineD
 
     els.panelClose.addEventListener('click', () => dash.deselect());
     els.replayBtn.addEventListener('click', () => profile?.replay(6000));
+    els.hrToggle.addEventListener('click', () => {
+      hrVisible = !hrVisible;
+      els.hrToggle.classList.toggle('on', hrVisible);
+      els.hrToggle.setAttribute('aria-checked', String(hrVisible));
+      profile?.setShowHeartRate(hrVisible);
+    });
     els.clearFiltersBtn.addEventListener('click', () => {
       dash.clearAllFilters();
       sportSelect?.refresh();
@@ -191,6 +247,18 @@ function initV2App({ tileTheme = 'light', controlsPosition = 'topright', inlineD
     });
     els.drawerToggle.addEventListener('click', () => {
       document.body.classList.toggle('drawer-collapsed');
+      dash.refitToOcclusion();
+    });
+
+    // Phone-width only (see app.css) — the drawer covers the whole screen
+    // there, so this is a binary switch rather than the partial collapse
+    // above. Label/icon are CSS-driven off the same body class; only the
+    // text needs updating in JS since the icons swap via display:none.
+    const mivLabel = els.mobileViewToggle.querySelector('.miv-label');
+    els.mobileViewToggle.addEventListener('click', () => {
+      const showingMap = document.body.classList.toggle('mobile-view-map');
+      mivLabel.textContent = showingMap ? 'List' : 'Map';
+      els.mobileViewToggle.setAttribute('aria-pressed', String(showingMap));
       dash.refitToOcclusion();
     });
 

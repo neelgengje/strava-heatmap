@@ -76,3 +76,29 @@ python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 python sync.py        # opens browser for Strava login on first run
 ```
+
+## Testing
+
+Three independent suites, no build step required for any of them.
+
+**Setup (one-time):**
+
+```bash
+pip install -r requirements-dev.txt
+playwright install chromium
+```
+
+**Run everything:**
+
+```bash
+python -m pytest tests/          # sync.py logic + browser E2E smoke tests
+node --test                      # pure JS function tests (site/js/)
+```
+
+| Suite | Location | What it covers |
+|---|---|---|
+| `sync.py` unit/integration | `tests/test_sync.py` | RDP route simplification, activity normalization, and the `--backfill-hr` resumability contract (mocked network — no real Strava calls) |
+| Browser E2E | `tests/test_e2e.py` | Selecting an activity, the HR chart toggle, closing the panel, and the phone-width map/list view — against a real Chromium instance and a throwaway local server |
+| JS pure functions | `tests/js/*.test.js` | `config.js`, `data.js`, and `engine.js`'s non-DOM logic (time/pace formatting, track normalization, RDP-adjacent geometry helpers) — run with Node's built-in test runner, no npm install needed |
+
+Run a single suite or test the usual pytest/node ways, e.g. `python -m pytest tests/test_sync.py -k backfill` or `node --test tests/js/config.test.js`.

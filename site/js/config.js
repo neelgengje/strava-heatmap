@@ -88,3 +88,9 @@ function freqColorForType(category, freq) {
   if (freq >= 2) return colors[1];
   return colors[0];
 }
+
+// Node-only export for the test suite (tests/js/) — a no-op in the browser,
+// where this file loads as a plain <script> and `module` is undefined.
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { ACTIVITY_TYPES, formatTime, formatPace, typeForCategory, freqColorForType };
+}

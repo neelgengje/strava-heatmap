@@ -4,27 +4,40 @@
 
 const BAY_AREA_BOUNDS_LL = [[37.20, -122.60], [38.00, -121.70]];
 
+// Builds one in-memory "track" record from a raw activities.json entry.
+// This is an explicit allowlist, not a spread — a field sync.py starts
+// emitting stays invisible to the rest of the app until it's added here.
+function normalizeTrack(a) {
+  return {
+    key: (a.category || 'Hike') + ':' + a.id,
+    id: a.id,
+    name: a.name,
+    category: a.category || 'Hike',
+    date: a.date,
+    year: a.date.slice(0, 4),
+    month: a.date.slice(0, 7), // YYYY-MM
+    distance_mi: a.distance_mi,
+    elev_gain_ft: a.elev_gain_ft,
+    moving_time: a.moving_time || 0,
+    speed_mph: a.speed_mph || 0,
+    pace_min_mi: a.pace_min_mi || 0,
+    coords: a.coords,
+    // Legitimately absent for most activities (predates any HR strap, or
+    // calories hasn't been backfilled yet) — null is the correct value
+    // here, not a fallback like the `|| 0`s above.
+    avg_hr: a.avg_hr ?? null,
+    max_hr: a.max_hr ?? null,
+    calories: a.calories ?? null,
+  };
+}
+
 async function loadTrailData() {
   const res = await fetch('/data/activities.json');
   const raw = await res.json();
 
   const tracks = raw
     .filter(a => a.coords && a.coords.length > 1)
-    .map(a => ({
-      key: (a.category || 'Hike') + ':' + a.id,
-      id: a.id,
-      name: a.name,
-      category: a.category || 'Hike',
-      date: a.date,
-      year: a.date.slice(0, 4),
-      month: a.date.slice(0, 7), // YYYY-MM
-      distance_mi: a.distance_mi,
-      elev_gain_ft: a.elev_gain_ft,
-      moving_time: a.moving_time || 0,
-      speed_mph: a.speed_mph || 0,
-      pace_min_mi: a.pace_min_mi || 0,
-      coords: a.coords,
-    }))
+    .map(normalizeTrack)
     .sort((a, b) => a.date.localeCompare(b.date)); // oldest first — draw-in order
 
   const { colorTable, buckets } = buildDensityIndex(tracks, 20);
@@ -77,4 +90,10 @@ function statsFor(tracks) {
 // a data-driven fitBounds would zoom out to fit the outlier instead.
 function boundsForTracks() {
   return L.latLngBounds(BAY_AREA_BOUNDS_LL);
+}
+
+// Node-only export for the test suite (tests/js/) — a no-op in the browser,
+// where this file loads as a plain <script> and `module` is undefined.
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { normalizeTrack, buildHistogram, statsFor };
 }

@@ -104,7 +104,7 @@ body.drawer-collapsed .drawer { transform: translateX(calc(-100% - 28px)); opaci
 
 .drawer-toggle {
   position: fixed; top: 106px; left: 332px; z-index: 1001;
-  width: 30px; height: 30px; border-radius: 50%;
+  width: 36px; height: 36px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   color: var(--ink-2); cursor: pointer; border: none;
   transition: left 0.42s var(--ease-out), color 0.15s;
@@ -206,7 +206,7 @@ body.drawer-collapsed .drawer-toggle svg { transform: rotate(180deg); }
 .detail-panel.open { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
 body.drawer-collapsed .detail-panel { left: 16px; }
 
-.detail-top { display: flex; align-items: center; gap: 22px; margin-bottom: 12px; }
+.detail-top { display: flex; align-items: center; gap: 22px; }
 .detail-id { min-width: 0; }
 .detail-title {
   font-family: var(--serif); font-style: italic; font-size: 22.5px; color: var(--ink);

@@ -10,6 +10,10 @@
   --ink-3:   #a2957c;
   --line:    #3c4560;
   --accent:  #E5F53B;
+  /* Fixed heart-rate color — deliberately not --accent or any sport color,
+     since it needs to read the same way regardless of which activity or
+     sport type is selected. Used for the HR chart trace and its toggle. */
+  --hr:      #7fb0d9;
 
   --bg: var(--paper);
   --page-bg: var(--paper);
@@ -156,29 +160,96 @@ body.drawer-collapsed .drawer-toggle { left: 27px; }
   box-shadow: none;
   background: rgba(255,255,255,0.03);
   transition: height 0.42s var(--ease-out), padding 0.42s var(--ease-out), margin 0.42s var(--ease-out);
+  /* One spacing system for every row inside the panel — see the rows
+     below, which are tokenized off this same value instead of carrying
+     their own ad-hoc margins/padding. */
+  --detail-gap: 12px;
+  gap: var(--detail-gap);
 }
 .detail-panel.open {
-  height: 320px;
-  padding: 16px 14px 14px;
+  /* app-controller.js measures the panel's real content height and sets
+     it inline (content is now variable — some activities have no HR/
+     calorie row at all) — this is only a fallback in case that ever fails. */
+  height: 400px;
+  padding: 16px 14px;
   margin: 2px 0 8px;
 }
 
-/* flex-basis:0 (not auto) on detail-id: flex-wrap's line-break decision
-   uses each item's unshrunk size, so a long title used to push Replay/
-   Close onto their own line while a short one didn't. flex-basis:0
-   makes the wrap ignore title length — actions always share its row. */
-.detail-top { flex-wrap: wrap; row-gap: 12px; }
-.detail-id { order: 1; flex: 1 1 0; min-width: 0; }
-.detail-actions { order: 2; flex-shrink: 0; }
+.detail-top { align-items: flex-start; }
+.detail-id { flex: 1 1 0; min-width: 0; }
+.detail-actions { flex-shrink: 0; }
 .detail-stats {
-  order: 3;
-  flex-basis: 100%;
   justify-content: space-between;
-  padding-top: 10px;
+  /* Matches --detail-gap so the space above this border (the panel's own
+     flex gap) and below it (this padding) are the same number. */
+  padding-top: var(--detail-gap);
   border-top: 1px solid var(--glass-border);
 }
-.detail-title { max-width: 180px; }
-.detail-chart-wrap { min-height: 140px; }
+/* Second, quieter tier: HR/calories, only rendered when an activity
+   actually has that data (see secondaryStatBlock() in app-controller.js). */
+.detail-stats-secondary { display: flex; justify-content: space-between; }
+.detail-stats-secondary:empty { display: none; }
+.dstat2nd { text-align: center; }
+.dstat2nd-v {
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  font-size: 14px; font-weight: 700; color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.dstat2nd-v svg { flex-shrink: 0; opacity: 0.85; }
+.dstat2nd-v .hr-icon { color: var(--hr); }
+.dstat2nd-v .cal-emoji { font-size: 12px; line-height: 1; }
+.dstat2nd-l {
+  font-size: 10.5px; color: var(--ink-3); opacity: 0.85;
+  text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px;
+}
+
+/* HR chart toggle — label and switch live in one control, sized to its
+   own content (not spread across the row), hidden entirely when the
+   selected activity has no HR data at all. */
+.hr-toggle-row {
+  display: none;
+  align-items: center; gap: 8px;
+  align-self: flex-start;
+  background: none; border: none;
+  /* Padding grows the actual tap target; the equal negative margin cancels
+     it back out for layout/visual purposes, so the row still sits and
+     spaces exactly as if the padding weren't there. */
+  padding: 10px 8px;
+  margin: -10px -8px;
+  cursor: pointer;
+}
+.hr-toggle-row.visible { display: inline-flex; }
+.hr-toggle-row:hover .hr-toggle-label { color: var(--ink-2); }
+.hr-toggle-row:focus-visible { outline: 2px solid var(--hr); outline-offset: 2px; border-radius: 8px; }
+.hr-toggle-label {
+  font: 600 12.5px var(--label);
+  letter-spacing: 0.01em;
+  color: var(--ink-3);
+  transition: color 0.15s;
+}
+.hr-toggle-row.on .hr-toggle-label { color: var(--ink); }
+.hr-switch {
+  position: relative;
+  width: 32px; height: 18px;
+  border-radius: 999px;
+  background: var(--paper-3);
+  border: 1px solid var(--line);
+  flex-shrink: 0;
+  transition: background 0.18s, border-color 0.18s;
+}
+.hr-switch-knob {
+  position: absolute;
+  top: 1px; left: 1px;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--ink-3);
+  transition: transform 0.18s cubic-bezier(0.4, 0, 0.2, 1), background 0.18s;
+}
+.hr-toggle-row.on .hr-switch { background: var(--hr); border-color: var(--hr); }
+.hr-toggle-row.on .hr-switch-knob { transform: translateX(14px); background: #1a2030; }
+
+.detail-title { max-width: 230px; }
+.detail-chart-wrap { min-height: 170px; }
 
 /* The drawer is the only real map occlusion; controls sit in the gap
    to its right, tracked via --controls-left-offset. */
@@ -199,4 +270,67 @@ body.proto-v2.drawer-collapsed {
   .drawer { width: min(320px, calc(100vw - 32px)); }
   .drawer-toggle { left: min(352px, calc(100vw - 16px)); }
   body.proto-v2 { --controls-left-offset: 16px; }
+}
+
+/* ── Map/list toggle — only ever visible at the phone breakpoint below.
+   Hidden here so it never appears at wider widths where the partial-
+   collapse .drawer-toggle already does that job. ───────────────────── */
+.mobile-view-toggle {
+  display: none;
+  position: fixed;
+  bottom: 20px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 2100;
+  align-items: center; gap: 7px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  font: 700 13px var(--label);
+  letter-spacing: 0.03em;
+  color: var(--ink);
+  cursor: pointer;
+}
+.miv-icon-list, body.mobile-view-map .miv-icon-map { display: none; }
+body.mobile-view-map .miv-icon-list { display: block; }
+
+/* ── Phone layout: the drawer becomes the whole screen (list-first) and
+   the map is reached through the toggle above, instead of both sharing
+   a viewport too narrow for either to be genuinely usable — a 320px-wide
+   drawer over a 375px phone leaves a ~55px sliver of map that isn't a
+   preview of anything. ─────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .brand-island {
+    left: 0; right: 0; top: 0;
+    width: 100%;
+    border-radius: 0;
+    border-left: none; border-right: none; border-top: none;
+  }
+  .drawer {
+    top: 58px; left: 0; right: 0; bottom: 0;
+    width: 100%;
+    border-radius: 0;
+    border-left: none; border-right: none; border-bottom: none;
+  }
+  /* The partial-collapse control doesn't make sense once the drawer is
+     full-width — there's no "narrow map strip" state to collapse into. */
+  .drawer-toggle { display: none; }
+  .mobile-view-toggle { display: flex; }
+
+  /* List view (default): the drawer already covers the whole screen, so
+     the map underneath is fully hidden regardless of occlusion — these
+     values only matter once mobile-view-map switches it to the front.
+     visibility, not display: a trail tapped on the map while the drawer
+     is hidden still needs its detail panel to lay out correctly (it
+     measures its own real height in app-controller.js's onSelect), and
+     display:none would zero out every dimension in that subtree. */
+  body.mobile-view-map .drawer,
+  body.mobile-view-map .brand-island {
+    visibility: hidden;
+  }
+  body.mobile-view-map.proto-v2 {
+    --occlusion-left: 16px;
+    --occlusion-top: 16px;
+    --occlusion-right: 16px;
+    --occlusion-bottom: 90px; /* clears the map/list toggle pill */
+    --controls-left-offset: 16px;
+  }
 }

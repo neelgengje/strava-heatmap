@@ -80,7 +80,11 @@ class Dashboard {
     this.map.fitBounds(bounds, this._homePadding());
 
     this.map.on('click', e => {
-      const key = this.layer.hitTest(this.map.latLngToContainerPoint(e.latlng), 10);
+      // A tap has a much larger, fuzzier contact area than a mouse click —
+      // widen the hit tolerance specifically for touch so nearby trails
+      // (e.g. the repeated Mission Peak hikes) are actually tappable.
+      const touch = e.originalEvent?.pointerType === 'touch';
+      const key = this.layer.hitTest(this.map.latLngToContainerPoint(e.latlng), touch ? 22 : 10);
       if (key) this.select(key); else this.deselect();
     });
     this.map.on('mousemove', e => {

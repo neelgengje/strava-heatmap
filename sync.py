@@ -52,8 +52,17 @@ SPORT_TYPE_MAP = {
     'StandUpPaddling': 'SUP',
 }
 
+BACKFILL_WRITE_EVERY = 25  # how often --backfill-hr flushes activities.json mid-run
+
 os.makedirs('data', exist_ok=True)
 os.makedirs(STREAMS_DIR, exist_ok=True)
+
+
+class RateLimited(Exception):
+    """Raised on a 429 from Strava. Backfill loops catch this, flush whatever
+    progress they've made, and stop — safe to just re-run the same command
+    later, since progress is tracked by which fields are already present."""
+    pass
 
 
 # ── Token management ──────────────────────────────────────────────────────────
@@ -212,6 +221,14 @@ def normalize_activity(a):
         'speed_mph':    round(distance_mi / (moving_time / 3600), 1) if moving_time > 0 else 0,
         'pace_min_mi':  round(moving_time / 60 / distance_mi, 1) if distance_mi > 0 else 0,
         'coords':       coords,
+        # Free on this same summary payload — no extra call needed.
+        'avg_hr':       round(a['average_heartrate']) if a.get('average_heartrate') else None,
+        'max_hr':       round(a['max_heartrate']) if a.get('max_heartrate') else None,
+        # 'calories' is intentionally NOT set here — it isn't on the summary
+        # payload (only the per-activity detail endpoint has it). Its
+        # *presence* as a key is the backfill's resumability marker, so it
+        # only gets set once a detail fetch for this activity actually
+        # completes (see the new-activity loop in main() and backfill_hr()).
     }
 
 
@@ -261,20 +278,150 @@ def compute_stats(activities):
 
 
 def fetch_stream(activity_id, headers):
-    """Fetch altitude + distance + latlng stream for one activity."""
+    """Fetch altitude + distance + latlng + heartrate stream for one activity."""
     r = requests.get(
         f'https://www.strava.com/api/v3/activities/{activity_id}/streams',
         headers=headers,
-        params={'keys': 'altitude,distance,latlng', 'key_type': 'distance'},
+        params={'keys': 'altitude,distance,latlng,heartrate', 'key_type': 'distance'},
     )
+    if r.status_code == 429:
+        raise RateLimited()
     if r.status_code != 200:
         return None
     streams = {s['type']: s['data'] for s in r.json()}
     return {
-        'distance': streams.get('distance', []),
-        'altitude': streams.get('altitude', []),
-        'latlng':   streams.get('latlng', []),
+        'distance':  streams.get('distance', []),
+        'altitude':  streams.get('altitude', []),
+        'latlng':    streams.get('latlng', []),
+        # [] (not missing) when this activity has no HR data — that
+        # distinguishes "fetched, nothing there" from "never fetched" for
+        # the backfill's resumability check.
+        'heartrate': streams.get('heartrate', []),
     }
+
+
+def fetch_activity_detail(activity_id, headers):
+    """Fetch the full activity detail — used only for `calories`, which
+    isn't on the summary list payload `fetch_new_activities` uses."""
+    r = requests.get(
+        f'https://www.strava.com/api/v3/activities/{activity_id}',
+        headers=headers,
+    )
+    if r.status_code == 429:
+        raise RateLimited()
+    if r.status_code != 200:
+        return None
+    return r.json()
+
+
+# ── One-time HR/calorie backfill ────────────────────────────────────────────
+# Existing activities predate avg/max HR, calories, and the HR stream. Three
+# phases, each resumable by checking whether a record already carries the
+# field that phase is responsible for — a failed fetch never sets that field,
+# so re-running after an interruption or a 429 just continues where it left
+# off instead of restarting.
+
+def backfill_hr(headers, limit=None):
+    if not os.path.exists(ACTIVITIES_OUT):
+        print(f'{ACTIVITIES_OUT} not found — run a normal sync first.')
+        sys.exit(1)
+    with open(ACTIVITIES_OUT) as f:
+        activities = json.load(f)
+    by_id = {a['id']: a for a in activities}
+
+    def save():
+        with open(ACTIVITIES_OUT, 'w') as f:
+            json.dump(activities, f)
+
+    # ── Phase A: avg/max HR — free, comes off the summary list (~3 calls) ──
+    print('Phase A: backfilling avg/max heart rate from the activity list…')
+    page, updated = 1, 0
+    while True:
+        r = requests.get(
+            'https://www.strava.com/api/v3/athlete/activities',
+            headers=headers,
+            params={'per_page': 200, 'page': page},
+        )
+        if r.status_code == 429:
+            print('  Rate limited during Phase A — re-run `python sync.py --backfill-hr` to continue.')
+            break
+        r.raise_for_status()
+        batch = r.json()
+        if not batch or not isinstance(batch, list):
+            break
+        for summary in batch:
+            a = by_id.get(summary['id'])
+            if a is None or 'avg_hr' in a:
+                continue
+            a['avg_hr'] = round(summary['average_heartrate']) if summary.get('average_heartrate') else None
+            a['max_hr'] = round(summary['max_heartrate']) if summary.get('max_heartrate') else None
+            updated += 1
+        if len(batch) < 200:
+            break
+        page += 1
+    save()
+    print(f'Phase A done: {updated} activities updated.')
+
+    # ── Phase B: calories — one detail call per activity missing it (~419) ──
+    todo = [a for a in activities if 'calories' not in a]
+    if limit:
+        todo = todo[:limit]
+    print(f'Phase B: fetching calories for {len(todo)} activities…')
+    for i, a in enumerate(todo, 1):
+        try:
+            detail = fetch_activity_detail(a['id'], headers)
+        except RateLimited:
+            save()
+            print(f'  Rate limited at {i}/{len(todo)} — re-run `python sync.py --backfill-hr` to continue.')
+            break
+        if detail is not None:
+            a['calories'] = round(detail['calories']) if detail.get('calories') is not None else None
+        if i % BACKFILL_WRITE_EVERY == 0:
+            save()
+            print(f'  {i}/{len(todo)} calories fetched…')
+        if i % 50 == 0:
+            time.sleep(5)
+    else:
+        save()  # loop finished without breaking (or todo was empty) — final flush
+    print('Phase B done.')
+
+    # ── Phase C: per-second HR stream — skip activities with no HR at all ──
+    todo = [a for a in activities if a.get('avg_hr') is not None]
+    if limit:
+        todo = todo[:limit]
+    print(f'Phase C: fetching heart-rate streams for up to {len(todo)} activities…')
+    fetched = skipped = 0
+    for i, a in enumerate(todo, 1):
+        stream_path = os.path.join(STREAMS_DIR, f"{a['id']}.json")
+        existing = None
+        if os.path.exists(stream_path):
+            with open(stream_path) as f:
+                existing = json.load(f)
+            if 'heartrate' in existing:
+                skipped += 1
+                continue
+        try:
+            stream = fetch_stream(a['id'], headers)
+        except RateLimited:
+            print(f'  Rate limited at {i}/{len(todo)} — re-run `python sync.py --backfill-hr` to continue.')
+            break
+        if stream is None:
+            continue
+        # Merge, don't overwrite: keep whatever distance/altitude/latlng is
+        # already on disk (coords were already derived from that latlng) and
+        # only add the new heartrate array.
+        merged = existing or {}
+        merged['heartrate'] = stream.get('heartrate', [])
+        merged.setdefault('distance', stream.get('distance', []))
+        merged.setdefault('altitude', stream.get('altitude', []))
+        merged.setdefault('latlng', stream.get('latlng', []))
+        with open(stream_path, 'w') as f:
+            json.dump(merged, f)
+        fetched += 1
+        if i % 50 == 0:
+            print(f'  {i}/{len(todo)} — pausing 5s for rate limit…')
+            time.sleep(5)
+    print(f'Phase C done: {fetched} streams updated, {skipped} already had heart rate.')
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
@@ -285,6 +432,13 @@ def main():
     parser.add_argument('--rebuild-coords', action='store_true',
                          help='Re-derive coords for every cached activity from its already-'
                               'downloaded stream file (no API calls) instead of the summary_polyline')
+    parser.add_argument('--backfill-hr', action='store_true',
+                         help='One-time backfill of avg/max heart rate, calories, and the '
+                              'per-second heart-rate stream for existing activities. Resumable '
+                              '— safe to re-run after a rate limit or interruption.')
+    parser.add_argument('--limit', type=int, default=None,
+                         help='With --backfill-hr, cap the calorie/stream phases to this many '
+                              'activities — use for a smoke test before the full run.')
     args = parser.parse_args()
 
     if args.rebuild_coords:
@@ -302,11 +456,22 @@ def main():
 
     headers = {'Authorization': f"Bearer {tokens['access_token']}"}
 
-    # Load existing cache
-    cached = []
-    if not args.full and os.path.exists(ACTIVITIES_OUT):
+    if args.backfill_hr:
+        backfill_hr(headers, limit=args.limit)
+        return
+
+    # Load prior output, keyed by id — used below as a safety net so calorie/
+    # HR backfill data survives a `--full` re-sync, which re-derives every
+    # activity fresh from the summary payload (and that payload has no
+    # `calories` field at all).
+    prior_by_id = {}
+    if os.path.exists(ACTIVITIES_OUT):
         with open(ACTIVITIES_OUT) as f:
-            cached = json.load(f)
+            prior_by_id = {a['id']: a for a in json.load(f)}
+
+    # Load existing cache
+    cached = [] if args.full else list(prior_by_id.values())
+    if cached:
         print(f'Loaded {len(cached)} cached activities.')
     else:
         print('Starting full sync…')
@@ -325,26 +490,67 @@ def main():
     # complex routes.
     if new_acts:
         print(f'Fetching elevation streams for {len(new_acts)} new activities…')
+        rate_limited_at = None
         for i, a in enumerate(new_acts, 1):
             stream_path = os.path.join(STREAMS_DIR, f"{a['id']}.json")
-            if os.path.exists(stream_path):
-                with open(stream_path) as f:
-                    stream = json.load(f)
-            else:
-                stream = fetch_stream(a['id'], headers)
-                if stream:
-                    with open(stream_path, 'w') as f:
-                        json.dump(stream, f)
-                # Strava rate limit: 200 requests per 15 min. Sleep briefly between fetches.
-                if i % 50 == 0:
-                    print(f'  {i}/{len(new_acts)} — pausing 5s for rate limit…')
-                    time.sleep(5)
-            if stream and stream.get('latlng'):
-                a['coords'] = simplify_latlng(stream['latlng'])
+            try:
+                if os.path.exists(stream_path):
+                    with open(stream_path) as f:
+                        stream = json.load(f)
+                else:
+                    stream = fetch_stream(a['id'], headers)
+                    if stream:
+                        with open(stream_path, 'w') as f:
+                            json.dump(stream, f)
+                if stream and stream.get('latlng'):
+                    a['coords'] = simplify_latlng(stream['latlng'])
 
+                # Calories aren't on the summary payload fetch_new_activities used —
+                # one extra call per new activity (cheap, there are usually only a
+                # handful). If this fails, 'calories' just stays unset and the next
+                # sync or `--backfill-hr` run picks it up.
+                #
+                # Skip entirely if we already know it: under --full, every activity
+                # looks "new" (known_ids is empty), so without this check a --full
+                # re-sync would redo all ~419 calorie fetches every time instead of
+                # just the genuinely new ones — the merge safety-net below would
+                # still restore the value, but only after paying for the call.
+                prior = prior_by_id.get(a['id'])
+                if prior and 'calories' in prior:
+                    pass
+                else:
+                    detail = fetch_activity_detail(a['id'], headers)
+                    if detail is not None:
+                        a['calories'] = round(detail['calories']) if detail.get('calories') is not None else None
+            except RateLimited:
+                rate_limited_at = i
+                break
+
+            # Strava rate limit: 200 requests per 15 min. Sleep briefly between fetches.
+            if i % 50 == 0:
+                print(f'  {i}/{len(new_acts)} — pausing 5s for rate limit…')
+                time.sleep(5)
+
+        if rate_limited_at:
+            print(f'  Rate limited at {rate_limited_at}/{len(new_acts)} — remaining activities '
+                  f'will pick up missing calories/streams on the next sync or `--backfill-hr` run.')
         print('Streams done.')
 
     all_acts = new_acts + cached  # newest-first
+
+    # Safety net: carry forward calorie/HR fields fetch_new_activities can't
+    # produce on its own (calories isn't on the summary payload; a `--full`
+    # re-sync re-derives every activity from scratch and would otherwise lose
+    # whatever --backfill-hr had already filled in).
+    for a in all_acts:
+        prior = prior_by_id.get(a['id'])
+        if not prior:
+            continue
+        if 'calories' not in a and 'calories' in prior:
+            a['calories'] = prior['calories']
+        if a.get('avg_hr') is None and prior.get('avg_hr') is not None:
+            a['avg_hr'] = prior['avg_hr']
+            a['max_hr'] = prior['max_hr']
 
     # Write activities.json
     os.makedirs(os.path.dirname(ACTIVITIES_OUT), exist_ok=True)

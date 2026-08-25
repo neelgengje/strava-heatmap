@@ -546,3 +546,14 @@ function lerpColor(hexA, hexB, t) {
   const a = hexToRgb(hexA), b = hexToRgb(hexB);
   return rgbToHex(a.map((v, i) => v + (b[i] - v) * t));
 }
+
+// Node-only export for the test suite (tests/js/) — a no-op in the browser,
+// where this file loads as a plain <script> and `module` is undefined.
+// Only the pure, Leaflet-independent helpers are exported; TrackLayer
+// itself extends L.Layer and needs a real Leaflet + DOM environment.
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    distToSegment, cellSizeDeg, cellKey, maxOf, bucketForFreq,
+    hexToRgb, rgbToHex, lerpColor,
+  };
+}
