@@ -246,7 +246,11 @@ def fetch_calories_if_unknown(a, prior_by_id, headers):
         return
     detail = fetch_activity_detail(a['id'], headers)
     if detail is not None:
-        a['calories'] = round(detail['calories']) if detail.get('calories') is not None else None
+        # Strava's detail endpoint returns 0 (not null/omitted) when it has no
+        # calorie estimate for the activity — seen on Kayaking activities that
+        # do have real HR data. Treat 0 the same as "no value" so the UI
+        # doesn't render a misleading "🔥 0".
+        a['calories'] = round(detail['calories']) if detail.get('calories') else None
 
 
 def merge_prior_hr_calories(all_acts, prior_by_id):
@@ -409,7 +413,9 @@ def backfill_hr(headers, limit=None):
             print(f'  Rate limited at {i}/{len(todo)} — re-run `python sync.py --backfill-hr` to continue.')
             break
         if detail is not None:
-            a['calories'] = round(detail['calories']) if detail.get('calories') is not None else None
+            # See fetch_calories_if_unknown: Strava returns 0, not null, when
+            # it has no calorie estimate — treat that as "no value" too.
+            a['calories'] = round(detail['calories']) if detail.get('calories') else None
         if i % BACKFILL_WRITE_EVERY == 0:
             save()
             print(f'  {i}/{len(todo)} calories fetched…')
