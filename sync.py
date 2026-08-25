@@ -232,6 +232,40 @@ def normalize_activity(a):
     }
 
 
+def fetch_calories_if_unknown(a, prior_by_id, headers):
+    """Sets a['calories'] for a freshly-normalized activity, unless a prior
+    sync already knows it — extracted so it's testable without a live
+    network call. Under --full every activity looks "new" (known_ids is
+    empty), so without this check a --full re-sync would redo all ~419
+    calorie fetches every time instead of just the genuinely new ones (the
+    merge_prior_hr_calories() safety net would still restore the value,
+    but only after paying for the call). Raises RateLimited; callers
+    decide whether that stops the whole batch."""
+    prior = prior_by_id.get(a['id'])
+    if prior and 'calories' in prior:
+        return
+    detail = fetch_activity_detail(a['id'], headers)
+    if detail is not None:
+        a['calories'] = round(detail['calories']) if detail.get('calories') is not None else None
+
+
+def merge_prior_hr_calories(all_acts, prior_by_id):
+    """Carries forward calorie/HR fields the current pass didn't produce —
+    calories isn't on the summary payload fetch_new_activities uses, and a
+    --full re-sync re-derives every activity from scratch, which would
+    otherwise lose whatever --backfill-hr had already filled in. Mutates
+    all_acts in place."""
+    for a in all_acts:
+        prior = prior_by_id.get(a['id'])
+        if not prior:
+            continue
+        if 'calories' not in a and 'calories' in prior:
+            a['calories'] = prior['calories']
+        if a.get('avg_hr') is None and prior.get('avg_hr') is not None:
+            a['avg_hr'] = prior['avg_hr']
+            a['max_hr'] = prior['max_hr']
+
+
 def fetch_new_activities(known_ids, headers):
     """Fetch from Strava newest-first, stop at first known ID."""
     new_acts, page, hit_known = [], 1, False
@@ -507,21 +541,10 @@ def main():
 
                 # Calories aren't on the summary payload fetch_new_activities used —
                 # one extra call per new activity (cheap, there are usually only a
-                # handful). If this fails, 'calories' just stays unset and the next
-                # sync or `--backfill-hr` run picks it up.
-                #
-                # Skip entirely if we already know it: under --full, every activity
-                # looks "new" (known_ids is empty), so without this check a --full
-                # re-sync would redo all ~419 calorie fetches every time instead of
-                # just the genuinely new ones — the merge safety-net below would
-                # still restore the value, but only after paying for the call.
-                prior = prior_by_id.get(a['id'])
-                if prior and 'calories' in prior:
-                    pass
-                else:
-                    detail = fetch_activity_detail(a['id'], headers)
-                    if detail is not None:
-                        a['calories'] = round(detail['calories']) if detail.get('calories') is not None else None
+                # handful), skipped if a prior sync already has it. If this fails,
+                # 'calories' just stays unset and the next sync or `--backfill-hr`
+                # run picks it up.
+                fetch_calories_if_unknown(a, prior_by_id, headers)
             except RateLimited:
                 rate_limited_at = i
                 break
@@ -537,20 +560,7 @@ def main():
         print('Streams done.')
 
     all_acts = new_acts + cached  # newest-first
-
-    # Safety net: carry forward calorie/HR fields fetch_new_activities can't
-    # produce on its own (calories isn't on the summary payload; a `--full`
-    # re-sync re-derives every activity from scratch and would otherwise lose
-    # whatever --backfill-hr had already filled in).
-    for a in all_acts:
-        prior = prior_by_id.get(a['id'])
-        if not prior:
-            continue
-        if 'calories' not in a and 'calories' in prior:
-            a['calories'] = prior['calories']
-        if a.get('avg_hr') is None and prior.get('avg_hr') is not None:
-            a['avg_hr'] = prior['avg_hr']
-            a['max_hr'] = prior['max_hr']
+    merge_prior_hr_calories(all_acts, prior_by_id)
 
     # Write activities.json
     os.makedirs(os.path.dirname(ACTIVITIES_OUT), exist_ok=True)

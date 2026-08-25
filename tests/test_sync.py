@@ -372,6 +372,63 @@ def test_backfill_hr_phase_a_fills_avg_max_hr_for_records_missing_the_key(tmp_pa
     assert result[2]['max_hr'] == 190
 
 
+# ── fetch_calories_if_unknown / merge_prior_hr_calories ─────────────────────
+# These back main()'s new-activity loop and its --full safety net — the
+# same resumability contract as backfill_hr(), but exercised directly here
+# since main() itself (argparse + real auth) isn't practical to test whole.
+
+def test_fetch_calories_if_unknown_skips_call_when_prior_already_has_it():
+    a = {'id': 1}
+    prior_by_id = {1: {'id': 1, 'calories': 900}}
+    with patch('sync.requests.get') as mock_get:
+        sync.fetch_calories_if_unknown(a, prior_by_id, headers={})
+    mock_get.assert_not_called()
+    assert 'calories' not in a  # untouched — the caller is expected to merge it in separately
+
+
+def test_fetch_calories_if_unknown_fetches_when_prior_lacks_it():
+    a = {'id': 2}
+    prior_by_id = {}
+    with patch('sync.requests.get', return_value=_mock_response(200, {'calories': 555})):
+        sync.fetch_calories_if_unknown(a, prior_by_id, headers={})
+    assert a['calories'] == 555
+
+
+def test_fetch_calories_if_unknown_propagates_rate_limited():
+    a = {'id': 3}
+    with patch('sync.requests.get', return_value=_mock_response(429)):
+        with pytest.raises(sync.RateLimited):
+            sync.fetch_calories_if_unknown(a, {}, headers={})
+
+
+def test_merge_prior_hr_calories_fills_missing_calories_from_prior():
+    all_acts = [{'id': 1}]  # freshly normalized -> no calories key at all
+    prior_by_id = {1: {'id': 1, 'calories': 700}}
+    sync.merge_prior_hr_calories(all_acts, prior_by_id)
+    assert all_acts[0]['calories'] == 700
+
+
+def test_merge_prior_hr_calories_does_not_overwrite_freshly_fetched_calories():
+    all_acts = [{'id': 1, 'calories': 111}]  # already fetched this run
+    prior_by_id = {1: {'id': 1, 'calories': 999}}
+    sync.merge_prior_hr_calories(all_acts, prior_by_id)
+    assert all_acts[0]['calories'] == 111  # not clobbered by the stale prior value
+
+
+def test_merge_prior_hr_calories_fills_missing_avg_max_hr_together():
+    all_acts = [{'id': 1, 'avg_hr': None}]
+    prior_by_id = {1: {'id': 1, 'avg_hr': 150, 'max_hr': 180}}
+    sync.merge_prior_hr_calories(all_acts, prior_by_id)
+    assert all_acts[0]['avg_hr'] == 150
+    assert all_acts[0]['max_hr'] == 180
+
+
+def test_merge_prior_hr_calories_no_prior_record_is_a_no_op():
+    all_acts = [{'id': 99}]
+    sync.merge_prior_hr_calories(all_acts, prior_by_id={})
+    assert 'calories' not in all_acts[0]
+
+
 def test_backfill_hr_limit_caps_phases_b_and_c(isolated_backfill):
     activities_out, streams_dir = isolated_backfill
     detail_calls = {'n': 0}

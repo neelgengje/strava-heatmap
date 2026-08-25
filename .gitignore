@@ -5,3 +5,5 @@ __pycache__/
 /data/
 .claude/
 .pytest_cache/
+node_modules/
+tests/__snapshots__/*.diff.png

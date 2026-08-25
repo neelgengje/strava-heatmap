@@ -1,0 +1,11 @@
+{
+  "name": "trail-log-tests",
+  "private": true,
+  "description": "Dev-only dependencies for the JS test suite (tests/js/) — the site itself has no build step and no runtime dependencies.",
+  "scripts": {
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "jsdom": "^25.0.0"
+  }
+}

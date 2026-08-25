@@ -8,35 +8,9 @@ session found and fixed — see visibility:hidden vs display:none in app.css).
 Run with: python3 -m pytest tests/test_e2e.py
 Requires: pip install pytest-playwright && playwright install chromium
 """
-import http.server
-import socket
-import threading
-import time
-from pathlib import Path
-
 import pytest
 
-SITE_DIR = Path(__file__).resolve().parent.parent / 'site'
-
-
-def _free_port():
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind(('', 0))
-        return s.getsockname()[1]
-
-
-@pytest.fixture(scope='session')
-def server_url():
-    """Serves site/ on its own local port for the duration of the test
-    session — independent of any dev server already running elsewhere,
-    so this suite works standalone."""
-    port = _free_port()
-    handler = lambda *a, **kw: http.server.SimpleHTTPRequestHandler(*a, directory=str(SITE_DIR), **kw)
-    httpd = http.server.ThreadingHTTPServer(('localhost', port), handler)
-    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
-    thread.start()
-    yield f'http://localhost:{port}'
-    httpd.shutdown()
+# server_url fixture lives in conftest.py (shared with test_visual.py).
 
 
 @pytest.fixture
@@ -222,3 +196,123 @@ def test_desktop_width_hides_mobile_view_toggle(page, server_url):
     assert page.locator('#drawer-toggle').is_visible()
     drawer_width = page.locator('#drawer').evaluate('el => getComputedStyle(el).width')
     assert drawer_width == '372px'
+
+
+# ── Real touch events ──────────────────────────────────────────────────────
+# Everything above drives clicks/mousemoves even on the "mobile" viewport —
+# real touch semantics (touchstart/touchmove, Playwright's has_touch context)
+# are different enough from mouse emulation that they're worth covering
+# directly, since touchstart/touchmove handlers were added to the chart and
+# the map's tap-tolerance branches on event.originalEvent.pointerType.
+
+@pytest.fixture
+def touch_page(browser, server_url):
+    context = browser.new_context(viewport={'width': 390, 'height': 844}, has_touch=True, is_mobile=True)
+    page = context.new_page()
+    page.goto(f'{server_url}/app.html')
+    page.wait_for_selector('.activity-item', timeout=10000)
+    yield page
+    context.close()
+
+
+def test_touch_tap_selects_activity_from_list(touch_page):
+    touch_page.locator('.activity-item', has_text='#H21 Mission Peak').first.tap()
+    touch_page.wait_for_selector('#detail-panel.open', timeout=5000)
+    assert touch_page.locator('#detail-title').inner_text() == '#H21 Mission Peak'
+
+
+def test_touch_tap_on_hr_toggle_switches_it_on(touch_page):
+    touch_page.locator('.activity-item', has_text='#H21 Mission Peak').first.tap()
+    touch_page.wait_for_selector('#detail-panel.open', timeout=5000)
+    touch_page.locator('#hr-toggle').tap()
+    assert 'on' in (touch_page.locator('#hr-toggle').get_attribute('class') or '')
+
+
+def _canvas_pixels(page):
+    return page.locator('#detail-chart').evaluate(
+        "el => Array.from(el.getContext('2d').getImageData(0, 0, el.width, el.height).data)"
+    )
+
+
+def test_real_touchstart_touchmove_on_chart_updates_the_canvas(touch_page):
+    """Dispatches genuine TouchEvents (not mouse events, not Playwright's
+    single-point .tap()) at the chart, exercising the same touchstart/
+    touchmove listeners profile.js binds for real phone use — a drag across
+    the chart should draw a scrub cursor same as a mouse move does."""
+    touch_page.locator('.activity-item', has_text='#H21 Mission Peak').first.tap()
+    touch_page.wait_for_selector('#detail-panel.open', timeout=5000)
+    touch_page.locator('#hr-toggle').tap()
+    touch_page.wait_for_timeout(200)
+
+    box = touch_page.locator('#detail-chart').bounding_box()
+    before = _canvas_pixels(touch_page)
+
+    touch_page.evaluate(f"""
+        () => {{
+          const canvas = document.getElementById('detail-chart');
+          const x = {box['x'] + box['width'] * 0.4};
+          const y = {box['y'] + box['height'] * 0.5};
+          const touch = new Touch({{ identifier: 1, target: canvas, clientX: x, clientY: y }});
+          const fire = (type) => canvas.dispatchEvent(new TouchEvent(type, {{
+            touches: [touch], targetTouches: [touch], changedTouches: [touch],
+            bubbles: true, cancelable: true,
+          }}));
+          fire('touchstart');
+          fire('touchmove');
+        }}
+    """)
+    touch_page.wait_for_timeout(200)
+    after = _canvas_pixels(touch_page)
+    assert before != after  # the scrub cursor (and HR marker) actually got drawn
+
+
+def test_real_touchend_clears_the_scrub_cursor(touch_page):
+    touch_page.locator('.activity-item', has_text='#H21 Mission Peak').first.tap()
+    touch_page.wait_for_selector('#detail-panel.open', timeout=5000)
+
+    box = touch_page.locator('#detail-chart').bounding_box()
+    touch_page.evaluate(f"""
+        () => {{
+          const canvas = document.getElementById('detail-chart');
+          const x = {box['x'] + box['width'] * 0.4};
+          const y = {box['y'] + box['height'] * 0.5};
+          const touch = new Touch({{ identifier: 1, target: canvas, clientX: x, clientY: y }});
+          canvas.dispatchEvent(new TouchEvent('touchstart', {{ touches: [touch], targetTouches: [touch], changedTouches: [touch], bubbles: true, cancelable: true }}));
+        }}
+    """)
+    touch_page.wait_for_timeout(150)
+    with_cursor = _canvas_pixels(touch_page)
+
+    touch_page.evaluate("""
+        () => document.getElementById('detail-chart').dispatchEvent(
+          new TouchEvent('touchend', { touches: [], targetTouches: [], changedTouches: [], bubbles: true, cancelable: true })
+        )
+    """)
+    touch_page.wait_for_timeout(150)
+    after_release = _canvas_pixels(touch_page)
+    assert with_cursor != after_release  # touchend calls _leave(), redrawing without the cursor
+
+
+def test_touch_tap_on_map_marker_selects_a_trail(touch_page):
+    touch_page.locator('#mobile-view-toggle').tap()
+    touch_page.wait_for_function("document.body.classList.contains('mobile-view-map')")
+    touch_page.wait_for_timeout(400)
+
+    marker = touch_page.evaluate("""
+        () => {
+          for (const el of document.querySelectorAll('.leaflet-marker-icon')) {
+            const r = el.getBoundingClientRect();
+            if (r.left >= 0 && r.top >= 0 && r.right <= window.innerWidth && r.bottom <= window.innerHeight) {
+              return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+            }
+          }
+          return null;
+        }
+    """)
+    assert marker, 'no on-screen trail marker found to tap'
+    touch_page.touchscreen.tap(marker['x'], marker['y'])
+    touch_page.wait_for_timeout(500)
+
+    touch_page.locator('#mobile-view-toggle').tap()
+    touch_page.wait_for_function("!document.body.classList.contains('mobile-view-map')")
+    assert touch_page.locator('#detail-title').inner_text() != ''

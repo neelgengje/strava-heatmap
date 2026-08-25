@@ -267,3 +267,12 @@ function initV2App({ tileTheme = 'light', controlsPosition = 'topright', inlineD
 
   main();
 }
+
+// Node-only export for the test suite (tests/js/) — a no-op in the browser,
+// where this file loads as a plain <script> and `module` is undefined.
+// statBlock/secondaryStatBlock reference formatTime/formatPace/typeForCategory
+// as free variables (config.js's own globals in the browser) — the test file
+// injects them onto `global` before requiring this file.
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { statBlock, secondaryStatBlock };
+}

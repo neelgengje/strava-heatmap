@@ -10,7 +10,7 @@ const path = require('node:path');
 
 global.L = { Layer: { extend: obj => obj } };
 
-const { distToSegment, cellSizeDeg, cellKey, maxOf, bucketForFreq, hexToRgb, rgbToHex, lerpColor } =
+const { distToSegment, hitTestTracks, cellSizeDeg, cellKey, maxOf, bucketForFreq, hexToRgb, rgbToHex, lerpColor } =
   require(path.join('..', '..', 'site', 'js', 'dashboard', 'engine.js'));
 
 test('distToSegment: point exactly on the segment is distance 0', () => {
@@ -28,6 +28,49 @@ test('distToSegment: clamps to the nearest endpoint beyond the segment\'s ends',
 
 test('distToSegment: degenerate zero-length segment treats it as a point', () => {
   assert.equal(distToSegment(3, 4, 0, 0, 0, 0), 5); // 3-4-5 triangle
+});
+
+// points: array of [x, y] pairs in layer-local coordinates.
+function fakeTrack(key, points) {
+  const xs = points.map(p => p[0]), ys = points.map(p => p[1]);
+  return {
+    key,
+    coords: points, // hitTestTracks only reads .length off this
+    _px: points.flat(),
+    _bbox: { minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys) },
+  };
+}
+
+test('hitTestTracks: finds a track when the point is close to its path', () => {
+  const tracks = [fakeTrack('a', [[0, 0], [100, 0]])];
+  assert.equal(hitTestTracks({ x: 50, y: 2 }, tracks, () => true, 10), 'a');
+});
+
+test('hitTestTracks: returns null when nothing is within tolerance', () => {
+  const tracks = [fakeTrack('a', [[0, 0], [100, 0]])];
+  assert.equal(hitTestTracks({ x: 50, y: 50 }, tracks, () => true, 10), null);
+});
+
+test('hitTestTracks: bbox rejection does not accidentally reject a real nearby match', () => {
+  const near = fakeTrack('near', [[0, 0], [10, 0]]);
+  const far = fakeTrack('far', [[10000, 10000], [10010, 10000]]);
+  assert.equal(hitTestTracks({ x: 5, y: 1 }, [far, near], () => true, 10), 'near');
+});
+
+test('hitTestTracks: invisible tracks are skipped even when closest', () => {
+  const tracks = [fakeTrack('hidden', [[0, 0], [100, 0]])];
+  assert.equal(hitTestTracks({ x: 50, y: 1 }, tracks, () => false, 10), null);
+});
+
+test('hitTestTracks: picks the nearer of two overlapping candidates', () => {
+  const a = fakeTrack('a', [[0, 5], [100, 5]]); // 5px from the target
+  const b = fakeTrack('b', [[0, 2], [100, 2]]); // 2px from the target — closer
+  assert.equal(hitTestTracks({ x: 50, y: 0 }, [a, b], () => true, 10), 'b');
+});
+
+test('hitTestTracks: a track with no cached bbox is skipped, not thrown on', () => {
+  const noBbox = { key: 'x', coords: [[0, 0], [1, 1]], _px: [0, 0, 1, 1], _bbox: null };
+  assert.equal(hitTestTracks({ x: 0, y: 0 }, [noBbox], () => true, 10), null);
 });
 
 test('cellSizeDeg: needs more degrees of longitude at higher latitude for the same meter size', () => {

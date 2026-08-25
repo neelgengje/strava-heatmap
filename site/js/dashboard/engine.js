@@ -431,28 +431,13 @@ const TrackLayer = L.Layer.extend({
     this._reset();
   },
 
-  // Nearest track to a point, within `tolerance` px. Rejects on cached
-  // bbox first so a mouse move over empty map doesn't walk ~156k segments.
+  // Nearest track to a point, within `tolerance` px. Delegates to the pure
+  // hitTestTracks() below (testable without a real Leaflet map) once the
+  // container point is transformed into this layer's local coordinates.
   hitTest(containerPoint, tolerance = 10) {
     const layerPoint = this._map.containerPointToLayerPoint(containerPoint);
     const target = { x: layerPoint.x - this._origin.x, y: layerPoint.y - this._origin.y };
-
-    let best = null, bestDist = tolerance;
-    this._tracks.forEach(t => {
-      const st = this._state.get(t.key);
-      if (!st.visible) return;
-      const b = t._bbox;
-      if (!b) return;
-      if (target.x < b.minX - tolerance || target.x > b.maxX + tolerance ||
-          target.y < b.minY - tolerance || target.y > b.maxY + tolerance) return;
-
-      const px = t._px;
-      for (let i = 0; i < t.coords.length - 1; i++) {
-        const d = distToSegment(target.x, target.y, px[i*2], px[i*2+1], px[(i+1)*2], px[(i+1)*2+1]);
-        if (d < bestDist) { bestDist = d; best = t.key; }
-      }
-    });
-    return best;
+    return hitTestTracks(target, this._tracks, key => this._state.get(key).visible, tolerance);
   },
 
   // True if the hover target changed; redraw is driven by the fade loop, not the caller.
@@ -507,6 +492,30 @@ function distToSegment(px, py, x1, y1, x2, y2) {
   return Math.hypot(px - cx, py - cy);
 }
 
+// Pure hit-test core, extracted from TrackLayer.hitTest() above so it's
+// testable without a real Leaflet map: given a target point already in
+// layer-local coordinates and a list of tracks carrying pre-computed
+// _px/_bbox (see _reset()/buildDensityIndex), finds the closest track
+// within tolerance. Rejects on cached bbox first so a mouse move over
+// empty map doesn't walk every segment of every track.
+function hitTestTracks(target, tracks, isVisible, tolerance) {
+  let best = null, bestDist = tolerance;
+  tracks.forEach(t => {
+    if (!isVisible(t.key)) return;
+    const b = t._bbox;
+    if (!b) return;
+    if (target.x < b.minX - tolerance || target.x > b.maxX + tolerance ||
+        target.y < b.minY - tolerance || target.y > b.maxY + tolerance) return;
+
+    const px = t._px;
+    for (let i = 0; i < t.coords.length - 1; i++) {
+      const d = distToSegment(target.x, target.y, px[i * 2], px[i * 2 + 1], px[(i + 1) * 2], px[(i + 1) * 2 + 1]);
+      if (d < bestDist) { bestDist = d; best = t.key; }
+    }
+  });
+  return best;
+}
+
 function createTrackLayer(options) {
   return new TrackLayer(options);
 }
@@ -553,7 +562,7 @@ function lerpColor(hexA, hexB, t) {
 // itself extends L.Layer and needs a real Leaflet + DOM environment.
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
-    distToSegment, cellSizeDeg, cellKey, maxOf, bucketForFreq,
+    distToSegment, hitTestTracks, cellSizeDeg, cellKey, maxOf, bucketForFreq,
     hexToRgb, rgbToHex, lerpColor,
   };
 }

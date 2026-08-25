@@ -92,3 +92,9 @@ class YearMultiSelect {
     });
   }
 }
+
+// Node-only export for the test suite (tests/js/) — a no-op in the browser,
+// where this file loads as a plain <script> and `module` is undefined.
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { YearMultiSelect };
+}

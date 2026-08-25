@@ -79,26 +79,29 @@ python sync.py        # opens browser for Strava login on first run
 
 ## Testing
 
-Three independent suites, no build step required for any of them.
+Five independent suites, no build step for the site itself either way.
 
 **Setup (one-time):**
 
 ```bash
 pip install -r requirements-dev.txt
 playwright install chromium
+npm install              # only for tests/js/*-select.test.js, which need jsdom
 ```
 
 **Run everything:**
 
 ```bash
-python -m pytest tests/          # sync.py logic + browser E2E smoke tests
-node --test                      # pure JS function tests (site/js/)
+python -m pytest tests/          # sync.py logic, E2E, data integrity, visual regression
+node --test                      # pure JS + DOM-component tests (site/js/)
 ```
 
 | Suite | Location | What it covers |
 |---|---|---|
-| `sync.py` unit/integration | `tests/test_sync.py` | RDP route simplification, activity normalization, and the `--backfill-hr` resumability contract (mocked network — no real Strava calls) |
-| Browser E2E | `tests/test_e2e.py` | Selecting an activity, the HR chart toggle, closing the panel, and the phone-width map/list view — against a real Chromium instance and a throwaway local server |
-| JS pure functions | `tests/js/*.test.js` | `config.js`, `data.js`, and `engine.js`'s non-DOM logic (time/pace formatting, track normalization, RDP-adjacent geometry helpers) — run with Node's built-in test runner, no npm install needed |
+| `sync.py` unit/integration | `tests/test_sync.py` | RDP route simplification, activity normalization, the new-activity calorie fetch, and the `--backfill-hr`/`--full` resumability contracts (mocked network — no real Strava calls) |
+| Data integrity | `tests/test_data_integrity.py` | Sweeps every committed file in `site/data/` (not a sample) — stream array-length consistency, required fields, HR activities have a matching stream, valid coordinates |
+| Browser E2E | `tests/test_e2e.py` | Selecting an activity, the HR chart toggle (mouse *and* real touch events), closing the panel, and the phone-width map/list view — against a real Chromium instance and a throwaway local server |
+| Visual regression | `tests/test_visual.py` | Screenshot diffing for the detail panel (HR on/off/absent) and the mobile list/map views — catches spacing/centering regressions functional tests can't. First run per snapshot writes a baseline instead of comparing; review it, then commit `tests/__snapshots__/*.png`. Update deliberately with `--update-snapshots` |
+| JS pure functions & DOM components | `tests/js/*.test.js` | `config.js`/`data.js`/`engine.js`/`app-controller.js`'s non-DOM logic (Node's built-in test runner, no npm needed) plus `year-select.js`/`sport-select.js`'s real DOM behavior via jsdom |
 
 Run a single suite or test the usual pytest/node ways, e.g. `python -m pytest tests/test_sync.py -k backfill` or `node --test tests/js/config.test.js`.
