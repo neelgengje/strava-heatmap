@@ -73,6 +73,7 @@ class Dashboard {
     ).addTo(this.map);
 
     this._addMapControls();
+    this._bindInteractingClass();
 
     const bounds = boundsForTracks();
     this._homeBounds = bounds;
@@ -88,15 +89,29 @@ class Dashboard {
       const key = this.layer.hitTest(this.map.latLngToContainerPoint(e.latlng), touch ? 22 : 10);
       if (key) this.select(key); else this.deselect();
     });
+    // A trackpad coalesces mousemove to display refresh rate; a Windows
+    // mouse can fire several hundred times a second. hitTest walks every
+    // segment of every overlapping track past its cheap bbox reject, so
+    // without this a dense mouse re-runs it far more often than a frame
+    // is ever shown — coalesce to at most one hit-test per rAF.
+    let pendingMoveEvt = null, moveRafPending = false;
     this.map.on('mousemove', e => {
       if (this.selectedKey) return;
-      const key = this.layer.hitTest(this.map.latLngToContainerPoint(e.latlng), 10);
-      const changed = this.layer.setHover(key);
-      if (changed) this.layer.redraw();
-      const container = this.map.getContainer().getBoundingClientRect();
-      this.onHover(key ? this.byKey.get(key) : null, {
-        x: e.originalEvent.clientX - container.left,
-        y: e.originalEvent.clientY - container.top,
+      pendingMoveEvt = e;
+      if (moveRafPending) return;
+      moveRafPending = true;
+      requestAnimationFrame(() => {
+        moveRafPending = false;
+        const evt = pendingMoveEvt;
+        pendingMoveEvt = null;
+        const key = this.layer.hitTest(this.map.latLngToContainerPoint(evt.latlng), 10);
+        const changed = this.layer.setHover(key);
+        if (changed) this.layer.redraw();
+        const container = this.map.getContainer().getBoundingClientRect();
+        this.onHover(key ? this.byKey.get(key) : null, {
+          x: evt.originalEvent.clientX - container.left,
+          y: evt.originalEvent.clientY - container.top,
+        });
       });
     });
 
@@ -133,6 +148,18 @@ class Dashboard {
       },
     });
     new RecenterControl().addTo(this.map);
+  }
+
+  // See the body.map-interacting rule in dashboard-core.css: drop every
+  // .glass surface's backdrop-filter for as long as the map underneath is
+  // actually moving (pan/zoom/fly), so the browser isn't re-blurring it
+  // every frame on top of everything else redrawing.
+  _bindInteractingClass() {
+    let count = 0;
+    const start = () => { if (count++ === 0) document.body.classList.add('map-interacting'); };
+    const end = () => { if (count > 0 && --count === 0) document.body.classList.remove('map-interacting'); };
+    this.map.on('movestart zoomstart', start);
+    this.map.on('moveend zoomend', end);
   }
 
   _bindWheelZoom() {
@@ -332,7 +359,10 @@ class Dashboard {
   }
 
   playDrawIn() {
-    this.layer.playDrawIn(2200);
+    const duration = 2200;
+    document.body.classList.add('map-interacting');
+    setTimeout(() => document.body.classList.remove('map-interacting'), duration);
+    this.layer.playDrawIn(duration);
   }
 
 }

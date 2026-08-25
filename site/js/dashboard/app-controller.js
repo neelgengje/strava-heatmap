@@ -241,7 +241,13 @@ function initV2App({ tileTheme = 'light', controlsPosition = 'topright', inlineD
       els.hrToggle.setAttribute('aria-checked', String(hrVisible));
       profile?.setShowHeartRate(hrVisible);
     });
-    els.searchInput.addEventListener('input', () => dash.setSearchQuery(els.searchInput.value));
+    // Debounced: every keystroke otherwise re-filters all ~420 tracks and
+    // toggles style.display on every list item synchronously.
+    let searchTO = null;
+    els.searchInput.addEventListener('input', () => {
+      clearTimeout(searchTO);
+      searchTO = setTimeout(() => dash.setSearchQuery(els.searchInput.value), 120);
+    });
     els.clearFiltersBtn.addEventListener('click', () => {
       dash.clearAllFilters();
       sportSelect?.refresh();

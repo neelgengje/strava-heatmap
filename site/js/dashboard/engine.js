@@ -112,9 +112,24 @@ const TrackLayer = L.Layer.extend({
 
     this._state = new Map(); // track.key -> { visible, drawProgress }
     this._trackByKey = new Map();
+
+    // Segment grouping key is (category, bucket), both fixed once buckets
+    // are assigned — precomputing it as one int per segment here means the
+    // draw-in animation's per-frame regroup (_collectSegments, called on
+    // every rAF tick for every visible track) hashes a small integer
+    // instead of concatenating and hashing a fresh string per segment,
+    // ~86k times a frame across ~130 frames.
+    const categoryIndex = new Map();
+    this._tracks.forEach(t => {
+      if (!categoryIndex.has(t.category)) categoryIndex.set(t.category, categoryIndex.size);
+    });
     this._tracks.forEach(t => {
       this._trackByKey.set(t.key, t);
       this._state.set(t.key, { visible: true, drawProgress: 1 });
+      const n = t.coords.length;
+      const catBase = categoryIndex.get(t.category) * this._buckets;
+      const segKey = t._segKey = new Int32Array(Math.max(0, n - 1));
+      for (let i = 0; i < segKey.length; i++) segKey[i] = catBase + t.pointBucket[i];
     });
 
     this._hoverKey = null;
@@ -201,7 +216,15 @@ const TrackLayer = L.Layer.extend({
     // about to be drawn at the current zoom's native resolution.
     L.DomUtil.setPosition(this._canvas, topLeft);
 
-    const dpr = window.devicePixelRatio || 1;
+    // Capped at 2x: a CPU profile of the load animation showed the
+    // per-frame "Commit" (main-thread rasterize + hand-off to the
+    // compositor) dominating total frame cost, and that cost scales with
+    // canvas pixel area — dpr² — not with anything else this layer does.
+    // Above 2x the visual gain on a ~2px-wide trail line is imperceptible,
+    // so this trades zero visible quality for meaningfully less to commit
+    // on any 3x display (many phones, some Retina Macs) or a 4K Windows
+    // panel at 200%+ scaling.
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     this._canvas.width = size.x * dpr;
     this._canvas.height = size.y * dpr;
     this._canvas.style.width = size.x + 'px';
@@ -335,13 +358,12 @@ const TrackLayer = L.Layer.extend({
     const n = t.coords.length;
     if (n < 2) return;
     const drawUpTo = Math.max(2, Math.floor(n * st.drawProgress));
-    const px = t._px, buckets = t.pointBucket;
+    const px = t._px, buckets = t.pointBucket, segKey = t._segKey;
 
     for (let i = 0; i < drawUpTo - 1; i++) {
-      const b = buckets[i];
-      const key = t.category + '|' + b;
+      const key = segKey[i];
       let g = groups.get(key);
-      if (!g) groups.set(key, g = { category: t.category, bucket: b, segs: [] });
+      if (!g) groups.set(key, g = { category: t.category, bucket: buckets[i], segs: [] });
       g.segs.push(px[i * 2], px[i * 2 + 1], px[(i + 1) * 2], px[(i + 1) * 2 + 1]);
     }
   },
@@ -461,18 +483,32 @@ const TrackLayer = L.Layer.extend({
     // for a frame before snapping to empty.
     this._restGroupsDirty = true;
 
+    // Rendered at a capped ~30fps rather than every rAF tick: a CPU/timeline
+    // profile of this exact animation showed the main-thread "Commit" (the
+    // canvas rasterize + hand-off to the compositor) as by far the largest
+    // single cost of the whole page load — far more than the JS above it —
+    // and that cost is paid once per _draw() call. Progress is still driven
+    // by real elapsed time, so the animation's duration and easing are
+    // unchanged; only how often the (expensive) frame is actually committed
+    // drops, which halves that cost with no perceptible difference at 2.2s.
+    const minFrameMs = 1000 / 30;
+    let lastDraw = -Infinity;
     const step = (now) => {
       const elapsed = now - start;
       const overallT = Math.min(1, elapsed / durationMs);
-      keys.forEach((k, i) => {
-        const trackStart = (i / keys.length) * 0.7;
-        const trackDur = 0.3;
-        const local = Math.min(1, Math.max(0, (overallT - trackStart) / trackDur));
-        this._state.get(k).drawProgress = local;
-      });
-      this._restGroupsDirty = true;
-      this._draw();
-      if (overallT < 1) requestAnimationFrame(step);
+      const isLast = overallT >= 1;
+      if (isLast || now - lastDraw >= minFrameMs) {
+        lastDraw = now;
+        keys.forEach((k, i) => {
+          const trackStart = (i / keys.length) * 0.7;
+          const trackDur = 0.3;
+          const local = Math.min(1, Math.max(0, (overallT - trackStart) / trackDur));
+          this._state.get(k).drawProgress = local;
+        });
+        this._restGroupsDirty = true;
+        this._draw();
+      }
+      if (!isLast) requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
   },

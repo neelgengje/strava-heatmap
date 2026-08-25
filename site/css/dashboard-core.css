@@ -60,6 +60,18 @@ body { background: var(--page-bg); color: var(--ink); }
   box-shadow: var(--shadow-glass);
 }
 
+/* Every .glass surface sits over the live map, so re-blurring its backdrop
+   is repeated every frame the content underneath changes — a pan, a fly,
+   the load-in draw animation. That compositing cost is cheap on Apple's
+   GPUs but can dominate the frame budget on weaker/integrated Windows
+   graphics. body.map-interacting (toggled in shell.js around exactly
+   those moments) drops the blur for their duration; --glass-bg is already
+   near-opaque so the visual difference is only noticeable mid-motion. */
+body.map-interacting .glass {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
 .ink-surface {
   background: rgba(26, 32, 48, 0.94);
   color: var(--ink-surface-ink);
