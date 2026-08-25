@@ -83,7 +83,7 @@ body { background: var(--page-bg); }
 .brand-island {
   position: fixed;
   top: 16px; left: 16px;
-  width: 372px; height: 58px;
+  width: 372px; height: 44px;
   display: flex; align-items: center; justify-content: center;
   padding: 0 24px;
   z-index: 1500;
@@ -96,26 +96,57 @@ body { background: var(--page-bg); }
 }
 .brand-island .brand svg { width: 18px; height: 18px; color: var(--accent); flex-shrink: 0; }
 
+/* ── Search: activity-title filter, one row above the sport/year
+   filters. Same 6px horizontal inset as .drawer-filters below it (its
+   own 6px padding), so both rows share the same left/right edge. ───*/
+.drawer-search {
+  display: flex; align-items: center; gap: 8px;
+  height: 32px;
+  margin: 0 6px 14px;
+  padding: 0 12px;
+  background: var(--paper-2);
+  border: 1.5px solid var(--line);
+  border-radius: 20px;
+  color: var(--ink-3);
+  transition: border-color 0.15s, color 0.15s;
+}
+.drawer-search:focus-within { border-color: var(--accent); color: var(--ink); }
+.drawer-search svg { width: 14px; height: 14px; flex-shrink: 0; opacity: 0.7; }
+.drawer-search input {
+  all: unset; flex: 1; min-width: 0;
+  color: var(--ink); font-family: var(--body); font-size: 13.8px;
+}
+.drawer-search input::placeholder { color: var(--ink-3); }
+
 /* ── Filters: activity/year dropdowns + Clear filters, one row
-   under the drawer's stats header. ───────────────────────────*/
+   under the search field. ─────────────────────────────────────*/
 .drawer-filters {
   display: flex; align-items: center; gap: 8px;
-  padding: 2px 6px 16px;
-  margin-bottom: 12px;
+  padding: 0 6px 14px;
+  margin-bottom: 14px;
   border-bottom: 1px solid var(--glass-border);
 }
 .drawer-filters > div { flex: 1; min-width: 0; }
 .drawer-filters .year-select-trigger {
   width: 100%; justify-content: space-between;
-  padding: 8px 10px; font-size: 13.9px;
+  height: 32px;
+  padding: 0 10px; font-size: 13.9px;
 }
 .drawer-filters .year-select-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.drawer-filters .clear-filters-btn { flex-shrink: 0; padding: 8px 12px; font-size: 13.4px; }
+.drawer-filters .clear-filters-btn {
+  flex-shrink: 0;
+  height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 12px; font-size: 13.4px;
+}
 
 /* ── Drawer: flex column so the stats header has a fixed height
    and the list takes the rest. ───────────────────────────────*/
 .drawer {
   width: 372px;
+  /* dashboard-layout.css's default (86px) assumed the old 58px-tall island
+     plus a 12px gap; this variant's island is 44px, same 12px gap. */
+  top: 72px;
   display: flex;
   flex-direction: column;
   /* Nearly opaque, decoupled from --glass-bg — the drawer is the main
@@ -125,17 +156,20 @@ body { background: var(--page-bg); }
 .activity-list { flex: 1; min-height: 0; height: auto; }
 /* Offset accounts for Leaflet's own 10px control-corner margin plus the
    1px width difference (30px toggle vs 32px controls), so centers align. */
-.drawer-toggle { left: 415px; }
+/* dashboard-layout.css's default top (106px) tracks its own default
+   drawer top (86px) — offset by the same 14px this variant's .drawer
+   shifted up when the island shrank. */
+.drawer-toggle { top: 92px; left: 415px; }
 body.drawer-collapsed .drawer-toggle { left: 27px; }
 
 .drawer-stats {
   display: flex;
-  padding: 10px 6px 20px;
+  padding: 8px 6px 14px;
   margin-bottom: 14px;
   border-bottom: 1px solid var(--glass-border);
 }
 .drawer-stats .dstat2 { flex: 1; text-align: center; }
-.drawer-stats .figure { font-size: 26.2px; display: block; color: var(--ink); }
+.drawer-stats .figure { font-size: 29.5px; display: block; color: var(--ink); }
 .drawer-stats .label { font-size: 12.3px; display: block; margin-top: 4px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.06em; }
 
 /* ── Detail panel: inline inside the drawer, under the selected
@@ -255,7 +289,8 @@ body.drawer-collapsed .drawer-toggle { left: 27px; }
    to its right, tracked via --controls-left-offset. */
 body.proto-v2 {
   --occlusion-left: 404px;
-  --occlusion-top: 90px;
+  /* 16px top offset + 44px island height + 16px gap to the drawer below it. */
+  --occlusion-top: 76px;
   --occlusion-right: 40px;
   --occlusion-bottom: 56px;
   --controls-left-offset: 404px;
@@ -305,7 +340,7 @@ body.mobile-view-map .miv-icon-list { display: block; }
     border-left: none; border-right: none; border-top: none;
   }
   .drawer {
-    top: 58px; left: 0; right: 0; bottom: 0;
+    top: 44px; left: 0; right: 0; bottom: 0;
     width: 100%;
     border-radius: 0;
     border-left: none; border-right: none; border-bottom: none;

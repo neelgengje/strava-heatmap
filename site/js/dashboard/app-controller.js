@@ -35,6 +35,7 @@ function initV2App({ tileTheme = 'light', controlsPosition = 'topright', inlineD
   const els = {
     sportSelectEl: document.getElementById('sport-select'),
     yearSelectEl: document.getElementById('year-select'),
+    searchInput: document.getElementById('activity-search'),
     clearFiltersBtn: document.getElementById('clear-filters-btn'),
     statCount: document.getElementById('stat-count'),
     statMiles: document.getElementById('stat-miles'),
@@ -240,10 +241,12 @@ function initV2App({ tileTheme = 'light', controlsPosition = 'topright', inlineD
       els.hrToggle.setAttribute('aria-checked', String(hrVisible));
       profile?.setShowHeartRate(hrVisible);
     });
+    els.searchInput.addEventListener('input', () => dash.setSearchQuery(els.searchInput.value));
     els.clearFiltersBtn.addEventListener('click', () => {
       dash.clearAllFilters();
       sportSelect?.refresh();
       yearSelect?.refresh();
+      els.searchInput.value = '';
     });
     els.drawerToggle.addEventListener('click', () => {
       document.body.classList.toggle('drawer-collapsed');

@@ -108,6 +108,11 @@ def test_toggling_hr_on_changes_the_rendered_chart(app_page):
 def test_scrubbing_chart_with_hr_on_labels_bpm(app_page):
     _select_activity(app_page, '#H21 Mission Peak')
     app_page.locator('#hr-toggle').click()
+    # app-controller.js scrolls the panel into view ~460ms after selection
+    # (past the 0.42s open transition) — wait for that before reading the
+    # chart's on-screen position, or its bounding box can still reflect the
+    # pre-scroll layout and put "off the chart" off-viewport instead.
+    app_page.wait_for_timeout(500)
     box = app_page.locator('#detail-chart').bounding_box()
     app_page.mouse.move(box['x'] + box['width'] * 0.4, box['y'] + box['height'] * 0.5)
     app_page.wait_for_timeout(150)

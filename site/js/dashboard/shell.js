@@ -27,6 +27,7 @@ class Dashboard {
 
     this.activeSports = null;      // Set, filled once data loads
     this.activeYears = new Set();  // empty = no year filter
+    this.searchQuery = '';         // empty = no title search
     this.selectedKey = null;
   }
 
@@ -190,15 +191,23 @@ class Dashboard {
     this._applyFilters();
   }
 
+  // Empty string = no title search (show all).
+  setSearchQuery(query) {
+    this.searchQuery = (query || '').trim().toLowerCase();
+    this._applyFilters();
+  }
+
   clearAllFilters() {
     this.activeSports = new Set();
     this.activeYears = new Set();
+    this.searchQuery = '';
     this._applyFilters();
   }
 
   isTrackVisible(t) {
     if (this.activeSports.size > 0 && !this.activeSports.has(t.category)) return false;
     if (this.activeYears.size > 0 && !this.activeYears.has(t.year)) return false;
+    if (this.searchQuery && !t.name.toLowerCase().includes(this.searchQuery)) return false;
     return true;
   }
 
