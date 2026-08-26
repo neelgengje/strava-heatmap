@@ -1,0 +1,20 @@
+# Cloudflare Pages reads this file to attach extra response headers by path
+# pattern. See README.md — this site deploys to Cloudflare Pages on every
+# `git push`.
+#
+# activities.json is intentionally NOT covered here: it's rewritten by every
+# sync.py run and must keep revalidating on each visit, or a sync wouldn't
+# show up for a returning visitor until the browser's cache expired on its
+# own.
+#
+# Stream files are close to immutable (each is fetched once per activity id
+# and normally never touched again) but not quite: sync.py's `--backfill-hr`
+# phase can rewrite an existing id's stream file in place, once, if that
+# activity later gets heart-rate data Strava didn't have at initial fetch
+# time (see fetch_stream/backfill_hr in sync.py). A plain long max-age
+# (not `immutable`) still cuts a real cost — selecting an activity a second
+# time within the cache window skips the network round-trip for its stream
+# entirely — while bounding staleness to at most a week if a backfill run
+# ever touches an id a visitor already has cached.
+/data/streams/*
+  Cache-Control: public, max-age=604800

@@ -154,12 +154,34 @@ class Dashboard {
   // .glass surface's backdrop-filter for as long as the map underneath is
   // actually moving (pan/zoom/fly), so the browser isn't re-blurring it
   // every frame on top of everything else redrawing.
+  //
+  // A trailing debounce, not a movestart/moveend start/stop counter: a
+  // discrete (non-animated) view change — our own wheel-zoom handler below
+  // calls setZoomAround(..., {animate:false}) once per rAF while the wheel
+  // is active — routes through Leaflet's _resetView, which fires
+  // movestart/zoomstart AND moveend/zoomend synchronously on every single
+  // call. A counter reads that as a start immediately followed by a stop,
+  // every frame, for the whole gesture — toggling the class (and every
+  // .glass surface's backdrop-filter) on and off twice a frame instead of
+  // holding it for the gesture's duration.
   _bindInteractingClass() {
-    let count = 0;
-    const start = () => { if (count++ === 0) document.body.classList.add('map-interacting'); };
-    const end = () => { if (count > 0 && --count === 0) document.body.classList.remove('map-interacting'); };
-    this.map.on('movestart zoomstart', start);
-    this.map.on('moveend zoomend', end);
+    let hideTO = null;
+    const show = () => {
+      clearTimeout(hideTO);
+      hideTO = null;
+      if (!document.body.classList.contains('map-interacting')) {
+        document.body.classList.add('map-interacting');
+      }
+    };
+    const scheduleHide = () => {
+      clearTimeout(hideTO);
+      hideTO = setTimeout(() => {
+        hideTO = null;
+        document.body.classList.remove('map-interacting');
+      }, 150);
+    };
+    this.map.on('movestart zoomstart move zoom', show);
+    this.map.on('moveend zoomend', scheduleHide);
   }
 
   _bindWheelZoom() {

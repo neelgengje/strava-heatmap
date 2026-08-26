@@ -25,6 +25,7 @@ class ElevationProfile {
     this.data = null;
     this._replayRun = 0; // must start numeric — ++undefined is NaN, and NaN !== NaN would abort every replay on frame 1
     this._loadGen = 0; // same pattern as _replayRun, guards load() below against out-of-order resolution
+    this._replaying = false; // see draw()'s shadowBlur comment
     this.showHr = false;
     this._bindInteraction();
 
@@ -44,6 +45,11 @@ class ElevationProfile {
 
   async load(activityId) {
     this.data = null;
+    // Otherwise selecting a new activity while a previous one's replay was
+    // still in flight would leave the shadow-skipping flag stuck on (see
+    // draw()'s shadowBlur comment), and the new activity's static chart
+    // would render without its glow until the next replay or deselect.
+    this._replaying = false;
     // Selecting a second activity before the first's fetch resolves — easy
     // to do when browsing the list quickly — used to let whichever request
     // landed last win, cache or not. Now that a cache hit resolves
@@ -206,8 +212,16 @@ class ElevationProfile {
     for (let i = 0; i < distMi.length; i++) i === 0 ? ctx.moveTo(xAt(i), yAt(i)) : ctx.lineTo(xAt(i), yAt(i));
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
-    ctx.shadowColor = this.color + '80';
-    ctx.shadowBlur = 6;
+    // shadowBlur forces the canvas onto a much slower rasterization path,
+    // and this strokes the full-resolution line (up to ~58k points for the
+    // longest activity) on every call — replay() calls draw() every frame
+    // for its whole duration, so skip the glow for just those frames rather
+    // than paying that cost ~300+ times per replay. Static/scrub draws (the
+    // overwhelming majority of calls) are unaffected.
+    if (!this._replaying) {
+      ctx.shadowColor = this.color + '80';
+      ctx.shadowBlur = 6;
+    }
     ctx.strokeStyle = this.color;
     ctx.lineWidth = 2;
     ctx.stroke();
@@ -328,14 +342,29 @@ class ElevationProfile {
     ctx.restore();
   }
 
+  // Binary search, not a linear scan: distMi is monotonically non-decreasing
+  // (cumulative distance along the route), so this is exact rather than an
+  // approximation, and it matters here — this runs on every scrub
+  // mousemove, over an array up to ~58k points long for the biggest
+  // activity. Finds the first index whose distance is >= d, then compares
+  // it against the index just before to pick the nearer one, matching the
+  // linear scan's own tie-break: on an exact tie (equidistant, or several
+  // points sharing a distance value from a GPS stall), prefer the earlier
+  // index, since the scan's strict `<` only overwrites `best` on a
+  // strictly smaller diff.
   _idxForDist(d) {
     const { distMi } = this.data;
-    let idx = 0, best = Infinity;
-    for (let i = 0; i < distMi.length; i++) {
-      const diff = Math.abs(distMi[i] - d);
-      if (diff < best) { best = diff; idx = i; }
+    const n = distMi.length;
+    let lo = 0, hi = n;
+    while (lo < hi) {
+      const mid = (lo + hi) >>> 1;
+      if (distMi[mid] < d) lo = mid + 1;
+      else hi = mid;
     }
-    return idx;
+    if (lo <= 0) return 0;
+    if (lo >= n) return n - 1;
+    const before = lo - 1, after = lo;
+    return (d - distMi[before]) <= (distMi[after] - d) ? before : after;
   }
 
   _bindInteraction() {
@@ -380,12 +409,16 @@ class ElevationProfile {
   replay(durationMs = 6000) {
     if (!this.data) return;
     const myRun = ++this._replayRun;
+    this._replaying = true;
     const n = this.data.distMi.length;
     const start = performance.now();
     const step = (now) => {
       if (myRun !== this._replayRun) return; // superseded by a newer replay() or stopReplay()
       const t = Math.min(1, (now - start) / durationMs);
       const idx = Math.min(n - 1, Math.floor(t * (n - 1)));
+      // Cleared before this frame's draw(), not after: the final, resting
+      // frame is the one that gets its glow back, not one frame later.
+      if (t >= 1) this._replaying = false;
       this.draw(idx);
       this.onMove(this.data.latlng[idx], idx);
       if (t < 1) requestAnimationFrame(step);
@@ -393,5 +426,8 @@ class ElevationProfile {
     requestAnimationFrame(step);
   }
 
-  stopReplay() { this._replayRun = (this._replayRun || 0) + 1; }
+  stopReplay() {
+    this._replayRun = (this._replayRun || 0) + 1;
+    this._replaying = false;
+  }
 }

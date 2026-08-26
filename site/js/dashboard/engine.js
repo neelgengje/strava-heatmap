@@ -7,6 +7,12 @@
 const EARTH_R_LAT_M = 111320; // meters per degree latitude, ~constant
 const DENSITY_BUCKETS = 16;
 
+// Reference alpha the base pass is rasterized at when cached as a bitmap
+// (see TrackLayer._draw()) — must match the highest restAlpha _draw() ever
+// computes (dimBlend.value === 0) so every real restAlpha, always <= this,
+// scales down from it rather than needing to scale up past opaque.
+const BASE_REF_ALPHA = 0.72;
+
 function cellSizeDeg(lat, cellMeters) {
   const latSize = cellMeters / EARTH_R_LAT_M;
   const lngSize = cellMeters / (EARTH_R_LAT_M * Math.max(0.15, Math.cos(lat * Math.PI / 180)));
@@ -169,6 +175,14 @@ const TrackLayer = L.Layer.extend({
     // Cached grouped segment geometry — see _draw()'s base-pass comment.
     this._restGroupsCache = null;
     this._restGroupsDirty = true;
+
+    // Offscreen bitmap the base pass is rasterized into once and reused
+    // across fade frames (see _draw()) — created lazily in _reset() once a
+    // canvas size is known. Bypassed during playDrawIn, whose geometry
+    // changes every frame; see that method's own comment.
+    this._baseCanvas = null;
+    this._baseCtx = null;
+    this._bypassBaseCache = false;
   },
 
   onAdd(map) {
@@ -186,7 +200,23 @@ const TrackLayer = L.Layer.extend({
     // viewreset alongside moveend/zoomend/resize: the same event Leaflet's
     // own markers listen to, so firing it manually (Dashboard._settleAfter)
     // forces every layer back in sync in one shot.
-    map.on('moveend zoomend resize viewreset', this._reset, this);
+    //
+    // All four are bound to _scheduleReset, not _reset directly: a discrete
+    // (non-animated) view change — our own wheel-zoom handler in shell.js
+    // calls setZoomAround(..., {animate:false}) once per rAF while the wheel
+    // is active — routes through Leaflet's _resetView, which fires zoomend,
+    // moveend, AND viewreset synchronously on every single call. Bound
+    // directly to _reset, that's a full reproject-and-redraw of all ~86k
+    // points three times per rendered frame for the whole gesture. Note
+    // moveend isn't a reliable "the gesture is over" signal on its own here —
+    // _resetView fires it on every call, animated or not — so it has to
+    // share _scheduleReset's debounce with the other three rather than get
+    // its own faster path, or a sustained wheel-zoom would still force a full
+    // reset every frame via moveend alone. (This debounce is not what keeps
+    // an in-flight zoom's CSS scale bounded, though — that's _onFlyMove's
+    // own throttle below; see its comment for why those have to be two
+    // different mechanisms.)
+    map.on('moveend zoomend resize viewreset', this._scheduleReset, this);
     map.on('zoomanim', this._onZoomAnim, this);
     // flyTo (select/reset-view) drives the map through a continuous run of
     // 'move' events and never fires 'zoomanim' — confirmed by instrumenting
@@ -201,10 +231,29 @@ const TrackLayer = L.Layer.extend({
 
   onRemove(map) {
     L.DomUtil.remove(this._canvas);
+    clearTimeout(this._resetTO);
     clearTimeout(this._flyMoveTO);
-    map.off('moveend zoomend resize viewreset', this._reset, this);
+    map.off('moveend zoomend resize viewreset', this._scheduleReset, this);
     map.off('zoomanim', this._onZoomAnim, this);
     map.off('move', this._onFlyMove, this);
+  },
+
+  // Debounced trailing edge for the four discrete events above, not a
+  // per-event or per-frame reset: a real _reset() reprojects and redraws
+  // the whole dataset, so this waits until they actually stop for 120ms
+  // before paying that cost, rather than once per event (moveend/zoomend/
+  // viewreset all fire on every single _resetView() call — see onAdd's
+  // comment). This is the fix for the reset-storm; it is deliberately NOT
+  // also what bounds an in-flight zoom's blur — _onFlyMove's own throttle
+  // handles that, and needs a different (throttle, not debounce) shape to
+  // do it. Also catches 'resize', which _onFlyMove never sees (window
+  // resize doesn't fire 'move').
+  _scheduleReset() {
+    clearTimeout(this._resetTO);
+    this._resetTO = setTimeout(() => {
+      this._resetTO = null;
+      this._reset();
+    }, 120);
   },
 
   // Translating the canvas element every frame (cheap: a DOM write) kept it
@@ -221,6 +270,28 @@ const TrackLayer = L.Layer.extend({
     const scale = map.getZoomScale(map.getZoom(), this._resetZoom);
     const offset = map.latLngToLayerPoint(this._originLatLng);
     L.DomUtil.setTransform(this._canvas, offset, scale);
+
+    // Pure pan (zoom unchanged since the last real reset): the transform
+    // above is already an exact identity-scale placement, so there's
+    // nothing to reproject until the pan actually settles — which
+    // _scheduleReset()'s debounce (bound to moveend below) already handles.
+    // Skipping the throttle entirely here is what makes a pan free.
+    if (map.getZoom() === this._resetZoom) return;
+
+    // Zoom is actively changing (flyTo, wheel-zoom, pinch) — _resetZoom is
+    // going stale as this keeps running, and the CSS scale above grows
+    // with it. This must be a THROTTLE (arm-and-lock), not a debounce: a
+    // debounce (tried here first, then reverted after review) never fires
+    // until the whole gesture stops, since 'move' fires every frame for its
+    // entire duration — leaving _resetZoom pinned at whatever zoom the
+    // gesture started at. select()'s flyTo goes from the home view (~z11)
+    // to maxZoom 17; getZoomScale(17, 11) is 2^6 = 64x, so a debounce here
+    // renders every trail as a wildly blurred band for nearly the whole
+    // ~0.9s flight before snapping sharp only once it's over. Firing once
+    // per ~80ms and then re-arming instead keeps _resetZoom refreshed
+    // regularly, bounding the drift to at most that much of the total zoom
+    // change no matter how long the gesture runs — the original cadence
+    // this had before _reset() was ever coalesced.
     if (this._flyMoveTO) return;
     this._flyMoveTO = setTimeout(() => {
       this._flyMoveTO = null;
@@ -228,9 +299,13 @@ const TrackLayer = L.Layer.extend({
     }, 80);
   },
 
-  // Repositions the canvas and reprojects every point. Panning is free
-  // (pane transform); this runs on zoom/resize/viewreset.
+  // Repositions the canvas and reprojects every point. Called directly (not
+  // through _scheduleReset) by onAdd's initial call and by forceResync()'s
+  // safety net; clears any pending debounce so neither races a second reset
+  // in shortly after.
   _reset() {
+    clearTimeout(this._resetTO);
+    this._resetTO = null;
     const map = this._map;
     const size = map.getSize();
     const topLeft = map.containerPointToLayerPoint([0, 0]);
@@ -254,12 +329,45 @@ const TrackLayer = L.Layer.extend({
     this._canvas.style.height = size.y + 'px';
     this._ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
+    // Mirrors the main canvas's own device-pixel size/transform so the base
+    // pass can be stroked into it once (in the same CSS-pixel coordinate
+    // space _project()/_collectSegments already use) and later blitted back
+    // wholesale — see _draw()'s base-pass comment. Resizing it here also
+    // clears its old contents, which is correct: _restGroupsDirty is set
+    // below regardless, so the next _draw() rebuilds it from scratch anyway.
+    if (!this._baseCanvas) this._baseCanvas = document.createElement('canvas');
+    this._baseCanvas.width = this._canvas.width;
+    this._baseCanvas.height = this._canvas.height;
+    this._baseCtx = this._baseCanvas.getContext('2d');
+    this._baseCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    // Setting .width above resets every other piece of context state too,
+    // not just the transform — without these, the base pass would rasterize
+    // at the canvas default 'butt' cap. _strokeGroupsInto emits each segment
+    // as its own moveTo/lineTo subpath, so round caps are what visually
+    // joins consecutive segments of one track; missing them would show as a
+    // notch at every vertex on a switchback-heavy trail.
+    this._baseCtx.lineJoin = 'round';
+    this._baseCtx.lineCap = 'round';
+
     this._origin = map.containerPointToLayerPoint([0, 0]);
     // Reference point/zoom for _onFlyMove's live scale-and-translate tracking
     // until the next reset.
     this._originLatLng = map.containerPointToLatLng([0, 0]);
     this._resetZoom = map.getZoom();
     this._project();
+    // Rebuilt from the fresh projection above — see buildHitGrid()'s comment.
+    // Culled to the viewport (plus the largest hitTest tolerance actually
+    // used — 22px for a touch tap, see shell.js), same reasoning as _draw()'s
+    // base-pass culling: hitTest() only ever queries a point on screen, so a
+    // segment nowhere near the viewport can never be its nearest match.
+    // Measured at ~2.8ms for the full unculled dataset, unconditionally, on
+    // every reset — worth culling even though _reset() itself now runs far
+    // less often than before Phase 1's debounce.
+    const hitMargin = 22;
+    this._hitGrid = buildHitGrid(
+      this._tracks, HIT_GRID_CELL_PX,
+      -hitMargin, -hitMargin, size.x + hitMargin, size.y + hitMargin
+    );
     this._restGroupsDirty = true;
     this._draw();
   },
@@ -299,22 +407,71 @@ const TrackLayer = L.Layer.extend({
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
 
+    // Viewport for culling the base pass below, in the same layer-local
+    // coordinate space as t._bbox/t._px (see _project()): the canvas's own
+    // (0,0)-(size.x,size.y) rect. Padded by the widest a stroke can ever get
+    // (selected width, plus a couple px for anti-aliasing) so a line whose
+    // center sits just off-canvas doesn't have its visible edge clipped.
+    const margin = this._selectedWidth + 2;
+    const viewMinX = -margin, viewMinY = -margin, viewMaxX = size.x + margin, viewMaxY = size.y + margin;
+
     // Base pass: every visible track, batched by (category, bucket), stroked
     // ascending so hot segments paint over cold. Alpha is one shared
     // animated scalar (dimBlend); cached geometry is reused across a fade's
     // frames, rebuilt only when visibility/projection/draw-in changes.
-    if (this._restGroupsDirty || !this._restGroupsCache) {
+    //
+    // Measured against the real dataset (420 tracks/86k points): at typical
+    // interaction zoom levels only 10-15% of segments are ever on screen —
+    // rising to under 6% at the zoom level activity selection flies to — so
+    // rejecting off-screen tracks/segments here is the single biggest win
+    // available in this pass. _project() above still runs on every track
+    // regardless (bbox/hitTest need it); only the collect+stroke work below
+    // is skipped.
+    const rebuildBase = this._restGroupsDirty || !this._restGroupsCache;
+    if (rebuildBase) {
       const restGroups = new Map();
       this._tracks.forEach(t => {
         const st = this._state.get(t.key);
         if (!st.visible) return;
-        this._collectSegments(t, st, restGroups);
+        const b = t._bbox;
+        if (b && (b.maxX < viewMinX || b.minX > viewMaxX || b.maxY < viewMinY || b.minY > viewMaxY)) return;
+        this._collectSegments(t, st, restGroups, viewMinX, viewMinY, viewMaxX, viewMaxY);
       });
       this._restGroupsCache = restGroups;
       this._restGroupsDirty = false;
     }
-    const restAlpha = 0.72 - (0.72 - 0.10) * this._dimBlend.value;
-    this._strokeGroups(this._restGroupsCache, restAlpha, this._baseWidth);
+    const restAlpha = BASE_REF_ALPHA - (BASE_REF_ALPHA - 0.10) * this._dimBlend.value;
+
+    // Hover/select fades (below) animate only this alpha over otherwise
+    // fixed geometry — restAlpha is a constant BASE_REF_ALPHA through an
+    // entire hover fade, so the base pass is byte-identical across all ~15 of its
+    // frames yet was being fully re-stroked on every one. Rasterizing it
+    // once into an offscreen bitmap at a fixed reference alpha and
+    // compositing that with a scaled globalAlpha turns every fade frame
+    // into one drawImage, independent of dataset size — but only while
+    // rebuildBase tracks real geometry changes; playDrawIn changes geometry
+    // every frame on purpose and bypasses this whole path (see its comment).
+    if (this._bypassBaseCache) {
+      this._strokeGroups(this._restGroupsCache, restAlpha, this._baseWidth);
+    } else {
+      if (rebuildBase) {
+        this._baseCtx.clearRect(0, 0, size.x, size.y);
+        this._strokeGroupsInto(this._baseCtx, this._restGroupsCache, BASE_REF_ALPHA, this._baseWidth);
+      }
+      if (this._restGroupsCache.size > 0) {
+        // save/restore rather than tracking dpr separately: it captures and
+        // later restores both the dpr transform _reset() set on this ctx
+        // and globalAlpha in one shot. The transform is reset to identity
+        // for the blit itself because the bitmap is already rasterized at
+        // device-pixel size — drawing it through the dpr transform again
+        // would double-scale it.
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.globalAlpha = restAlpha / BASE_REF_ALPHA;
+        ctx.drawImage(this._baseCanvas, 0, 0);
+        ctx.restore();
+      }
+    }
 
     // Hover overlay: real per-bucket density colour, eased in on top of
     // the base pass so a repeat-heavy stretch still reads hot.
@@ -377,23 +534,42 @@ const TrackLayer = L.Layer.extend({
     requestAnimationFrame(() => this._tick());
   },
 
-  _collectSegments(t, st, groups) {
+  // The four viewMin/viewMax args are optional (undefined for the
+  // hover/select overlays below, which touch one already-relevant track and
+  // aren't worth culling) — when given, segments entirely outside that
+  // rect are skipped rather than pushed into a group that would just get
+  // stroked off-canvas.
+  _collectSegments(t, st, groups, viewMinX, viewMinY, viewMaxX, viewMaxY) {
     const n = t.coords.length;
     if (n < 2) return;
     const drawUpTo = Math.max(2, Math.floor(n * st.drawProgress));
     const px = t._px, buckets = t.pointBucket, segKey = t._segKey;
+    const cull = viewMinX !== undefined;
 
     for (let i = 0; i < drawUpTo - 1; i++) {
+      const x1 = px[i * 2], y1 = px[i * 2 + 1], x2 = px[(i + 1) * 2], y2 = px[(i + 1) * 2 + 1];
+      if (cull) {
+        if ((x1 < viewMinX && x2 < viewMinX) || (x1 > viewMaxX && x2 > viewMaxX) ||
+            (y1 < viewMinY && y2 < viewMinY) || (y1 > viewMaxY && y2 > viewMaxY)) continue;
+      }
       const key = segKey[i];
       let g = groups.get(key);
       if (!g) groups.set(key, g = { category: t.category, bucket: buckets[i], segs: [] });
-      g.segs.push(px[i * 2], px[i * 2 + 1], px[(i + 1) * 2], px[(i + 1) * 2 + 1]);
+      g.segs.push(x1, y1, x2, y2);
     }
   },
 
+  // Thin wrapper over _strokeGroupsInto targeting this layer's main ctx —
+  // kept as its own method since the hover/select overlays below and the
+  // playDrawIn bypass call it exactly as before the base-bitmap cache
+  // existed. _draw()'s cached path calls _strokeGroupsInto directly to
+  // target the offscreen _baseCtx instead.
   _strokeGroups(groups, alpha, baseWidth) {
+    this._strokeGroupsInto(this._ctx, groups, alpha, baseWidth);
+  },
+
+  _strokeGroupsInto(ctx, groups, alpha, baseWidth) {
     if (groups.size === 0) return;
-    const ctx = this._ctx;
     ctx.globalAlpha = alpha;
     const ordered = [...groups.values()].sort((a, b) => a.bucket - b.bucket);
     ordered.forEach(g => {
@@ -469,20 +645,20 @@ const TrackLayer = L.Layer.extend({
     this._draw();
   },
 
-  // Full reposition + reproject, bypassing the moveend/zoomend/resize
-  // events _reset() normally waits for — a safety net for after a
-  // programmatic flyTo that doesn't cleanly settle.
+  // Full reposition + reproject, bypassing _scheduleReset's debounce and the
+  // moveend/zoomend/resize/viewreset events that feed it — a safety net for
+  // after a programmatic flyTo that doesn't cleanly settle.
   forceResync() {
     this._reset();
   },
 
   // Nearest track to a point, within `tolerance` px. Delegates to the pure
-  // hitTestTracks() below (testable without a real Leaflet map) once the
+  // hitTestGrid() below (testable without a real Leaflet map) once the
   // container point is transformed into this layer's local coordinates.
   hitTest(containerPoint, tolerance = 10) {
     const layerPoint = this._map.containerPointToLayerPoint(containerPoint);
     const target = { x: layerPoint.x - this._origin.x, y: layerPoint.y - this._origin.y };
-    return hitTestTracks(target, this._tracks, key => this._state.get(key).visible, tolerance);
+    return hitTestGrid(target, this._hitGrid, this._tracks, key => this._state.get(key).visible, tolerance);
   },
 
   // True if the hover target changed; redraw is driven by the fade loop, not the caller.
@@ -505,6 +681,14 @@ const TrackLayer = L.Layer.extend({
     // this line and the first rAF tick would otherwise flash the full map
     // for a frame before snapping to empty.
     this._restGroupsDirty = true;
+    // This animation changes every track's geometry (drawProgress) every
+    // frame on purpose, so caching a base-pass bitmap here would mean
+    // rebuilding it every one of the ~66 frames below instead of today's
+    // plain stroke — strictly worse than the cache existing at all. Bypass
+    // it for the animation's duration; _draw() falls back to stroking
+    // _restGroupsCache directly while this is set, exactly as it did before
+    // that cache existed.
+    this._bypassBaseCache = true;
 
     // Rendered at a capped ~30fps rather than every rAF tick: a CPU/timeline
     // profile of this exact animation showed the main-thread "Commit" (the
@@ -529,6 +713,11 @@ const TrackLayer = L.Layer.extend({
           this._state.get(k).drawProgress = local;
         });
         this._restGroupsDirty = true;
+        // Every track is fully drawn in by the last frame — safe to resume
+        // caching the base pass from here on. Cleared before this frame's
+        // _draw() call, not after, so that call is the one that builds the
+        // fresh cache instead of stroking directly one more time.
+        if (isLast) this._bypassBaseCache = false;
         this._draw();
       }
       if (!isLast) requestAnimationFrame(step);
@@ -548,7 +737,14 @@ function distToSegment(px, py, x1, y1, x2, y2) {
   let t = len2 === 0 ? 0 : ((px - x1) * dx + (py - y1) * dy) / len2;
   t = Math.max(0, Math.min(1, t));
   const cx = x1 + t * dx, cy = y1 + t * dy;
-  return Math.hypot(px - cx, py - cy);
+  // sqrt, not hypot: hypot's extra work (rescaling to guard against
+  // overflow/underflow on huge or tiny inputs) is wasted on plain screen-
+  // pixel coordinates, which never come close to either extreme, and it
+  // measurably loses to a plain sqrt of the sum of squares for that case —
+  // this runs per segment per mousemove, thousands of times in a dense
+  // cluster.
+  const ex = px - cx, ey = py - cy;
+  return Math.sqrt(ex * ex + ey * ey);
 }
 
 // Pure hit-test core, extracted from TrackLayer.hitTest() above so it's
@@ -572,6 +768,116 @@ function hitTestTracks(target, tracks, isVisible, tolerance) {
       if (d < bestDist) { bestDist = d; best = t.key; }
     }
   });
+  return best;
+}
+
+// ── Hit-test grid ─────────────────────────────────────────────
+// hitTestTracks() above is correct but walks every segment of every track
+// whose cached bbox merely overlaps the cursor — measured at ~12,500
+// segments per mousemove in the densest real cluster (Mission Peak, ~170
+// overlapping bboxes). Bucketing segments into a uniform grid over
+// layer-local pixel space turns that into "check the ~9 cells around the
+// cursor." hitTestTracks() is kept as-is (and still exported) since it's
+// simple and tested — this is an accelerated path alongside it, not a
+// replacement.
+const HIT_GRID_CELL_PX = 64;
+
+// Same numeric-composite-key trick cellKey() above uses for lat/lng cells:
+// one Map lookup on a plain number instead of a string. cy is offset by a
+// half-stride so it stays a non-negative int (Map keys distinguish -0/0
+// fine, but a negative multiplicand here could collide with a different
+// (cx,cy) pair's stride the way a signed cLng could not for cellKey's much
+// larger stride) — 5e4 is comfortably larger than any cy this layer's
+// tracks (a fixed Bay Area bounding box, plus a handful of far-flung trips)
+// ever produce at cellSize 64.
+const HIT_GRID_STRIDE = 100000;
+const HIT_GRID_Y_OFFSET = 50000;
+
+function hitGridKey(cx, cy) {
+  return cx * HIT_GRID_STRIDE + (cy + HIT_GRID_Y_OFFSET);
+}
+
+// Called once per _reset() (segments don't move until the next reproject),
+// not per mousemove. Each segment is added to every cell its own small
+// bounding box overlaps — almost always just one cell, since a segment is
+// two consecutive GPS points and cellSize (64px) comfortably exceeds the
+// gap between them at any zoom this app renders at.
+//
+// The four viewMin/viewMax args are optional (undefined skips culling
+// entirely, e.g. for tests) — when given, a track is skipped via its cached
+// bbox first (cheap, rejects most of the dataset at typical zoom levels —
+// same reasoning as _draw()'s base-pass culling), and segments of a
+// partially-overlapping track are culled individually the same way
+// _collectSegments does. hitTest() only ever queries a point at or near the
+// visible viewport, so a segment nowhere near it can never be its nearest
+// match — measured at ~2.8ms to build unculled on the real dataset,
+// unconditionally, on every reset.
+function buildHitGrid(tracks, cellSize = HIT_GRID_CELL_PX, viewMinX, viewMinY, viewMaxX, viewMaxY) {
+  const grid = new Map();
+  const cull = viewMinX !== undefined;
+  for (let ti = 0; ti < tracks.length; ti++) {
+    const t = tracks[ti];
+    const px = t._px;
+    const n = t.coords.length;
+    if (!px || n < 2) continue;
+    if (cull) {
+      const b = t._bbox;
+      if (b && (b.maxX < viewMinX || b.minX > viewMaxX || b.maxY < viewMinY || b.minY > viewMaxY)) continue;
+    }
+    for (let i = 0; i < n - 1; i++) {
+      const x1 = px[i * 2], y1 = px[i * 2 + 1], x2 = px[(i + 1) * 2], y2 = px[(i + 1) * 2 + 1];
+      if (cull) {
+        if ((x1 < viewMinX && x2 < viewMinX) || (x1 > viewMaxX && x2 > viewMaxX) ||
+            (y1 < viewMinY && y2 < viewMinY) || (y1 > viewMaxY && y2 > viewMaxY)) continue;
+      }
+      const cx0 = Math.floor(Math.min(x1, x2) / cellSize), cx1 = Math.floor(Math.max(x1, x2) / cellSize);
+      const cy0 = Math.floor(Math.min(y1, y2) / cellSize), cy1 = Math.floor(Math.max(y1, y2) / cellSize);
+      for (let cx = cx0; cx <= cx1; cx++) {
+        for (let cy = cy0; cy <= cy1; cy++) {
+          const key = hitGridKey(cx, cy);
+          let bucket = grid.get(key);
+          if (!bucket) grid.set(key, bucket = []);
+          bucket.push(ti, i);
+        }
+      }
+    }
+  }
+  return { grid, cellSize };
+}
+
+// Nearest track to `target` (layer-local pixel coords) within `tolerance`,
+// using a grid from buildHitGrid() instead of every track's every segment.
+// Checking only the 3x3 block of cells centered on the cursor is exact
+// (not an approximation) as long as tolerance never exceeds cellSize — true
+// here: tolerance tops out at 22px for a touch tap, cellSize defaults to
+// 64px — because any segment closer than `tolerance` to a point inside the
+// center cell must itself pass through the center cell or one of its
+// 8 neighbors.
+function hitTestGrid(target, hitGrid, tracks, isVisible, tolerance) {
+  const { grid, cellSize } = hitGrid;
+  const cx = Math.floor(target.x / cellSize), cy = Math.floor(target.y / cellSize);
+  let best = null, bestDist = tolerance;
+  // A segment can land in >1 cell (see buildHitGrid) and a long track can
+  // put several segments in the same cell — dedupe (track, segment) pairs
+  // so a neighboring cell doesn't re-test one already checked this call.
+  const seen = new Set();
+  for (let gx = cx - 1; gx <= cx + 1; gx++) {
+    for (let gy = cy - 1; gy <= cy + 1; gy++) {
+      const bucket = grid.get(hitGridKey(gx, gy));
+      if (!bucket) continue;
+      for (let k = 0; k < bucket.length; k += 2) {
+        const ti = bucket[k], i = bucket[k + 1];
+        const pairKey = ti * 1e6 + i; // segments-per-track never approaches 1e6
+        if (seen.has(pairKey)) continue;
+        seen.add(pairKey);
+        const t = tracks[ti];
+        if (!isVisible(t.key)) continue;
+        const px = t._px;
+        const d = distToSegment(target.x, target.y, px[i * 2], px[i * 2 + 1], px[(i + 1) * 2], px[(i + 1) * 2 + 1]);
+        if (d < bestDist) { bestDist = d; best = t.key; }
+      }
+    }
+  }
   return best;
 }
 
@@ -622,6 +928,6 @@ function lerpColor(hexA, hexB, t) {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     distToSegment, hitTestTracks, cellSizeDeg, cellKey, maxOf, bucketForFreq,
-    hexToRgb, rgbToHex, lerpColor,
+    hexToRgb, rgbToHex, lerpColor, buildHitGrid, hitTestGrid,
   };
 }

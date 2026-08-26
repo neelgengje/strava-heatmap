@@ -85,7 +85,18 @@ function initV2App({ tileTheme = 'light', controlsPosition = 'topright', inlineD
         </li>`;
     }).join('');
 
-    itemByKey = new Map(ordered.map(t => [t.key, els.list.querySelector(`[data-key="${t.key}"]`)]));
+    // Pair by position instead of a `querySelector` per track: the matched
+    // elements were just built from this exact `ordered` array in this
+    // exact order, so the i-th .activity-item is already ordered[i]'s — no
+    // per-item attribute matching needed. One querySelectorAll rather than
+    // els.list.children: onSelect() re-parents #detail-panel to sit right
+    // after the selected row (see inlineDetail below), which makes it a
+    // child of the list too — .activity-item filters that out, where a
+    // plain children index would silently shift if renderList ever ran
+    // again after a selection.
+    itemByKey = new Map();
+    const rendered = els.list.querySelectorAll('.activity-item');
+    for (let i = 0; i < ordered.length; i++) itemByKey.set(ordered[i].key, rendered[i]);
 
     // Hover highlights the trail only — no camera move, no scrolling.
     els.list.addEventListener('mousemove', e => {
