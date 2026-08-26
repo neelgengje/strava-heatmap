@@ -234,7 +234,7 @@ function initV2App({ tileTheme = 'light', controlsPosition = 'topright', inlineD
     });
 
     els.panelClose.addEventListener('click', () => dash.deselect());
-    els.replayBtn.addEventListener('click', () => profile?.replay(12000));
+    els.replayBtn.addEventListener('click', () => profile?.replay(9000));
     els.hrToggle.addEventListener('click', () => {
       hrVisible = !hrVisible;
       els.hrToggle.classList.toggle('on', hrVisible);
