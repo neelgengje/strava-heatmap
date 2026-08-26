@@ -3,6 +3,18 @@
 // replay mode (ghost marker walks the route on its own). No duration/pace
 // curve — streams only carry distance/altitude/latlng, no timestamps.
 
+// Module-level so it's shared across every ElevationProfile ever
+// constructed (there's normally just one, reused for the panel's whole
+// lifetime — see app-controller.js). Keyed by activity id, capped with
+// simple LRU eviction: re-selecting an activity already viewed this
+// session (a common flow when browsing the list) skips the fetch +
+// JSON.parse + per-point processing entirely. Capped small — the biggest
+// entries carry a full-resolution `latlng` array (~58k points) and can run
+// multiple MB each, so this is sized for "the last few browsed", not "the
+// whole session".
+const STREAM_CACHE_MAX = 6;
+const streamCache = new Map(); // activityId -> processed data; insertion order = recency
+
 class ElevationProfile {
   constructor(canvas, { color = '#c44535', onMove, onLeave } = {}) {
     this.canvas = canvas;
@@ -12,6 +24,7 @@ class ElevationProfile {
     this.onLeave = onLeave || (() => {});
     this.data = null;
     this._replayRun = 0; // must start numeric — ++undefined is NaN, and NaN !== NaN would abort every replay on frame 1
+    this._loadGen = 0; // same pattern as _replayRun, guards load() below against out-of-order resolution
     this.showHr = false;
     this._bindInteraction();
 
@@ -31,29 +44,76 @@ class ElevationProfile {
 
   async load(activityId) {
     this.data = null;
+    // Selecting a second activity before the first's fetch resolves — easy
+    // to do when browsing the list quickly — used to let whichever request
+    // landed last win, cache or not. Now that a cache hit resolves
+    // synchronously while a miss still awaits a fetch, that race is much
+    // easier to trigger (the cached selection renders instantly, then the
+    // slower one lands and overwrites it), so this generation counter (same
+    // pattern as _replayRun above) makes a load that's since been
+    // superseded a no-op instead of clobbering `this.data`.
+    const myGen = ++this._loadGen;
+
+    const cached = streamCache.get(activityId);
+    if (cached) {
+      // Bump to most-recently-used: delete + re-set moves it to the end of
+      // Map's insertion order, which the eviction below reads as "newest".
+      streamCache.delete(activityId);
+      streamCache.set(activityId, cached);
+      this.data = cached;
+      this._layout();
+      this.draw();
+      return this.data;
+    }
+
     const res = await fetch(`/data/streams/${activityId}.json`);
     if (!res.ok) throw new Error('no stream');
     const { distance, altitude, latlng, heartrate } = await res.json();
     if (!distance?.length) throw new Error('empty');
+    if (myGen !== this._loadGen) return this.data; // superseded while the fetch was in flight
 
-    const distMi = distance.map(d => d / 1609.34);
-    const elevFt = altitude.map(a => a * 3.28084);
-    const maxDist = distMi[distMi.length - 1];
-    const minElev = Math.min(...elevFt);
-    const maxElev = Math.max(...elevFt);
-
-    // heartrate is absent for older/non-HR activities, and Strava streams
-    // carry `null` gaps even within an HR-having activity — filter those
-    // out before taking min/max, or a single null (coerced to 0 by
-    // Math.min) would crush the whole scale into the top sliver of the band.
-    const hrValid = (heartrate || []).filter(v => Number.isFinite(v) && v > 0);
-    const minHr = hrValid.length ? Math.min(...hrValid) : 0;
-    const maxHr = hrValid.length ? Math.max(...hrValid) : 0;
+    // One indexed pass building both converted arrays and every min/max,
+    // instead of separate .map()/.filter() passes plus Math.min(...arr)/
+    // Math.max(...arr) — the spread form marshals the whole array as call
+    // arguments, which is slower and (for a long enough activity; the
+    // biggest stream here is ~58k points) risks blowing the engine's
+    // argument-count limit. Selecting an activity is on the interaction
+    // path, not just load, so this runs every time, not once.
+    const n = distance.length;
+    const distMi = new Float64Array(n);
+    const elevFt = new Float64Array(n);
+    let minElev = Infinity, maxElev = -Infinity;
+    let minHr = Infinity, maxHr = -Infinity, hasHr = false;
+    for (let i = 0; i < n; i++) {
+      const d = distance[i] / 1609.34;
+      const e = altitude[i] * 3.28084;
+      distMi[i] = d;
+      elevFt[i] = e;
+      if (e < minElev) minElev = e;
+      if (e > maxElev) maxElev = e;
+      // heartrate is absent for older/non-HR activities, and Strava streams
+      // carry `null` gaps even within an HR-having activity — skip those
+      // when tracking min/max, or a single null would crush the scale.
+      const hr = heartrate ? heartrate[i] : undefined;
+      if (Number.isFinite(hr) && hr > 0) {
+        hasHr = true;
+        if (hr < minHr) minHr = hr;
+        if (hr > maxHr) maxHr = hr;
+      }
+    }
+    if (!hasHr) { minHr = 0; maxHr = 0; }
+    const maxDist = distMi[n - 1];
 
     this.data = {
       distMi, elevFt, latlng: latlng || [], maxDist, minElev, elevRange: (maxElev - minElev) || 1,
       hrBpm: heartrate || [], minHr, hrRange: (maxHr - minHr) || 1,
     };
+
+    streamCache.set(activityId, this.data);
+    if (streamCache.size > STREAM_CACHE_MAX) {
+      streamCache.delete(streamCache.keys().next().value); // evict least-recently-used
+    }
+
     this._layout();
     this.draw();
     return this.data;
