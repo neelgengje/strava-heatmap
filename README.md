@@ -23,19 +23,19 @@ heatmap of your most-traveled paths.
 
 Activities are synced locally with `sync.py`, which pulls from the Strava API and
 writes static JSON files. The site is pure HTML/CSS/JS, no backend, no database.
-Deployed on Cloudflare Pages and auto-updates on every `git push`.
+Deployed as static assets on Cloudflare Workers and auto-updates on every push to `main`.
 
 ```
 After a hike:
   python sync.py       ← pulls new activities from Strava
-  git push origin main ← Cloudflare Pages deploys in ~30s
+  git push origin main ← Cloudflare Workers deploys the new version
 ```
 
 ## Tech Stack
 
 - **Frontend:** Vanilla JS, Leaflet.js, CartoDB Voyager tiles
 - **Sync:** Python — Strava API v3, incremental fetch, OAuth via local callback
-- **Hosting:** Cloudflare Pages (static, always-on, free)
+- **Hosting:** Cloudflare Workers static assets
 - **Data:** Pre-built JSON files committed to the repo
 
 ## Project Structure
