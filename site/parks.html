@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-GTYKHLJXDT"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-GTYKHLJXDT');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>National Parks I Have Visited — Trail Log</title>
+  <meta name="description" content="A personal gallery of all 63 U.S. national parks, collected one visit at a time.">
+  <meta property="og:title" content="National Parks I Have Visited — Trail Log">
+  <meta property="og:description" content="A personal gallery of all 63 U.S. national parks, collected one visit at a time.">
+  <meta property="og:url" content="https://neelgengje.com/parks">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://neelgengje.com/parks">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,400;0,600;0,700;1,400&family=Source+Serif+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/shared.css">
+  <link rel="stylesheet" href="/css/parks.css?v=1">
+  <link rel="preload" as="fetch" href="/data/parks.json" crossorigin>
+</head>
+<body class="parks">
+  <nav class="top-nav" aria-label="Primary navigation">
+    <a class="nav-brand" href="/">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20L10 6L14 14L18 10L21 20H3Z"/></svg>
+      TRAIL LOG
+    </a>
+    <div class="nav-spacer"></div>
+    <div class="nav-links">
+      <a href="/" class="nav-link">home</a>
+      <a href="/app.html" class="nav-link">map</a>
+      <a href="/parks" class="nav-link active" aria-current="page">parks</a>
+    </div>
+  </nav>
+
+  <main class="pk-main">
+    <header class="pk-hero">
+      <div class="pk-kicker">On the road</div>
+      <div class="pk-hero-row">
+        <div class="pk-hero-copy">
+          <h1>National parks<br><em>so far</em></h1>
+          <p>Yosemite was my first national park, and its scale and natural beauty left me in awe. Since then, I’ve wanted to keep exploring what each of America’s national parks has to offer.</p>
+          <div class="pk-tally" aria-label="Visit progress">
+            <strong id="pkVisitedTotal">11</strong>
+            <span>parks visited<br>of 63</span>
+          </div>
+        </div>
+      </div>
+      <div class="pk-divider" aria-hidden="true"><span></span><svg viewBox="0 0 32 32"><path d="M16 3 20 12 29 16 20 20 16 29 12 20 3 16 12 12Z"/></svg><span></span></div>
+    </header>
+
+    <section class="pk-gallery-section" aria-labelledby="pkGalleryTitle">
+      <div class="pk-gallery-heading">
+        <h2 id="pkGalleryTitle">All national parks</h2>
+        <p class="pk-result-count" id="pkResultCount" aria-live="polite">Showing 63 parks</p>
+      </div>
+      <div class="pk-grid" id="pkGrid" aria-live="polite"></div>
+      <div class="pk-empty" id="pkEmpty" hidden><span>Nothing in this corner of the map.</span><button type="button" id="pkEmptyReset">Reset filters</button></div>
+    </section>
+  </main>
+
+  <button class="pk-filter-trigger" id="pkFilterTrigger" type="button" aria-controls="pkFilterDrawer" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h16M7 12h10M10 17h4"/></svg>
+    <span>Filter</span><b id="pkFilterBadge" hidden>1</b>
+  </button>
+
+  <div class="pk-drawer-scrim" id="pkDrawerScrim" hidden></div>
+  <aside class="pk-drawer" id="pkFilterDrawer" aria-label="Park filters" aria-hidden="true" inert>
+    <div class="pk-drawer-head">
+      <p>Explore the collection</p>
+      <button class="pk-icon-button" id="pkDrawerClose" type="button" aria-label="Close filters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="pk-drawer-body">
+      <fieldset class="pk-fieldset">
+        <legend class="pk-visually-hidden">Visit status</legend>
+        <div class="pk-segmented" id="pkStatusFilter">
+          <button type="button" data-status="all" class="active">All <span>63</span></button>
+          <button type="button" data-status="visited">Visited <span>11</span></button>
+          <button type="button" data-status="unvisited">Unvisited <span>52</span></button>
+        </div>
+      </fieldset>
+      <fieldset class="pk-fieldset pk-state-fieldset">
+        <legend>States / territories</legend>
+        <div class="pk-state-options" id="pkStateFilter" aria-label="Filter by states and territories"></div>
+      </fieldset>
+    </div>
+    <div class="pk-drawer-foot"><button type="button" class="pk-reset" id="pkResetFilters">Reset</button><button type="button" class="pk-show-results" id="pkShowResults">Show 63 parks</button></div>
+  </aside>
+
+  <div class="pk-modal" id="pkModal" data-design="atlas" hidden>
+    <div class="pk-modal-scrim" data-modal-close></div>
+    <article class="pk-modal-card" role="dialog" aria-modal="true" aria-labelledby="pkModalTitle">
+      <button class="pk-modal-close pk-icon-button" type="button" data-modal-close aria-label="Close park details"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+      <div class="pk-modal-poster"><img id="pkModalImage" alt=""></div>
+      <div class="pk-modal-content">
+        <h2 id="pkModalTitle"></h2>
+        <div class="pk-modal-meta"><span id="pkModalLocation"></span><span class="pk-modal-established">Established <strong id="pkModalYear"></strong></span></div>
+        <section><h3>About the park</h3><ul id="pkModalFacts" class="pk-facts"></ul></section>
+        <div class="pk-modal-columns">
+          <section><h3>Visitor centers</h3><ul id="pkModalCenters"></ul></section>
+          <section><h3>Hikes to explore</h3><ul id="pkModalHikes"></ul></section>
+        </div>
+      </div>
+    </article>
+  </div>
+  <script src="/js/parks.js?v=1"></script>
+</body>
+</html>

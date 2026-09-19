@@ -16,6 +16,7 @@ heatmap of your most-traveled paths.
 - **Heart rate + calories** — Per-second HR streams and calorie totals in the detail panel
 - **Activity filtering** — Filter by type, search by name, or narrow by year
 - **Landing page** — Stats overview and activity breakdown
+- **National parks gallery** — 63 illustrated park posters, visit and state filters, and park details at [neelgengje.com/parks](https://neelgengje.com/parks)
 - **No login required** — Fully public static site, no server
 
 ## How it works
@@ -44,16 +45,19 @@ sync.py               Pull Strava activities → write static JSON
 site/
   index.html          Landing page
   app.html            Map application
+  parks.html          National parks gallery
   css/
     shared.css        Design tokens, nav, shared styles
     landing.css        Landing page styles
     dashboard-core.css Map app core styles
     dashboard-layout.css Map app layout (sidebar, drawer, controls)
     app.css            Map app overrides
+    parks.css          Parks gallery styles
   js/
     config.js          Activity type definitions and color palettes
     landing.js          Landing page — reads stats.json
     track.js            Landing page cursor-track animation
+    parks.js            Parks gallery filters and details
     dashboard/
       engine.js          Map rendering engine
       data.js            Data loading/normalization
@@ -67,6 +71,7 @@ site/
   data/
     activities.json     All activity data (coords, stats, metadata)
     stats.json           Aggregated totals for the landing page
+    parks.json           Park facts, visitor centers, and hikes
     streams/              Per-activity elevation + GPS + heart-rate streams
 ```
 

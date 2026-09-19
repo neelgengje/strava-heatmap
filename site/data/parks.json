@@ -1,0 +1,1598 @@
+[
+  {
+    "id": "acadia",
+    "name": "Acadia",
+    "state": "Maine",
+    "established": 1919,
+    "acres": 49000,
+    "biome": "coastal",
+    "hikes": [
+      "Precipice Trail",
+      "Cadillac Mountain South Ridge Trail",
+      "Jordan Pond Path"
+    ],
+    "facts": [
+      "Cadillac Mountain is, for part of the year, one of the first places in the continental United States to see the sunrise.",
+      "The park protects approximately 49,000 acres of coastal landscape in Maine."
+    ],
+    "visitorCenters": [
+      "Hulls Cove Visitor Center",
+      "Rockefeller Welcome Center",
+      "Sieur de Monts Nature Center"
+    ],
+    "hikeLinks": {
+      "Precipice Trail": "https://www.alltrails.com/trail/us/maine/precipice-loop",
+      "Cadillac Mountain South Ridge Trail": "https://www.alltrails.com/trail/us/maine/cadillac-south-ridge-trail--2",
+      "Jordan Pond Path": "https://www.alltrails.com/trail/us/maine/jordan-pond-path"
+    }
+  },
+  {
+    "id": "american-samoa",
+    "name": "American Samoa",
+    "state": "American Samoa",
+    "established": 1988,
+    "acres": 8300,
+    "biome": "island-tropical",
+    "hikes": [
+      "Mount 'Alava Trail",
+      "Lata Mountain Trail",
+      "Tuafanua Trail"
+    ],
+    "facts": [
+      "It is the only U.S. national park south of the equator, protecting paleotropical rainforest and coral reefs across three volcanic islands.",
+      "The park protects approximately 8,300 acres of island tropical landscape in American Samoa."
+    ],
+    "visitorCenters": [
+      "National Park of American Samoa Visitor Center"
+    ],
+    "hikeLinks": {
+      "Mount 'Alava Trail": "https://www.alltrails.com/trail/american-samoa/tutuila/mount-alava-trail",
+      "Tuafanua Trail": "https://www.alltrails.com/trail/american-samoa/tutuila/tuafanua-trail"
+    }
+  },
+  {
+    "id": "arches",
+    "name": "Arches",
+    "state": "Utah",
+    "established": 1971,
+    "acres": 76700,
+    "biome": "desert",
+    "hikes": [
+      "Delicate Arch Trail",
+      "Devils Garden Loop",
+      "Landscape Arch Trail"
+    ],
+    "facts": [
+      "Arches contains over 2,000 documented natural sandstone arches, the highest density of them in the world.",
+      "The park protects approximately 76,700 acres of desert landscape in Utah."
+    ],
+    "visitorCenters": [
+      "Arches Visitor Center"
+    ],
+    "hikeLinks": {
+      "Delicate Arch Trail": "https://www.alltrails.com/trail/us/utah/delicate-arch-trail",
+      "Devils Garden Loop": "https://www.alltrails.com/trail/us/utah/devils-garden-loop-trail-with-7-arches",
+      "Landscape Arch Trail": "https://www.alltrails.com/trail/us/utah/landscape-arch-trail"
+    }
+  },
+  {
+    "id": "badlands",
+    "name": "Badlands",
+    "state": "South Dakota",
+    "established": 1978,
+    "acres": 242800,
+    "biome": "desert",
+    "hikes": [
+      "Notch Trail",
+      "Door Trail",
+      "Castle Trail"
+    ],
+    "facts": [
+      "The park's striped rock layers hold one of the richest Oligocene-epoch mammal fossil beds in the world.",
+      "The park protects approximately 242,800 acres of desert landscape in South Dakota."
+    ],
+    "visitorCenters": [
+      "Ben Reifel Visitor Center",
+      "White River Visitor Center"
+    ],
+    "hikeLinks": {
+      "Notch Trail": "https://www.alltrails.com/trail/us/south-dakota/notch-trail",
+      "Door Trail": "https://www.alltrails.com/trail/us/south-dakota/the-door-trail",
+      "Castle Trail": "https://www.alltrails.com/trail/us/south-dakota/castle-trail--4"
+    }
+  },
+  {
+    "id": "big-bend",
+    "name": "Big Bend",
+    "state": "Texas",
+    "established": 1944,
+    "acres": 801000,
+    "biome": "desert",
+    "hikes": [
+      "South Rim Trail",
+      "Window Trail",
+      "Lost Mine Trail"
+    ],
+    "facts": [
+      "Big Bend hosts more bird species, around 450, than any other U.S. national park.",
+      "The park protects approximately 801,000 acres of desert landscape in Texas."
+    ],
+    "visitorCenters": [
+      "Panther Junction Visitor Center",
+      "Chisos Basin Visitor Center",
+      "Persimmon Gap Visitor Center",
+      "Rio Grande Village Visitor Center",
+      "Castolon Visitor Center"
+    ],
+    "hikeLinks": {
+      "South Rim Trail": "https://www.alltrails.com/trail/us/texas/south-rim-trail-loop",
+      "Window Trail": "https://www.alltrails.com/trail/us/texas/the-window-trail",
+      "Lost Mine Trail": "https://www.alltrails.com/trail/us/texas/lost-mine-trail"
+    }
+  },
+  {
+    "id": "biscayne",
+    "name": "Biscayne",
+    "state": "Florida",
+    "established": 1980,
+    "acres": 173000,
+    "biome": "coastal",
+    "hikes": [
+      "Jetty Trail (Boca Chita Key)",
+      "Spite Highway Trail (Elliott Key)",
+      "Black Point Park nature walk"
+    ],
+    "facts": [
+      "About 95 percent of the park is open water, protecting a long stretch of Florida's living coral reef.",
+      "The park protects approximately 173,000 acres of coastal landscape in Florida."
+    ],
+    "visitorCenters": [
+      "Dante Fascell Visitor Center"
+    ],
+    "hikeLinks": {}
+  },
+  {
+    "id": "black-canyon-of-the-gunnison",
+    "name": "Black Canyon of the Gunnison",
+    "state": "Colorado",
+    "established": 1999,
+    "acres": 30800,
+    "biome": "canyon",
+    "hikes": [
+      "Rim Rock Trail",
+      "Warner Point Nature Trail",
+      "Oak Flat Loop Trail"
+    ],
+    "facts": [
+      "The canyon's Painted Wall is Colorado's tallest cliff, rising about 2,250 feet from river to rim.",
+      "The park protects approximately 30,800 acres of canyon landscape in Colorado."
+    ],
+    "visitorCenters": [
+      "South Rim Visitor Center",
+      "North Rim Ranger Station"
+    ],
+    "hikeLinks": {
+      "Rim Rock Trail": "https://www.alltrails.com/trail/us/colorado/rim-rock-nature-trail",
+      "Warner Point Nature Trail": "https://www.alltrails.com/trail/us/colorado/warner-point-nature-trail",
+      "Oak Flat Loop Trail": "https://www.alltrails.com/trail/us/colorado/oak-flat-loop-trail"
+    }
+  },
+  {
+    "id": "bryce-canyon",
+    "name": "Bryce Canyon",
+    "state": "Utah",
+    "established": 1928,
+    "acres": 35800,
+    "biome": "canyon",
+    "hikes": [
+      "Navajo Loop Trail",
+      "Queens Garden Trail",
+      "Fairyland Loop"
+    ],
+    "facts": [
+      "Bryce Canyon contains the largest concentration of hoodoos found anywhere on Earth.",
+      "The park protects approximately 35,800 acres of canyon landscape in Utah."
+    ],
+    "visitorCenters": [
+      "Bryce Canyon Visitor Center"
+    ],
+    "hikeLinks": {
+      "Navajo Loop Trail": "https://www.alltrails.com/trail/us/utah/navajo-loop-trail",
+      "Queens Garden Trail": "https://www.alltrails.com/trail/us/utah/queen-victoria-via-queens-garden-loop",
+      "Fairyland Loop": "https://www.alltrails.com/trail/us/utah/fairyland-loop-trail"
+    }
+  },
+  {
+    "id": "canyonlands",
+    "name": "Canyonlands",
+    "state": "Utah",
+    "established": 1964,
+    "acres": 337600,
+    "biome": "canyon",
+    "hikes": [
+      "Mesa Arch Trail",
+      "Chesler Park Loop",
+      "Grand View Point Trail"
+    ],
+    "facts": [
+      "The confluence of the Green and Colorado Rivers splits the park into three distinct districts: Island in the Sky, The Needles, and The Maze.",
+      "The park protects approximately 337,600 acres of canyon landscape in Utah."
+    ],
+    "visitorCenters": [
+      "Island in the Sky Visitor Center",
+      "The Needles Visitor Center",
+      "Hans Flat Ranger Station"
+    ],
+    "hikeLinks": {
+      "Mesa Arch Trail": "https://www.alltrails.com/trail/us/utah/mesa-arch",
+      "Chesler Park Loop": "https://www.alltrails.com/trail/us/utah/chesler-park",
+      "Grand View Point Trail": "https://www.alltrails.com/trail/us/utah/grand-view"
+    }
+  },
+  {
+    "id": "capitol-reef",
+    "name": "Capitol Reef",
+    "state": "Utah",
+    "established": 1971,
+    "acres": 241900,
+    "biome": "canyon",
+    "hikes": [
+      "Cassidy Arch Trail",
+      "Hickman Bridge Trail",
+      "Grand Wash Trail"
+    ],
+    "facts": [
+      "The park protects the Waterpocket Fold, a nearly 100-mile-long wrinkle in the earth's crust.",
+      "The park protects approximately 241,900 acres of canyon landscape in Utah."
+    ],
+    "visitorCenters": [
+      "Capitol Reef Visitor Center"
+    ],
+    "hikeLinks": {
+      "Cassidy Arch Trail": "https://www.alltrails.com/trail/us/utah/cassidy-arch-trail",
+      "Hickman Bridge Trail": "https://www.alltrails.com/trail/us/utah/hickman-bridge-trail",
+      "Grand Wash Trail": "https://www.alltrails.com/trail/us/utah/grand-wash-trail-via-capitol-reef-scenic-dr"
+    }
+  },
+  {
+    "id": "carlsbad-caverns",
+    "name": "Carlsbad Caverns",
+    "state": "New Mexico",
+    "established": 1930,
+    "acres": 46800,
+    "biome": "desert",
+    "hikes": [
+      "Natural Entrance Trail",
+      "Big Room Trail",
+      "Slaughter Canyon Cave hike"
+    ],
+    "facts": [
+      "The Big Room chamber is one of the largest single cave chambers by volume in North America.",
+      "The park protects approximately 46,800 acres of desert landscape in New Mexico."
+    ],
+    "visitorCenters": [
+      "Carlsbad Caverns Visitor Center"
+    ],
+    "hikeLinks": {
+      "Slaughter Canyon Cave hike": "https://www.alltrails.com/trail/us/new-mexico/slaughter-canyon-cave-trail"
+    }
+  },
+  {
+    "id": "channel-islands",
+    "name": "Channel Islands",
+    "state": "California",
+    "established": 1980,
+    "acres": 249600,
+    "biome": "coastal",
+    "hikes": [
+      "Cavern Point Loop",
+      "Potato Harbor Trail",
+      "Inspiration Point Trail"
+    ],
+    "facts": [
+      "The park is home to the island fox, a species found nowhere else on Earth and roughly the size of a housecat.",
+      "The park protects approximately 249,600 acres of coastal landscape in California."
+    ],
+    "visitorCenters": [
+      "Robert J. Lagomarsino Visitor Center",
+      "Outdoors Santa Barbara Visitor Center"
+    ],
+    "hikeLinks": {
+      "Cavern Point Loop": "https://www.alltrails.com/trail/us/california/cavern-point-loop--2",
+      "Potato Harbor Trail": "https://www.alltrails.com/trail/us/california/potato-harbor"
+    }
+  },
+  {
+    "id": "congaree",
+    "name": "Congaree",
+    "state": "South Carolina",
+    "established": 2003,
+    "acres": 26700,
+    "biome": "wetland",
+    "hikes": [
+      "Boardwalk Loop Trail",
+      "Weston Lake Loop Trail",
+      "Kingsnake Trail"
+    ],
+    "facts": [
+      "Congaree protects the largest intact expanse of old-growth bottomland hardwood forest left in the United States, with some of the tallest trees in eastern North America.",
+      "The park protects approximately 26,700 acres of wetland landscape in South Carolina."
+    ],
+    "visitorCenters": [
+      "Harry Hampton Visitor Center"
+    ],
+    "hikeLinks": {
+      "Boardwalk Loop Trail": "https://www.alltrails.com/trail/us/south-carolina/boardwalk-loop-trail--2",
+      "Weston Lake Loop Trail": "https://www.alltrails.com/trail/us/south-carolina/weston-lake-loop-trail",
+      "Kingsnake Trail": "https://www.alltrails.com/trail/us/south-carolina/kingsnake-trail"
+    }
+  },
+  {
+    "id": "crater-lake",
+    "name": "Crater Lake",
+    "state": "Oregon",
+    "established": 1902,
+    "acres": 183200,
+    "biome": "volcanic",
+    "hikes": [
+      "Garfield Peak Trail",
+      "Cleetwood Cove Trail",
+      "Watchman Peak Trail"
+    ],
+    "facts": [
+      "Formed by the collapse of ancient Mount Mazama, Crater Lake is the deepest lake in the United States at 1,943 feet.",
+      "The park protects approximately 183,200 acres of volcanic landscape in Oregon."
+    ],
+    "visitorCenters": [
+      "Rim Visitor Center",
+      "Steel Visitor Center"
+    ],
+    "hikeLinks": {
+      "Garfield Peak Trail": "https://www.alltrails.com/trail/us/oregon/garfield-peak-trail",
+      "Watchman Peak Trail": "https://www.alltrails.com/trail/us/oregon/the-watchman-peak-trail"
+    }
+  },
+  {
+    "id": "cuyahoga-valley",
+    "name": "Cuyahoga Valley",
+    "state": "Ohio",
+    "established": 2000,
+    "acres": 32600,
+    "biome": "forest",
+    "hikes": [
+      "Brandywine Gorge Trail",
+      "Ledges Trail",
+      "Blue Hen Falls Trail"
+    ],
+    "facts": [
+      "The park was established around the Cuyahoga River, whose 1969 fire helped spark the modern environmental movement.",
+      "The park protects approximately 32,600 acres of forest landscape in Ohio."
+    ],
+    "visitorCenters": [
+      "Boston Mill Visitor Center"
+    ],
+    "hikeLinks": {
+      "Brandywine Gorge Trail": "https://www.alltrails.com/trail/us/ohio/brandywine-gorge-trail",
+      "Ledges Trail": "https://www.alltrails.com/trail/us/ohio/cuyahoga-valley-ledges-trail",
+      "Blue Hen Falls Trail": "https://www.alltrails.com/trail/us/ohio/blue-hen-falls-trail--2"
+    }
+  },
+  {
+    "id": "death-valley",
+    "name": "Death Valley",
+    "state": "California, Nevada",
+    "established": 1994,
+    "acres": 3408000,
+    "biome": "desert",
+    "hikes": [
+      "Golden Canyon Trail",
+      "Mosaic Canyon Trail",
+      "Badwater Basin Salt Flat walk"
+    ],
+    "facts": [
+      "Badwater Basin, at 282 feet below sea level, is the lowest point in North America, and Death Valley holds the record for the hottest air temperature ever recorded on Earth.",
+      "The park protects approximately 3,408,000 acres of desert landscape in California, Nevada."
+    ],
+    "visitorCenters": [
+      "Furnace Creek Visitor Center"
+    ],
+    "hikeLinks": {
+      "Mosaic Canyon Trail": "https://www.alltrails.com/trail/us/california/mosaic-canyon-trail",
+      "Badwater Basin Salt Flat walk": "https://www.alltrails.com/trail/us/california/badwater-basin-salt-flats-trail"
+    }
+  },
+  {
+    "id": "denali",
+    "name": "Denali",
+    "state": "Alaska",
+    "established": 1917,
+    "acres": 4741000,
+    "biome": "alpine",
+    "hikes": [
+      "Savage Alpine Trail",
+      "Horseshoe Lake Trail",
+      "Mount Healy Overlook Trail"
+    ],
+    "facts": [
+      "Denali is the tallest peak in North America, rising to 20,310 feet.",
+      "The park protects approximately 4,741,000 acres of alpine landscape in Alaska."
+    ],
+    "visitorCenters": [
+      "Denali Visitor Center",
+      "Murie Science and Learning Center",
+      "Eielson Visitor Center"
+    ],
+    "hikeLinks": {
+      "Savage Alpine Trail": "https://www.alltrails.com/trail/us/alaska/savage-alpine-trail--2",
+      "Horseshoe Lake Trail": "https://www.alltrails.com/trail/us/alaska/horseshoe-lake-trail",
+      "Mount Healy Overlook Trail": "https://www.alltrails.com/trail/us/alaska/mount-healy-overlook-trail"
+    }
+  },
+  {
+    "id": "dry-tortugas",
+    "name": "Dry Tortugas",
+    "state": "Florida",
+    "established": 1992,
+    "acres": 64700,
+    "biome": "island-tropical",
+    "hikes": [
+      "Fort Jefferson Loop Trail",
+      "Garden Key self-guided fort tour",
+      "Bush Key sandbar walk"
+    ],
+    "facts": [
+      "The park's centerpiece, Fort Jefferson, is the largest all-masonry fort in the Western Hemisphere, built from over 16 million bricks.",
+      "The park protects approximately 64,700 acres of island tropical landscape in Florida."
+    ],
+    "visitorCenters": [
+      "Garden Key Visitor Center"
+    ],
+    "hikeLinks": {
+      "Fort Jefferson Loop Trail": "https://www.alltrails.com/trail/us/florida/fort-jefferson-loop",
+      "Bush Key sandbar walk": "https://www.alltrails.com/trail/us/florida/bush-key-trail"
+    }
+  },
+  {
+    "id": "everglades",
+    "name": "Everglades",
+    "state": "Florida",
+    "established": 1934,
+    "acres": 1509000,
+    "biome": "wetland",
+    "hikes": [
+      "Anhinga Trail",
+      "Gumbo Limbo Trail",
+      "Shark Valley Trail"
+    ],
+    "facts": [
+      "Everglades is the only place on Earth where alligators and crocodiles live side by side.",
+      "The park protects approximately 1,509,000 acres of wetland landscape in Florida."
+    ],
+    "visitorCenters": [
+      "Ernest F. Coe Visitor Center",
+      "Flamingo Visitor Center",
+      "Shark Valley Visitor Center",
+      "Gulf Coast Visitor Center"
+    ],
+    "hikeLinks": {
+      "Anhinga Trail": "https://www.alltrails.com/trail/us/florida/anhinga-trail",
+      "Gumbo Limbo Trail": "https://www.alltrails.com/trail/us/florida/gumbo-limbo-trail",
+      "Shark Valley Trail": "https://www.alltrails.com/trail/us/florida/shark-valley-tram-trail"
+    }
+  },
+  {
+    "id": "gates-of-the-arctic",
+    "name": "Gates of the Arctic",
+    "state": "Alaska",
+    "established": 1980,
+    "acres": 7524000,
+    "biome": "arctic-tundra",
+    "hikes": [
+      "Arrigetch Peaks cross-country route",
+      "Anaktuvuk Pass valley routes",
+      "Circle Lake tundra hike"
+    ],
+    "facts": [
+      "Gates of the Arctic has no roads or maintained trails anywhere in the park, making it the least-visited national park in the United States.",
+      "The park protects approximately 7,524,000 acres of arctic tundra landscape in Alaska."
+    ],
+    "visitorCenters": [
+      "Arctic Interagency Visitor Center",
+      "Bettles Ranger Station",
+      "Anaktuvuk Pass Ranger Station"
+    ],
+    "hikeLinks": {}
+  },
+  {
+    "id": "gateway-arch",
+    "name": "Gateway Arch",
+    "state": "Missouri",
+    "established": 2018,
+    "acres": 193,
+    "biome": "forest",
+    "hikes": [
+      "Riverfront Trail",
+      "Arch grounds walking loop",
+      "Luther Ely Smith Square path"
+    ],
+    "facts": [
+      "At 630 feet tall, the Gateway Arch is the tallest man-made monument in the Western Hemisphere.",
+      "The park protects approximately 193 acres of forest landscape in Missouri."
+    ],
+    "visitorCenters": [
+      "Gateway Arch Visitor Center"
+    ],
+    "hikeLinks": {
+      "Riverfront Trail": "https://www.alltrails.com/trail/us/missouri/st-louis-riverfront-trail",
+      "Arch grounds walking loop": "https://www.alltrails.com/trail/us/missouri/gateway-arch-loop"
+    }
+  },
+  {
+    "id": "glacier",
+    "name": "Glacier",
+    "state": "Montana",
+    "established": 1910,
+    "acres": 1013100,
+    "biome": "alpine",
+    "hikes": [
+      "Highline Trail",
+      "Grinnell Glacier Trail",
+      "Hidden Lake Overlook Trail"
+    ],
+    "facts": [
+      "The park had more than 100 named glaciers in 1850; fewer than 25 remain today.",
+      "The park protects approximately 1,013,100 acres of alpine landscape in Montana."
+    ],
+    "visitorCenters": [
+      "Apgar Visitor Center",
+      "Logan Pass Visitor Center",
+      "St. Mary Visitor Center"
+    ],
+    "hikeLinks": {
+      "Highline Trail": "https://www.alltrails.com/trail/us/montana/highline-trail",
+      "Grinnell Glacier Trail": "https://www.alltrails.com/trail/us/montana/grinnell-glacier-trail",
+      "Hidden Lake Overlook Trail": "https://www.alltrails.com/trail/us/montana/hidden-lake-overlook"
+    }
+  },
+  {
+    "id": "glacier-bay",
+    "name": "Glacier Bay",
+    "state": "Alaska",
+    "established": 1980,
+    "acres": 3223400,
+    "biome": "coastal",
+    "hikes": [
+      "Forest Loop Trail",
+      "Bartlett River Trail",
+      "Point Gustavus beach walk"
+    ],
+    "facts": [
+      "The bay was almost entirely covered by a single tidewater glacier as recently as 1750; the ice has since retreated more than 65 miles.",
+      "The park protects approximately 3,223,400 acres of coastal landscape in Alaska."
+    ],
+    "visitorCenters": [
+      "Glacier Bay Visitor Information Station",
+      "Bartlett Cove Ranger Station"
+    ],
+    "hikeLinks": {}
+  },
+  {
+    "id": "grand-canyon",
+    "name": "Grand Canyon",
+    "state": "Arizona",
+    "established": 1919,
+    "acres": 1201600,
+    "biome": "canyon",
+    "hikes": [
+      "Bright Angel Trail",
+      "South Kaibab Trail",
+      "Rim Trail"
+    ],
+    "facts": [
+      "The canyon exposes nearly two billion years of Earth's geologic history in its layered rock walls.",
+      "The park protects approximately 1,201,600 acres of canyon landscape in Arizona."
+    ],
+    "visitorCenters": [
+      "Grand Canyon Visitor Center",
+      "Verkamp’s Visitor Center",
+      "Desert View Watchtower",
+      "North Rim Visitor Center"
+    ],
+    "hikeLinks": {
+      "Bright Angel Trail": "https://www.alltrails.com/trail/us/arizona/bright-angel-trail--11"
+    }
+  },
+  {
+    "id": "grand-teton",
+    "name": "Grand Teton",
+    "state": "Wyoming",
+    "established": 1929,
+    "acres": 310000,
+    "biome": "alpine",
+    "hikes": [
+      "Cascade Canyon Trail",
+      "Jenny Lake Loop Trail",
+      "Delta Lake Trail"
+    ],
+    "facts": [
+      "The Teton Range has no foothills, so the peaks appear to rise abruptly straight from the valley floor.",
+      "The park protects approximately 310,000 acres of alpine landscape in Wyoming."
+    ],
+    "visitorCenters": [
+      "Craig Thomas Discovery and Visitor Center",
+      "Colter Bay Visitor Center",
+      "Jenny Lake Visitor Center",
+      "Laurance S. Rockefeller Preserve Center"
+    ],
+    "hikeLinks": {
+      "Cascade Canyon Trail": "https://www.alltrails.com/trail/us/wyoming/cascade-canyon-trail",
+      "Jenny Lake Loop Trail": "https://www.alltrails.com/trail/us/wyoming/jenny-lake-trail",
+      "Delta Lake Trail": "https://www.alltrails.com/trail/us/wyoming/delta-lake-via-lupine-meadows-access"
+    }
+  },
+  {
+    "id": "great-basin",
+    "name": "Great Basin",
+    "state": "Nevada",
+    "established": 1986,
+    "acres": 77200,
+    "biome": "desert",
+    "hikes": [
+      "Bristlecone Pine Trail",
+      "Wheeler Peak Summit Trail",
+      "Alpine Lakes Loop"
+    ],
+    "facts": [
+      "The park protects groves of Great Basin bristlecone pines, some of the oldest living non-clonal trees on Earth at over 4,000 years old.",
+      "The park protects approximately 77,200 acres of desert landscape in Nevada."
+    ],
+    "visitorCenters": [
+      "Great Basin Visitor Center",
+      "Lehman Caves Visitor Center"
+    ],
+    "hikeLinks": {
+      "Wheeler Peak Summit Trail": "https://www.alltrails.com/trail/us/nevada/wheeler-peak-trail-via-stella-lake-trail",
+      "Alpine Lakes Loop": "https://www.alltrails.com/trail/us/nevada/alpine-lakes"
+    }
+  },
+  {
+    "id": "great-sand-dunes",
+    "name": "Great Sand Dunes",
+    "state": "Colorado",
+    "established": 2004,
+    "acres": 107300,
+    "biome": "desert",
+    "hikes": [
+      "High Dune Trail",
+      "Star Dune route",
+      "Medano Creek walk"
+    ],
+    "facts": [
+      "Great Sand Dunes contains the tallest sand dunes in North America, with Star Dune rising nearly 750 feet.",
+      "The park protects approximately 107,300 acres of desert landscape in Colorado."
+    ],
+    "visitorCenters": [
+      "Great Sand Dunes Visitor Center"
+    ],
+    "hikeLinks": {
+      "High Dune Trail": "https://www.alltrails.com/trail/us/colorado/high-dune-trail"
+    }
+  },
+  {
+    "id": "great-smoky-mountains",
+    "name": "Great Smoky Mountains",
+    "state": "North Carolina, Tennessee",
+    "established": 1934,
+    "acres": 522400,
+    "biome": "forest",
+    "hikes": [
+      "Alum Cave Trail",
+      "Charlies Bunion Trail",
+      "Clingmans Dome Trail"
+    ],
+    "facts": [
+      "It is the most visited national park in the United States, drawing more than twice the visitors of any other.",
+      "The park protects approximately 522,400 acres of forest landscape in North Carolina, Tennessee."
+    ],
+    "visitorCenters": [
+      "Sugarlands Visitor Center",
+      "Oconaluftee Visitor Center",
+      "Cades Cove Visitor Center"
+    ],
+    "hikeLinks": {}
+  },
+  {
+    "id": "guadalupe-mountains",
+    "name": "Guadalupe Mountains",
+    "state": "Texas",
+    "established": 1972,
+    "acres": 86400,
+    "biome": "desert",
+    "hikes": [
+      "Guadalupe Peak Trail",
+      "Devil's Hall Trail",
+      "McKittrick Canyon Trail"
+    ],
+    "facts": [
+      "Guadalupe Peak, at 8,751 feet, is the highest point in Texas.",
+      "The park protects approximately 86,400 acres of desert landscape in Texas."
+    ],
+    "visitorCenters": [
+      "Pine Springs Visitor Center",
+      "McKittrick Canyon Visitor Contact Station"
+    ],
+    "hikeLinks": {
+      "Guadalupe Peak Trail": "https://www.alltrails.com/trail/us/texas/guadalupe-peak-texas-highpoint-trail",
+      "Devil's Hall Trail": "https://www.alltrails.com/trail/us/texas/devils-hall",
+      "McKittrick Canyon Trail": "https://www.alltrails.com/trail/us/texas/mckittrick-canyon-trail"
+    }
+  },
+  {
+    "id": "haleakala",
+    "name": "Haleakalā",
+    "state": "Hawaii",
+    "established": 1961,
+    "acres": 33500,
+    "biome": "volcanic",
+    "hikes": [
+      "Sliding Sands Trail",
+      "Pipiwai Trail",
+      "Halemau'u Trail"
+    ],
+    "facts": [
+      "Haleakalā's massive volcanic crater is so barren and otherworldly that NASA has used it to test lunar and Mars rover equipment.",
+      "The park protects approximately 33,500 acres of volcanic landscape in Hawaii."
+    ],
+    "visitorCenters": [
+      "Park Headquarters Visitor Center",
+      "Haleakalā Visitor Center",
+      "Kīpahulu Visitor Center"
+    ],
+    "hikeLinks": {
+      "Sliding Sands Trail": "https://www.alltrails.com/trail/hawaii/maui/sliding-sands-keonehe-ehe-e"
+    }
+  },
+  {
+    "id": "hawaii-volcanoes",
+    "name": "Hawaiʻi Volcanoes",
+    "state": "Hawaii",
+    "established": 1916,
+    "acres": 344800,
+    "biome": "volcanic",
+    "hikes": [
+      "Kīlauea Iki Trail",
+      "Crater Rim Trail",
+      "Devastation Trail"
+    ],
+    "facts": [
+      "The park protects Kīlauea, one of the most active volcanoes on Earth.",
+      "The park protects approximately 344,800 acres of volcanic landscape in Hawaii."
+    ],
+    "visitorCenters": [
+      "Kīlauea Visitor Center",
+      "Kahuku Visitor Contact Station"
+    ],
+    "hikeLinks": {}
+  },
+  {
+    "id": "hot-springs",
+    "name": "Hot Springs",
+    "state": "Arkansas",
+    "established": 1921,
+    "acres": 5550,
+    "biome": "forest",
+    "hikes": [
+      "Hot Springs Mountain Trail",
+      "Sunset Trail",
+      "Gulpha Gorge Trail"
+    ],
+    "facts": [
+      "Land here was first federally protected in 1832, making it the oldest area in the National Park System, decades before Yellowstone.",
+      "The park protects approximately 5,550 acres of forest landscape in Arkansas."
+    ],
+    "visitorCenters": [
+      "Fordyce Bathhouse Visitor Center"
+    ],
+    "hikeLinks": {
+      "Sunset Trail": "https://www.alltrails.com/trail/us/arkansas/sunset-loop-trail",
+      "Gulpha Gorge Trail": "https://www.alltrails.com/trail/us/arkansas/gulpha-gorge-trail"
+    }
+  },
+  {
+    "id": "indiana-dunes",
+    "name": "Indiana Dunes",
+    "state": "Indiana",
+    "established": 2019,
+    "acres": 15350,
+    "biome": "coastal",
+    "hikes": [
+      "Mount Baldy Trail",
+      "Cowles Bog Trail",
+      "West Beach Dune Succession Trail"
+    ],
+    "facts": [
+      "Because it sits where several ecosystems converge along Lake Michigan, the park has one of the highest levels of plant biodiversity of any U.S. national park.",
+      "The park protects approximately 15,350 acres of coastal landscape in Indiana."
+    ],
+    "visitorCenters": [
+      "Indiana Dunes Visitor Center",
+      "Paul H. Douglas Center for Environmental Education"
+    ],
+    "hikeLinks": {
+      "Cowles Bog Trail": "https://www.alltrails.com/trail/us/indiana/cowles-bog-trail--4",
+      "West Beach Dune Succession Trail": "https://www.alltrails.com/trail/us/indiana/west-beach-dune-succession-trail"
+    }
+  },
+  {
+    "id": "isle-royale",
+    "name": "Isle Royale",
+    "state": "Michigan",
+    "established": 1940,
+    "acres": 571800,
+    "biome": "forest",
+    "hikes": [
+      "Greenstone Ridge Trail",
+      "Rock Harbor Trail",
+      "Scoville Point Loop"
+    ],
+    "facts": [
+      "The island is home to the longest continuous predator-prey study in the world, tracking wolves and moose since 1958.",
+      "The park protects approximately 571,800 acres of forest landscape in Michigan."
+    ],
+    "visitorCenters": [
+      "Houghton Visitor Center",
+      "Rock Harbor Visitor Center",
+      "Windigo Visitor Center"
+    ],
+    "hikeLinks": {
+      "Greenstone Ridge Trail": "https://www.alltrails.com/trail/us/michigan/greenstone-ridge-trail",
+      "Rock Harbor Trail": "https://www.alltrails.com/trail/us/michigan/rock-harbor-trail"
+    }
+  },
+  {
+    "id": "joshua-tree",
+    "name": "Joshua Tree",
+    "state": "California",
+    "established": 1994,
+    "acres": 795200,
+    "biome": "desert",
+    "hikes": [
+      "Hidden Valley Trail",
+      "Ryan Mountain Trail",
+      "Lost Palms Oasis Trail"
+    ],
+    "facts": [
+      "The park sits at the meeting point of the Mojave and Colorado deserts, each with distinct plant life.",
+      "The park protects approximately 795,200 acres of desert landscape in California."
+    ],
+    "visitorCenters": [
+      "Joshua Tree Visitor Center",
+      "Cottonwood Visitor Center",
+      "Oasis Visitor Center",
+      "Black Rock Nature Center"
+    ],
+    "hikeLinks": {
+      "Hidden Valley Trail": "https://www.alltrails.com/trail/us/california/hidden-valley--3",
+      "Ryan Mountain Trail": "https://www.alltrails.com/trail/us/california/ryan-mountain-trail",
+      "Lost Palms Oasis Trail": "https://www.alltrails.com/trail/us/california/lost-palms-oasis--4"
+    }
+  },
+  {
+    "id": "katmai",
+    "name": "Katmai",
+    "state": "Alaska",
+    "established": 1980,
+    "acres": 3674500,
+    "biome": "volcanic",
+    "hikes": [
+      "Brooks Falls platform trail",
+      "Dumpling Mountain Trail",
+      "Valley of Ten Thousand Smokes hike"
+    ],
+    "facts": [
+      "Katmai formed around the 1912 eruption of Novarupta, the largest volcanic eruption of the 20th century, and is now famous for brown bears fishing at Brooks Falls.",
+      "The park protects approximately 3,674,500 acres of volcanic landscape in Alaska."
+    ],
+    "visitorCenters": [
+      "King Salmon Visitor Center",
+      "Brooks Camp Visitor Center"
+    ],
+    "hikeLinks": {
+      "Brooks Falls platform trail": "https://www.alltrails.com/trail/us/alaska/brooks-lodge-brooks-river-bridge-riffles-platform-and-brooks-falls"
+    }
+  },
+  {
+    "id": "kenai-fjords",
+    "name": "Kenai Fjords",
+    "state": "Alaska",
+    "established": 1980,
+    "acres": 669600,
+    "biome": "coastal",
+    "hikes": [
+      "Harding Icefield Trail",
+      "Exit Glacier Trail",
+      "Glacier Overlook Loop"
+    ],
+    "facts": [
+      "The park protects the Harding Icefield, one of the largest ice fields in the United States, which feeds nearly 40 glaciers.",
+      "The park protects approximately 669,600 acres of coastal landscape in Alaska."
+    ],
+    "visitorCenters": [
+      "Kenai Fjords National Park Visitor Center",
+      "Exit Glacier Nature Center"
+    ],
+    "hikeLinks": {
+      "Harding Icefield Trail": "https://www.alltrails.com/trail/us/alaska/harding-ice-field-trail",
+      "Exit Glacier Trail": "https://www.alltrails.com/trail/us/alaska/exit-glacier-view-loop",
+      "Glacier Overlook Loop": "https://www.alltrails.com/trail/us/alaska/exit-glacier-overlook-trail"
+    }
+  },
+  {
+    "id": "kings-canyon",
+    "name": "Kings Canyon",
+    "state": "California",
+    "established": 1940,
+    "acres": 461900,
+    "biome": "forest",
+    "hikes": [
+      "Mist Falls Trail",
+      "Zumwalt Meadow Loop",
+      "General Grant Tree Trail"
+    ],
+    "facts": [
+      "The park's General Grant Tree is the second-largest tree on Earth by volume.",
+      "The park protects approximately 461,900 acres of forest landscape in California."
+    ],
+    "visitorCenters": [
+      "Kings Canyon Visitor Center",
+      "Cedar Grove Visitor Center"
+    ],
+    "hikeLinks": {
+      "Mist Falls Trail": "https://www.alltrails.com/trail/us/california/mist-falls",
+      "Zumwalt Meadow Loop": "https://www.alltrails.com/trail/us/california/zumwalt-meadow",
+      "General Grant Tree Trail": "https://www.alltrails.com/trail/us/california/general-grant-trail"
+    }
+  },
+  {
+    "id": "kobuk-valley",
+    "name": "Kobuk Valley",
+    "state": "Alaska",
+    "established": 1980,
+    "acres": 1750700,
+    "biome": "arctic-tundra",
+    "hikes": [
+      "Great Kobuk Sand Dunes cross-country hike",
+      "Onion Portage caribou-crossing route",
+      "Salmon River corridor walk"
+    ],
+    "facts": [
+      "Nearly half a million caribou migrate through the park's Great Kobuk Sand Dunes twice a year, and the park has no roads or maintained trails.",
+      "The park protects approximately 1,750,700 acres of arctic tundra landscape in Alaska."
+    ],
+    "visitorCenters": [
+      "Northwest Arctic Heritage Center"
+    ],
+    "hikeLinks": {
+      "Great Kobuk Sand Dunes cross-country hike": "https://www.alltrails.com/trail/us/alaska/kobuk-giant-sand-dunes"
+    }
+  },
+  {
+    "id": "lake-clark",
+    "name": "Lake Clark",
+    "state": "Alaska",
+    "established": 1980,
+    "acres": 2619800,
+    "biome": "alpine",
+    "hikes": [
+      "Tanalian Falls Trail",
+      "Tanalian Mountain Trail",
+      "Kontrashibuna Lake route"
+    ],
+    "facts": [
+      "Lake Clark has no road access, reachable only by small plane or boat, and contains two active volcanoes, Redoubt and Iliamna.",
+      "The park protects approximately 2,619,800 acres of alpine landscape in Alaska."
+    ],
+    "visitorCenters": [
+      "Lake Clark Visitor Center"
+    ],
+    "hikeLinks": {
+      "Tanalian Falls Trail": "https://www.alltrails.com/trail/us/alaska/tanalian-falls--2",
+      "Tanalian Mountain Trail": "https://www.alltrails.com/trail/us/alaska/tanalian-mountain--3",
+      "Kontrashibuna Lake route": "https://www.alltrails.com/trail/us/alaska/tanalian-falls"
+    }
+  },
+  {
+    "id": "lassen-volcanic",
+    "name": "Lassen Volcanic",
+    "state": "California",
+    "established": 1916,
+    "acres": 106600,
+    "biome": "volcanic",
+    "hikes": [
+      "Bumpass Hell Trail",
+      "Lassen Peak Trail",
+      "Cinder Cone Trail"
+    ],
+    "facts": [
+      "Lassen Peak, one of the largest plug dome volcanoes in the world, last erupted in 1915, prompting the park's creation the following year.",
+      "The park protects approximately 106,600 acres of volcanic landscape in California."
+    ],
+    "visitorCenters": [
+      "Kohm Yah-mah-nee Visitor Center",
+      "Loomis Museum"
+    ],
+    "hikeLinks": {
+      "Lassen Peak Trail": "https://www.alltrails.com/trail/us/california/lassen-peak",
+      "Cinder Cone Trail": "https://www.alltrails.com/trail/us/california/cinder-cone-trail--2"
+    }
+  },
+  {
+    "id": "mammoth-cave",
+    "name": "Mammoth Cave",
+    "state": "Kentucky",
+    "established": 1941,
+    "acres": 72500,
+    "biome": "forest",
+    "hikes": [
+      "Green River Bluffs Trail",
+      "Cedar Sink Trail",
+      "Historic Tour cave route"
+    ],
+    "facts": [
+      "Mammoth Cave is the longest known cave system in the world, with over 420 mapped miles of passages.",
+      "The park protects approximately 72,500 acres of forest landscape in Kentucky."
+    ],
+    "visitorCenters": [
+      "Mammoth Cave Visitor Center"
+    ],
+    "hikeLinks": {
+      "Cedar Sink Trail": "https://www.alltrails.com/trail/us/kentucky/cedar-sink-trail"
+    }
+  },
+  {
+    "id": "mesa-verde",
+    "name": "Mesa Verde",
+    "state": "Colorado",
+    "established": 1906,
+    "acres": 52500,
+    "biome": "canyon",
+    "hikes": [
+      "Petroglyph Point Trail",
+      "Cliff Palace Loop",
+      "Balcony House tour trail"
+    ],
+    "facts": [
+      "The park protects nearly 5,000 archaeological sites, including about 600 cliff dwellings built by Ancestral Puebloans.",
+      "The park protects approximately 52,500 acres of canyon landscape in Colorado."
+    ],
+    "visitorCenters": [
+      "Mesa Verde Visitor and Research Center",
+      "Chapin Mesa Archeological Museum"
+    ],
+    "hikeLinks": {
+      "Petroglyph Point Trail": "https://www.alltrails.com/trail/us/colorado/petroglyph-point-trail",
+      "Cliff Palace Loop": "https://www.alltrails.com/trail/us/colorado/cliff-palace-loop-trail",
+      "Balcony House tour trail": "https://www.alltrails.com/trail/us/colorado/balcony-house-loop-trail"
+    }
+  },
+  {
+    "id": "mount-rainier",
+    "name": "Mount Rainier",
+    "state": "Washington",
+    "established": 1899,
+    "acres": 236400,
+    "biome": "alpine",
+    "hikes": [
+      "Skyline Trail",
+      "Wonderland Trail",
+      "Burroughs Mountain Trail"
+    ],
+    "facts": [
+      "Mount Rainier is the most heavily glaciated peak in the contiguous United States, carrying 25 major glaciers.",
+      "The park protects approximately 236,400 acres of alpine landscape in Washington."
+    ],
+    "visitorCenters": [
+      "Henry M. Jackson Memorial Visitor Center",
+      "Longmire Museum",
+      "Sunrise Visitor Center",
+      "Ohanapecosh Visitor Center"
+    ],
+    "hikeLinks": {
+      "Skyline Trail": "https://www.alltrails.com/trail/us/washington/skyline-trail",
+      "Burroughs Mountain Trail": "https://www.alltrails.com/trail/us/washington/burroughs-mountain-trail"
+    }
+  },
+  {
+    "id": "new-river-gorge",
+    "name": "New River Gorge",
+    "state": "West Virginia",
+    "established": 2020,
+    "acres": 7000,
+    "biome": "canyon",
+    "hikes": [
+      "Long Point Trail",
+      "Endless Wall Trail",
+      "Kaymoor Miners Trail"
+    ],
+    "facts": [
+      "It is the newest U.S. national park, redesignated from a national river in 2020, and its gorge bridge is one of the longest steel single-span arch bridges in the world.",
+      "The park protects approximately 7,000 acres of canyon landscape in West Virginia."
+    ],
+    "visitorCenters": [
+      "Canyon Rim Visitor Center",
+      "Sandstone Visitor Center",
+      "Grandview Visitor Center",
+      "Thurmond Depot Visitor Center"
+    ],
+    "hikeLinks": {
+      "Long Point Trail": "https://www.alltrails.com/trail/us/west-virginia/long-point",
+      "Endless Wall Trail": "https://www.alltrails.com/trail/us/west-virginia/endless-wall",
+      "Kaymoor Miners Trail": "https://www.alltrails.com/trail/us/west-virginia/kaymoor-miners-trail"
+    }
+  },
+  {
+    "id": "north-cascades",
+    "name": "North Cascades",
+    "state": "Washington",
+    "established": 1968,
+    "acres": 504800,
+    "biome": "alpine",
+    "hikes": [
+      "Cascade Pass Trail",
+      "Thunder Knob Trail",
+      "Maple Pass Loop"
+    ],
+    "facts": [
+      "North Cascades contains over 300 glaciers, more than any other U.S. national park outside Alaska.",
+      "The park protects approximately 504,800 acres of alpine landscape in Washington."
+    ],
+    "visitorCenters": [
+      "North Cascades Visitor Center",
+      "Golden West Visitor Center",
+      "Wilderness Information Center"
+    ],
+    "hikeLinks": {
+      "Cascade Pass Trail": "https://www.alltrails.com/trail/us/washington/cascade-pass-trail--3",
+      "Thunder Knob Trail": "https://www.alltrails.com/trail/us/washington/thunder-knob-trail",
+      "Maple Pass Loop": "https://www.alltrails.com/trail/us/washington/maple-pass-trail"
+    }
+  },
+  {
+    "id": "olympic",
+    "name": "Olympic",
+    "state": "Washington",
+    "established": 1938,
+    "acres": 922600,
+    "biome": "forest",
+    "hikes": [
+      "Hoh River Trail",
+      "Hurricane Ridge trails",
+      "Sol Duc Falls Trail"
+    ],
+    "facts": [
+      "Olympic National Park contains three strikingly different ecosystems in one park: glaciated mountains, temperate rainforest, and rugged Pacific coastline.",
+      "The park protects approximately 922,600 acres of forest landscape in Washington."
+    ],
+    "visitorCenters": [
+      "Olympic National Park Visitor Center",
+      "Hoh Rain Forest Visitor Center",
+      "Hurricane Ridge Visitor Contact Station"
+    ],
+    "hikeLinks": {
+      "Sol Duc Falls Trail": "https://www.alltrails.com/trail/us/washington/sol-duc-falls-nature-trail"
+    }
+  },
+  {
+    "id": "petrified-forest",
+    "name": "Petrified Forest",
+    "state": "Arizona",
+    "established": 1962,
+    "acres": 221400,
+    "biome": "desert",
+    "hikes": [
+      "Blue Mesa Trail",
+      "Crystal Forest Trail",
+      "Painted Desert Rim Trail"
+    ],
+    "facts": [
+      "The park holds one of the largest concentrations of petrified wood in the world, some logs over 200 million years old.",
+      "The park protects approximately 221,400 acres of desert landscape in Arizona."
+    ],
+    "visitorCenters": [
+      "Painted Desert Visitor Center",
+      "Rainbow Forest Museum"
+    ],
+    "hikeLinks": {
+      "Blue Mesa Trail": "https://www.alltrails.com/trail/us/arizona/blue-mesa-trail",
+      "Crystal Forest Trail": "https://www.alltrails.com/trail/us/arizona/crystal-forest-trail",
+      "Painted Desert Rim Trail": "https://www.alltrails.com/trail/us/arizona/painted-desert-rim-trail"
+    }
+  },
+  {
+    "id": "pinnacles",
+    "name": "Pinnacles",
+    "state": "California",
+    "established": 2013,
+    "acres": 26700,
+    "biome": "volcanic",
+    "hikes": [
+      "High Peaks Trail",
+      "Bear Gulch Cave Trail",
+      "Balconies Cave Trail"
+    ],
+    "facts": [
+      "The park's rock spires are eroded remnants of an ancient volcanic field, and it is a key release site for the endangered California condor.",
+      "The park protects approximately 26,700 acres of volcanic landscape in California."
+    ],
+    "visitorCenters": [
+      "Pinnacles Visitor Center",
+      "Bear Gulch Nature Center"
+    ],
+    "hikeLinks": {
+      "High Peaks Trail": "https://www.alltrails.com/trail/us/california/high-peaks-trail",
+      "Balconies Cave Trail": "https://www.alltrails.com/trail/us/california/balconies-cave-trail"
+    }
+  },
+  {
+    "id": "redwood",
+    "name": "Redwood",
+    "state": "California",
+    "established": 1968,
+    "acres": 139000,
+    "biome": "forest",
+    "hikes": [
+      "Tall Trees Grove Trail",
+      "Fern Canyon Trail",
+      "Lady Bird Johnson Grove Trail"
+    ],
+    "facts": [
+      "Redwood National and State Parks protect the tallest trees on Earth, including specimens over 350 feet high.",
+      "The park protects approximately 139,000 acres of forest landscape in California."
+    ],
+    "visitorCenters": [
+      "Thomas H. Kuchel Visitor Center",
+      "Prairie Creek Visitor Center",
+      "Hiouchi Visitor Center",
+      "Jedediah Smith Visitor Center"
+    ],
+    "hikeLinks": {
+      "Tall Trees Grove Trail": "https://www.alltrails.com/trail/us/california/tall-trees-grove-loop-trail",
+      "Lady Bird Johnson Grove Trail": "https://www.alltrails.com/trail/us/california/lady-bird-grove-trail"
+    }
+  },
+  {
+    "id": "rocky-mountain",
+    "name": "Rocky Mountain",
+    "state": "Colorado",
+    "established": 1915,
+    "acres": 265800,
+    "biome": "alpine",
+    "hikes": [
+      "Bear Lake Loop",
+      "Sky Pond Trail",
+      "Emerald Lake Trail"
+    ],
+    "facts": [
+      "Trail Ridge Road, which crosses the park, is the highest continuous paved through-road in the United States.",
+      "The park protects approximately 265,800 acres of alpine landscape in Colorado."
+    ],
+    "visitorCenters": [
+      "Beaver Meadows Visitor Center",
+      "Fall River Visitor Center",
+      "Kawuneeche Visitor Center",
+      "Alpine Visitor Center"
+    ],
+    "hikeLinks": {
+      "Sky Pond Trail": "https://www.alltrails.com/trail/us/colorado/sky-pond-via-glacier-gorge-trail",
+      "Emerald Lake Trail": "https://www.alltrails.com/trail/us/colorado/emerald-lake-trail"
+    }
+  },
+  {
+    "id": "saguaro",
+    "name": "Saguaro",
+    "state": "Arizona",
+    "established": 1994,
+    "acres": 91700,
+    "biome": "desert",
+    "hikes": [
+      "Signal Hill Petroglyph Trail",
+      "Cactus Forest Trail",
+      "Hugh Norris Trail"
+    ],
+    "facts": [
+      "The park protects dense stands of saguaro cactus, which can live over 150 years and grow taller than 40 feet.",
+      "The park protects approximately 91,700 acres of desert landscape in Arizona."
+    ],
+    "visitorCenters": [
+      "Rincon Mountain Visitor Center",
+      "Red Hills Visitor Center"
+    ],
+    "hikeLinks": {
+      "Signal Hill Petroglyph Trail": "https://www.alltrails.com/trail/us/arizona/signal-hill-trail"
+    }
+  },
+  {
+    "id": "sequoia",
+    "name": "Sequoia",
+    "state": "California",
+    "established": 1890,
+    "acres": 404000,
+    "biome": "forest",
+    "hikes": [
+      "General Sherman Tree Trail",
+      "Moro Rock Trail",
+      "Congress Trail"
+    ],
+    "facts": [
+      "Sequoia is home to General Sherman, the largest known tree on Earth by trunk volume.",
+      "The park protects approximately 404,000 acres of forest landscape in California."
+    ],
+    "visitorCenters": [
+      "Foothills Visitor Center",
+      "Giant Forest Museum",
+      "Lodgepole Visitor Center"
+    ],
+    "hikeLinks": {
+      "General Sherman Tree Trail": "https://www.alltrails.com/trail/us/california/general-sherman-tree-trail",
+      "Moro Rock Trail": "https://www.alltrails.com/trail/us/california/moro-rock--3",
+      "Congress Trail": "https://www.alltrails.com/trail/us/california/congress-trail"
+    }
+  },
+  {
+    "id": "shenandoah",
+    "name": "Shenandoah",
+    "state": "Virginia",
+    "established": 1935,
+    "acres": 199200,
+    "biome": "forest",
+    "hikes": [
+      "Old Rag Mountain Trail",
+      "Dark Hollow Falls Trail",
+      "Hawksbill Summit Trail"
+    ],
+    "facts": [
+      "The Appalachian Trail runs through Shenandoah for about 101 miles, more than through any other national park.",
+      "The park protects approximately 199,200 acres of forest landscape in Virginia."
+    ],
+    "visitorCenters": [
+      "Dickey Ridge Visitor Center",
+      "Byrd Visitor Center"
+    ],
+    "hikeLinks": {
+      "Old Rag Mountain Trail": "https://www.alltrails.com/trail/us/virginia/old-rag-mountain-loop-trail",
+      "Dark Hollow Falls Trail": "https://www.alltrails.com/trail/us/virginia/dark-hollow-falls-trail",
+      "Hawksbill Summit Trail": "https://www.alltrails.com/trail/us/virginia/hawksbill-summit"
+    }
+  },
+  {
+    "id": "theodore-roosevelt",
+    "name": "Theodore Roosevelt",
+    "state": "North Dakota",
+    "established": 1978,
+    "acres": 70400,
+    "biome": "desert",
+    "hikes": [
+      "Petrified Forest Loop Trail",
+      "Wind Canyon Trail",
+      "Buck Hill Trail"
+    ],
+    "facts": [
+      "The park is named for Theodore Roosevelt, who ranched in these North Dakota badlands as a young man, an experience that shaped his conservation legacy.",
+      "The park protects approximately 70,400 acres of desert landscape in North Dakota."
+    ],
+    "visitorCenters": [
+      "South Unit Visitor Center",
+      "North Unit Visitor Center",
+      "Painted Canyon Visitor Center"
+    ],
+    "hikeLinks": {
+      "Petrified Forest Loop Trail": "https://www.alltrails.com/trail/us/north-dakota/petrified-forest-trail",
+      "Wind Canyon Trail": "https://www.alltrails.com/trail/us/north-dakota/wind-canyon-trail"
+    }
+  },
+  {
+    "id": "virgin-islands",
+    "name": "Virgin Islands",
+    "state": "U.S. Virgin Islands",
+    "established": 1956,
+    "acres": 15000,
+    "biome": "island-tropical",
+    "hikes": [
+      "Reef Bay Trail",
+      "Annaberg Sugar Plantation Trail",
+      "Ram Head Trail"
+    ],
+    "facts": [
+      "The park protects Trunk Bay's famous underwater snorkeling trail along with the ruins of 18th-century Danish sugar plantations.",
+      "The park protects approximately 15,000 acres of island tropical landscape in U.S. Virgin Islands."
+    ],
+    "visitorCenters": [
+      "Cruz Bay Visitor Center",
+      "Annaberg Historic District Visitor Contact Station"
+    ],
+    "hikeLinks": {
+      "Reef Bay Trail": "https://www.alltrails.com/trail/us/saint-john/reef-bay-trail"
+    }
+  },
+  {
+    "id": "voyageurs",
+    "name": "Voyageurs",
+    "state": "Minnesota",
+    "established": 1975,
+    "acres": 218000,
+    "biome": "forest",
+    "hikes": [
+      "Cruiser Lake Trail",
+      "Blind Ash Bay Trail",
+      "Kab-Ami Falls Trail"
+    ],
+    "facts": [
+      "Named for French-Canadian fur traders who once paddled its waterways, roughly a third of the park's area is open water.",
+      "The park protects approximately 218,000 acres of forest landscape in Minnesota."
+    ],
+    "visitorCenters": [
+      "Rainy Lake Visitor Center",
+      "Kabetogama Lake Visitor Center",
+      "Ash River Visitor Center"
+    ],
+    "hikeLinks": {
+      "Cruiser Lake Trail": "https://www.alltrails.com/trail/us/minnesota/cruiser-lake-trail--3",
+      "Blind Ash Bay Trail": "https://www.alltrails.com/trail/us/minnesota/blind-ash-bay-trail"
+    }
+  },
+  {
+    "id": "white-sands",
+    "name": "White Sands",
+    "state": "New Mexico",
+    "established": 2019,
+    "acres": 146500,
+    "biome": "desert",
+    "hikes": [
+      "Alkali Flat Trail",
+      "Dune Life Nature Trail",
+      "Interdune Boardwalk"
+    ],
+    "facts": [
+      "White Sands protects the largest gypsum dune field on Earth, covering nearly 275 square miles.",
+      "The park protects approximately 146,500 acres of desert landscape in New Mexico."
+    ],
+    "visitorCenters": [
+      "White Sands Visitor Center"
+    ],
+    "hikeLinks": {
+      "Alkali Flat Trail": "https://www.alltrails.com/trail/us/new-mexico/alkali-flat-trail",
+      "Dune Life Nature Trail": "https://www.alltrails.com/trail/us/new-mexico/dune-life-nature-trail",
+      "Interdune Boardwalk": "https://www.alltrails.com/trail/us/new-mexico/interdune-boardwalk"
+    }
+  },
+  {
+    "id": "wind-cave",
+    "name": "Wind Cave",
+    "state": "South Dakota",
+    "established": 1903,
+    "acres": 28300,
+    "biome": "forest",
+    "hikes": [
+      "Rankin Ridge Trail",
+      "Centennial Trail (park segment)",
+      "Wind Cave Canyon Trail"
+    ],
+    "facts": [
+      "Wind Cave is one of the longest and most complex cave systems in the world and holds most of the world's known boxwork cave formations.",
+      "The park protects approximately 28,300 acres of forest landscape in South Dakota."
+    ],
+    "visitorCenters": [
+      "Wind Cave Visitor Center"
+    ],
+    "hikeLinks": {
+      "Rankin Ridge Trail": "https://www.alltrails.com/trail/us/south-dakota/rankin-ridge-interpretive-trail",
+      "Wind Cave Canyon Trail": "https://www.alltrails.com/trail/us/south-dakota/wind-cave-canyon-trail"
+    }
+  },
+  {
+    "id": "wrangell-st-elias",
+    "name": "Wrangell-St. Elias",
+    "state": "Alaska",
+    "established": 1980,
+    "acres": 8332600,
+    "biome": "alpine",
+    "hikes": [
+      "Root Glacier Trail",
+      "Bonanza Mine Trail",
+      "Erie Mine Trail"
+    ],
+    "facts": [
+      "At over 8.3 million acres, Wrangell-St. Elias is the largest national park in the United States, roughly the size of Switzerland.",
+      "The park protects approximately 8,332,600 acres of alpine landscape in Alaska."
+    ],
+    "visitorCenters": [
+      "Copper Center Visitor Center",
+      "Kennecott Visitor Center",
+      "Slana Ranger Station",
+      "Chitina Ranger Station"
+    ],
+    "hikeLinks": {
+      "Root Glacier Trail": "https://www.alltrails.com/trail/us/alaska/root-glacier-trail",
+      "Bonanza Mine Trail": "https://www.alltrails.com/trail/us/alaska/bonanza-mine-trail"
+    }
+  },
+  {
+    "id": "yellowstone",
+    "name": "Yellowstone",
+    "state": "Wyoming, Montana, Idaho",
+    "established": 1872,
+    "acres": 2213000,
+    "biome": "volcanic",
+    "hikes": [
+      "Grand Prismatic Overlook Trail",
+      "Mount Washburn Trail",
+      "Fairy Falls Trail"
+    ],
+    "facts": [
+      "Established in 1872, Yellowstone was the world's first national park and sits atop one of the largest active volcanic systems on Earth.",
+      "The park protects approximately 2,213,000 acres of volcanic landscape in Wyoming, Montana, Idaho."
+    ],
+    "visitorCenters": [
+      "Albright Visitor Center",
+      "Canyon Visitor Education Center",
+      "Fishing Bridge Visitor Center",
+      "Old Faithful Visitor Education Center",
+      "Grant Visitor Center"
+    ],
+    "hikeLinks": {
+      "Grand Prismatic Overlook Trail": "https://www.alltrails.com/trail/us/wyoming/grand-prismatic-hot-spring",
+      "Fairy Falls Trail": "https://www.alltrails.com/trail/us/wyoming/fairy-falls--4"
+    }
+  },
+  {
+    "id": "yosemite",
+    "name": "Yosemite",
+    "state": "California",
+    "established": 1890,
+    "acres": 761700,
+    "biome": "alpine",
+    "hikes": [
+      "Half Dome",
+      "Mist Trail to Vernal Fall",
+      "Four Mile Trail"
+    ],
+    "facts": [
+      "Yosemite's El Capitan is one of the largest granite monoliths in the world and a mecca for rock climbers.",
+      "The park protects approximately 761,700 acres of alpine landscape in California."
+    ],
+    "visitorCenters": [
+      "Yosemite Valley Welcome Center",
+      "Wawona Visitor Center",
+      "Tuolumne Meadows Visitor Center",
+      "Big Oak Flat Information Station"
+    ],
+    "hikeLinks": {
+      "Mist Trail to Vernal Fall": "https://www.alltrails.com/trail/us/california/vernal-falls"
+    }
+  },
+  {
+    "id": "zion",
+    "name": "Zion",
+    "state": "Utah",
+    "established": 1919,
+    "acres": 147200,
+    "biome": "canyon",
+    "hikes": [
+      "Angels Landing",
+      "The Narrows",
+      "Emerald Pools Trail"
+    ],
+    "facts": [
+      "The Zion Narrows is one of the narrowest slot canyons in the world carved by a river, in places just 20-30 feet wide with walls 1,000 feet tall.",
+      "The park protects approximately 147,200 acres of canyon landscape in Utah."
+    ],
+    "visitorCenters": [
+      "Zion Canyon Visitor Center",
+      "Kolob Canyons Visitor Center"
+    ],
+    "hikeLinks": {
+      "Angels Landing": "https://www.alltrails.com/trail/us/utah/angels-landing-trail",
+      "Emerald Pools Trail": "https://www.alltrails.com/trail/us/utah/emerald-pools-trail"
+    }
+  }
+]
