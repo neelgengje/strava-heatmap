@@ -38,8 +38,8 @@ body.landing .nav-link.active::after { display: none; }
    so the nudge must more-than-cancel it, but overshooting exposes
    the page background at the edges. Verified clean at 1280/1512/1920. */
 .hf {
-  --zoom: 1.26;
-  --nudge: -8%;
+  --zoom: 1;
+  --nudge: 0;
   position: absolute;
   top: 50%;
   left: 50%;
@@ -66,10 +66,10 @@ body.landing .nav-link.active::after { display: none; }
 /* ── Pinned print ─────────────────────────────────────────── */
 .print {
   position: absolute;
-  right: clamp(18px, 6vw, 90px);
-  top: calc(50% - 24px);
+  right: clamp(18px, 3vw, 56px);
+  top: calc(50% - 8px);
   transform: translateY(-50%) rotate(2.2deg);
-  width: min(clamp(190px, 26vw, 370px), 42vh);
+  width: min(clamp(180px, 21vw, 320px), 40vh);
   z-index: 6;
   background: #F1F3EE;
   padding: 11px 11px 0;
