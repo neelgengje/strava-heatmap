@@ -16,7 +16,12 @@ body.proto-v2 {
 body.proto-v2.drawer-collapsed { --occlusion-left: 40px; }
 
 #map { position: fixed; inset: 0; touch-action: none; }
-.leaflet-control-attribution { display: none; }
+.leaflet-control-attribution {
+  background: color-mix(in srgb, var(--glass-bg) 88%, transparent) !important;
+  color: var(--ink-2) !important;
+  font-size: 10px !important;
+}
+.leaflet-control-attribution a { color: inherit !important; }
 
 /* ── Map controls (zoom + recenter), added by Dashboard ──────── */
 .leaflet-top.leaflet-right { margin-top: 90px; margin-right: 16px; }

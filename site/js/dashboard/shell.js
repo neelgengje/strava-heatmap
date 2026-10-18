@@ -5,14 +5,15 @@
 
 const TILE_THEMES = {
   light: {
-    base:   'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png',
-    labels: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png',
+    base: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
   },
   dark: {
-    base:   'https://{s}.basemaps.cartocdn.com/rastertiles/dark_nolabels/{z}/{x}/{y}{r}.png',
-    labels: 'https://{s}.basemaps.cartocdn.com/rastertiles/dark_only_labels/{z}/{x}/{y}{r}.png',
+    base: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
   },
 };
+
+const OSM_ATTRIBUTION =
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
 class Dashboard {
   constructor({ mapElId, tileTheme = 'light', controlsPosition = 'topright', onFiltersChange, onSelect, onDeselect, onHover, onDataLoaded }) {
@@ -41,7 +42,7 @@ class Dashboard {
 
     this._baseTileLayer = L.tileLayer(
       this.tileTheme.base,
-      { maxZoom: 20, subdomains: 'abcd' }
+      { maxZoom: 19, attribution: OSM_ATTRIBUTION }
     ).addTo(this.map);
 
     this._bindWheelZoom();
@@ -65,12 +66,6 @@ class Dashboard {
       onClick: key => this.select(key),
     });
     this.pins.addTo(this.map);
-
-    // Added after the track layer/pins so place-name labels stay legible over dense trail clusters.
-    this._labelsTileLayer = L.tileLayer(
-      this.tileTheme.labels,
-      { maxZoom: 20, subdomains: 'abcd', pane: 'overlayPane' }
-    ).addTo(this.map);
 
     this._addMapControls();
     this._bindInteractingClass();
