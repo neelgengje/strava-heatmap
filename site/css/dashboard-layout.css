@@ -16,6 +16,7 @@ body.proto-v2 {
 body.proto-v2.drawer-collapsed { --occlusion-left: 40px; }
 
 #map { position: fixed; inset: 0; touch-action: none; }
+.maplibregl-map { font: inherit; }
 .leaflet-control-attribution {
   background: color-mix(in srgb, var(--glass-bg) 88%, transparent) !important;
   color: var(--ink-2) !important;

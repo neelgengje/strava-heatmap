@@ -3,22 +3,13 @@
 // prototype builds its own DOM/CSS and wires it to a Dashboard
 // instance via the callbacks below.
 
-const TILE_THEMES = {
-  light: {
-    base: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-  },
-  dark: {
-    base: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-  },
-};
-
-const OSM_ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+const OPENFREEMAP_ATTRIBUTION =
+  '<a href="https://openfreemap.org/">OpenFreeMap</a> &copy; OpenMapTiles &copy; OpenStreetMap contributors';
+const OPENFREEMAP_STYLE = 'https://tiles.openfreemap.org/styles/bright';
 
 class Dashboard {
-  constructor({ mapElId, tileTheme = 'light', controlsPosition = 'topright', onFiltersChange, onSelect, onDeselect, onHover, onDataLoaded }) {
+  constructor({ mapElId, controlsPosition = 'topright', onFiltersChange, onSelect, onDeselect, onHover, onDataLoaded }) {
     this.mapElId = mapElId;
-    this.tileTheme = TILE_THEMES[tileTheme] || TILE_THEMES.light;
     this.controlsPosition = controlsPosition;
     this.onFiltersChange = onFiltersChange || (() => {});
     this.onSelect = onSelect || (() => {});
@@ -40,10 +31,11 @@ class Dashboard {
       minZoom: 3,
     });
 
-    this._baseTileLayer = L.tileLayer(
-      this.tileTheme.base,
-      { maxZoom: 19, attribution: OSM_ATTRIBUTION }
-    ).addTo(this.map);
+    this._baseTileLayer = L.maplibreGL({
+      style: OPENFREEMAP_STYLE,
+      interactive: false,
+    }).addTo(this.map);
+    this.map.attributionControl.addAttribution(OPENFREEMAP_ATTRIBUTION);
 
     this._bindWheelZoom();
 

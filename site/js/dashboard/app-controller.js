@@ -31,7 +31,7 @@ function secondaryStatBlock(t) {
   return items.map(([v, l]) => `<div class="dstat2nd"><div class="dstat2nd-v">${v}</div><div class="dstat2nd-l">${l}</div></div>`).join('');
 }
 
-function initV2App({ tileTheme = 'light', controlsPosition = 'topright', inlineDetail = false } = {}) {
+function initV2App({ controlsPosition = 'topright', inlineDetail = false } = {}) {
   const els = {
     sportSelectEl: document.getElementById('sport-select'),
     yearSelectEl: document.getElementById('year-select'),
@@ -136,7 +136,6 @@ function initV2App({ tileTheme = 'light', controlsPosition = 'topright', inlineD
   async function main() {
     const dash = new Dashboard({
       mapElId: 'map',
-      tileTheme,
       controlsPosition,
       onDataLoaded: () => {
         sportSelect = new SportMultiSelect(els.sportSelectEl, { dash });
